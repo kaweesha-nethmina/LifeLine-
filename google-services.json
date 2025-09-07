@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "860802675389",
+    "project_id": "lifelineplus-b7c27",
+    "storage_bucket": "lifelineplus-b7c27.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:860802675389:android:b5bb365360e42c2e86bdd4",
+        "android_client_info": {
+          "package_name": "com.lifelineplus.healthcare"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDY2o-E6kfxIN8YJs_3hcMRSTCsHCQ7LS4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
