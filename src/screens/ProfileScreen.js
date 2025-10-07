@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -9,7 +9,8 @@ import {
   Alert,
   Modal,
   TextInput,
-  Image
+  Image,
+  Switch
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
@@ -24,6 +25,7 @@ const ProfileScreen = ({ navigation }) => {
   const { user, userProfile, logout, updateUserProfile } = useAuth();
   const [isEditModalVisible, setEditModalVisible] = useState(false);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const [isHeartPatient, setIsHeartPatient] = useState(false);
   const [editForm, setEditForm] = useState({
     firstName: userProfile?.firstName || '',
     lastName: userProfile?.lastName || '',
@@ -32,6 +34,13 @@ const ProfileScreen = ({ navigation }) => {
     bloodType: userProfile?.bloodType || '',
     allergies: userProfile?.allergies?.join(', ') || ''
   });
+
+  // Initialize heart patient status from user profile
+  useEffect(() => {
+    if (userProfile?.isHeartPatient !== undefined) {
+      setIsHeartPatient(userProfile.isHeartPatient);
+    }
+  }, [userProfile]);
 
   const handleLogout = () => {
     Alert.alert(
@@ -51,6 +60,23 @@ const ProfileScreen = ({ navigation }) => {
         }
       ]
     );
+  };
+
+  const handleHeartPatientToggle = async (value) => {
+    setIsHeartPatient(value);
+    
+    try {
+      const result = await updateUserProfile({ isHeartPatient: value });
+      if (!result.success) {
+        // Revert the toggle if update fails
+        setIsHeartPatient(!value);
+        Alert.alert('Error', result.error || 'Failed to update heart patient status');
+      }
+    } catch (error) {
+      // Revert the toggle if update fails
+      setIsHeartPatient(!value);
+      Alert.alert('Error', 'Failed to update heart patient status');
+    }
   };
 
   const handleUpdateProfile = async () => {
@@ -206,16 +232,28 @@ const ProfileScreen = ({ navigation }) => {
     );
   };
 
-  const ProfileItem = ({ icon, label, value, onPress }) => (
+  const ProfileItem = ({ icon, label, value, onPress, toggle }) => (
     <TouchableOpacity style={styles.profileItem} onPress={onPress}>
       <View style={styles.itemLeft}>
         <Ionicons name={icon} size={24} color={COLORS.PRIMARY} />
         <View style={styles.itemText}>
           <Text style={styles.itemLabel}>{label}</Text>
-          <Text style={styles.itemValue}>{value || 'Not set'}</Text>
+          {toggle ? (
+            <View style={styles.toggleContainer}>
+              <Text style={styles.toggleLabel}>Heart Patient</Text>
+              <Switch
+                trackColor={{ false: COLORS.GRAY_MEDIUM, true: COLORS.PRIMARY }}
+                thumbColor={isHeartPatient ? COLORS.WHITE : COLORS.WHITE}
+                onValueChange={handleHeartPatientToggle}
+                value={isHeartPatient}
+              />
+            </View>
+          ) : (
+            <Text style={styles.itemValue}>{value || 'Not set'}</Text>
+          )}
         </View>
       </View>
-      {onPress && <Ionicons name="chevron-forward" size={20} color={COLORS.GRAY_MEDIUM} />}
+      {onPress && !toggle && <Ionicons name="chevron-forward" size={20} color={COLORS.GRAY_MEDIUM} />}
     </TouchableOpacity>
   );
 
@@ -296,6 +334,12 @@ const ProfileScreen = ({ navigation }) => {
         {/* Medical Information */}
         <Card style={styles.section}>
           <Text style={styles.sectionTitle}>Medical Information</Text>
+          
+          <ProfileItem
+            icon="heart"
+            label="Heart Patient Status"
+            toggle={true}
+          />
           
           <ProfileItem
             icon="water-outline"
@@ -558,6 +602,16 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.XS / 2,
   },
   itemValue: {
+    fontSize: FONT_SIZES.MD,
+    color: COLORS.TEXT_PRIMARY,
+    fontWeight: '500',
+  },
+  toggleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  toggleLabel: {
     fontSize: FONT_SIZES.MD,
     color: COLORS.TEXT_PRIMARY,
     fontWeight: '500',

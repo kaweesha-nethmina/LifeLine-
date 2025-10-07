@@ -19,29 +19,115 @@ import LocationService from '../services/locationService';
 import { db, collection, addDoc, query, where, getDocs, doc, updateDoc } from '../services/firebase';
 import { serverTimestamp } from 'firebase/firestore';
 
-const EmergencyScreen = ({ navigation }) => {
+const EmergencyScreen = ({ navigation, route }) => {
   const { user, userProfile } = useAuth();
   const [isActivating, setIsActivating] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [isEmergencyActive, setIsEmergencyActive] = useState(false);
   const [emergencyId, setEmergencyId] = useState(null);
   const [location, setLocation] = useState(null);
+  const paramsProcessedRef = useRef(false); // Track if we've processed route params
   const locationSubscriptionRef = useRef(null);
 
-  const emergencyContacts = [
-    { name: 'Ambulance', number: '911', icon: 'medical' },
-    { name: 'Fire Department', number: '911', icon: 'flame' },
-    { name: 'Police', number: '911', icon: 'shield' },
-  ];
-
-  // Clean up on unmount
+  // Check if this is a direct SOS activation from heart patient
+  useEffect(() => {
+    // Only process route params once to prevent re-triggering
+    if (!paramsProcessedRef.current) {
+      const immediateSOS = route.params?.immediateSOS;
+      const isHeartPatient = route.params?.isHeartPatient;
+      const quickSOS = route.params?.quickSOS;
+      
+      if (immediateSOS && isHeartPatient && !isEmergencyActive) {
+        // For heart patients, activate SOS immediately without confirmation
+        paramsProcessedRef.current = true;
+        activateHeartSOS();
+      } else if (quickSOS && userProfile?.isHeartPatient && !isEmergencyActive) {
+        // Show confirmation immediately for heart patients using quick SOS
+        // Only show if emergency is not already active
+        paramsProcessedRef.current = true;
+        setShowConfirmation(true);
+      } else if (immediateSOS !== undefined || quickSOS !== undefined) {
+        // Mark as processed even if conditions don't match to prevent future triggering
+        paramsProcessedRef.current = true;
+      }
+    }
+  }, [route.params, isEmergencyActive, userProfile?.isHeartPatient]);
+  
+  // Reset params processed flag when component unmounts
   useEffect(() => {
     return () => {
       if (locationSubscriptionRef.current) {
         locationSubscriptionRef.current.remove();
       }
+      // Reset params processed flag when component unmounts
+      paramsProcessedRef.current = false;
     };
   }, []);
+
+  // Special SOS activation for heart patients (faster, no delay)
+  const activateHeartSOS = async () => {
+    setIsActivating(true);
+    
+    try {
+      // Vibrate device with more urgent pattern for heart patients
+      Vibration.vibrate([1000, 1000, 1000], true); // Continuous vibration
+      
+      // Get current location
+      const currentLocation = await LocationService.getCurrentLocation();
+      setLocation(currentLocation);
+      
+      // Save emergency to Firebase with high priority for heart patients
+      const emergencyData = {
+        userId: user.uid,
+        patientName: userProfile?.firstName && userProfile?.lastName ? 
+          `${userProfile.firstName} ${userProfile.lastName}` : 
+          userProfile?.name || 'Unknown User',
+        phone: userProfile?.phone || 'Unknown',
+        age: userProfile?.age || 'N/A',
+        medicalHistory: userProfile?.medicalConditions?.join(', ') || 'None',
+        latitude: currentLocation.latitude,
+        longitude: currentLocation.longitude,
+        accuracy: currentLocation.accuracy,
+        location: `${currentLocation.latitude.toFixed(6)}, ${currentLocation.longitude.toFixed(6)}`,
+        timestamp: serverTimestamp(),
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+        status: EMERGENCY_STATUS.PENDING,
+        priority: 'critical', // Higher priority for heart patients
+        type: 'Heart Emergency SOS',
+        description: 'Critical heart emergency activated by heart patient',
+        notes: 'Heart patient - immediate response required',
+        assignedUnit: null,
+        responseTime: null,
+        resolvedAt: null,
+        isHeartPatient: true // Flag for heart patient emergency
+      };
+
+      const docRef = await addDoc(collection(db, 'emergencies'), emergencyData);
+      setEmergencyId(docRef.id);
+      setIsEmergencyActive(true);
+      
+      // Notify emergency operators with urgent priority
+      await notifyEmergencyOperators(emergencyData, docRef.id, true); // urgent flag
+      
+      // Start location tracking
+      startLocationTracking();
+      
+      // Show success alert
+      Alert.alert(
+        'Heart Emergency Activated',
+        'Critical emergency services notified immediately. Help is on the way.',
+        [{ text: 'OK' }]
+      );
+      
+    } catch (error) {
+      console.error('Error activating heart emergency:', error);
+      Vibration.cancel();
+      Alert.alert('Error', 'Failed to activate emergency. Please try again.');
+    } finally {
+      setIsActivating(false);
+    }
+  };
 
   const activateSOS = async () => {
     setShowConfirmation(false);
@@ -175,7 +261,7 @@ const EmergencyScreen = ({ navigation }) => {
     }
   };
 
-  const notifyEmergencyOperators = async (emergencyData, emergencyId) => {
+  const notifyEmergencyOperators = async (emergencyData, emergencyId, isUrgent = false) => {
     try {
       // Query all users with role 'emergency_operator'
       const operatorsQuery = query(
@@ -193,11 +279,11 @@ const EmergencyScreen = ({ navigation }) => {
         if (operator.uid) {
           const notificationData = {
             userId: operator.uid,
-            title: 'Emergency Alert',
+            title: isUrgent ? 'CRITICAL HEART EMERGENCY' : 'Emergency Alert',
             message: `SOS from ${emergencyData.patientName || 'Unknown User'} at location (${emergencyData.latitude.toFixed(6)}, ${emergencyData.longitude.toFixed(6)})`,
             type: 'emergency',
             category: 'emergency',
-            priority: 'urgent',
+            priority: isUrgent ? 'critical' : 'urgent',
             data: {
               emergencyId: emergencyId,
               userId: emergencyData.userId,
@@ -205,7 +291,8 @@ const EmergencyScreen = ({ navigation }) => {
               userPhone: emergencyData.phone,
               latitude: emergencyData.latitude,
               longitude: emergencyData.longitude,
-              timestamp: emergencyData.timestamp
+              timestamp: emergencyData.timestamp,
+              isHeartPatient: emergencyData.isHeartPatient || false
             },
             actionUrl: `/emergency/${emergencyId}`
           };
@@ -360,6 +447,12 @@ const EmergencyScreen = ({ navigation }) => {
     </SafeAreaView>
   );
 };
+
+const emergencyContacts = [
+  { name: 'Ambulance', number: '911', icon: 'medical' },
+  { name: 'Fire Department', number: '911', icon: 'flame' },
+  { name: 'Police', number: '911', icon: 'shield' },
+];
 
 const styles = StyleSheet.create({
   container: {
