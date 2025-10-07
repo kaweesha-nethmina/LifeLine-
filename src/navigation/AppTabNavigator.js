@@ -26,7 +26,6 @@ import TelemedicineScreen from '../screens/TelemedicineScreen';
 import PatientAppointmentsScreen from '../screens/PatientAppointmentsScreen';
 
 // Emergency Related Screens
-import SOSScreen from '../screens/SOSScreen';
 import EmergencyMapScreen from '../screens/EmergencyMapScreen';
 
 // Consultation Related Screens
@@ -172,11 +171,6 @@ const EmergencyStackNavigator = () => (
       name="EmergencyMain" 
       component={EmergencyScreen}
       options={{ title: 'Emergency' }}
-    />
-    <EmergencyStack.Screen 
-      name="SOS" 
-      component={SOSScreen}
-      options={{ title: 'SOS Alert' }}
     />
     <EmergencyStack.Screen 
       name="EmergencyMap" 

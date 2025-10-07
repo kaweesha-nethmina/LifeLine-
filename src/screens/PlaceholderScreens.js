@@ -12,7 +12,7 @@ const createPlaceholderScreen = (title, subtitle) => () => (
   </SafeAreaView>
 );
 
-// Note: SOSScreen, EmergencyMapScreen, and VideoCallScreen are now implemented
+// Note: EmergencyMapScreen and VideoCallScreen are now implemented
 // These exports remain for any legacy navigation references
 export const PlaceholderScreen = createPlaceholderScreen('Feature Coming Soon', 'This feature is under development');
 

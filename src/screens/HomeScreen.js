@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -6,7 +6,9 @@ import {
   SafeAreaView,
   ScrollView,
   TouchableOpacity,
-  Image
+  Image,
+  Dimensions,
+  Animated
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Card from '../components/Card';
@@ -17,6 +19,10 @@ import useProfilePicture from '../hooks/useProfilePicture';
 import { collection, query, where, getDocs, orderBy, limit } from 'firebase/firestore';
 import { db } from '../services/firebase';
 
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const CARD_WIDTH = (SCREEN_WIDTH - SPACING.LG * 2 - SPACING.MD) / 2;
+const CARD_HEIGHT = 160; // Fixed height for all cards
+
 const HomeScreen = ({ navigation }) => {
   const { userProfile, isPatient, isDoctor, isEmergencyOperator } = useAuth();
   const { fetchUserProfilePicture, getCachedProfilePicture } = useProfilePicture();
@@ -24,6 +30,30 @@ const HomeScreen = ({ navigation }) => {
   const [recentChats, setRecentChats] = useState([]);
   const [loadingChats, setLoadingChats] = useState(false);
   const [chatProfilePictures, setChatProfilePictures] = useState({});
+  const heartSOSAnimation = useRef(new Animated.Value(1)).current;
+
+  // Animation for Heart SOS button
+  useEffect(() => {
+    const animate = () => {
+      Animated.sequence([
+        Animated.timing(heartSOSAnimation, {
+          toValue: 1.1,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+        Animated.timing(heartSOSAnimation, {
+          toValue: 1,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+      ]).start(() => {
+        // Loop the animation
+        animate();
+      });
+    };
+
+    animate();
+  }, [heartSOSAnimation]);
 
   // Fetch recent chats when screen loads
   useEffect(() => {
@@ -143,14 +173,35 @@ const HomeScreen = ({ navigation }) => {
     }
   };
 
+  // Direct SOS activation for heart patients
+  const activateHeartSOS = () => {
+    // Navigate directly to emergency screen with immediate activation flag
+    navigation.navigate('Emergency', { 
+      screen: 'EmergencyMain',
+      params: { 
+        immediateSOS: true,
+        isHeartPatient: true
+      }
+    });
+  };
+
   const quickActions = [
     {
       title: 'Emergency SOS',
       subtitle: 'Immediate help',
       icon: 'alert-circle',
       color: COLORS.EMERGENCY,
-      onPress: () => navigation.navigate('Emergency', { screen: 'SOS' }),
+      onPress: () => navigation.navigate('Emergency'),
       show: isPatient
+    },
+    {
+      title: 'Heart SOS',
+      subtitle: 'Quick heart emergency',
+      icon: 'heart',
+      color: COLORS.ERROR,
+      onPress: activateHeartSOS,
+      show: isPatient && userProfile?.isHeartPatient,
+      isHeartSOS: true // Special flag for heart SOS
     },
     {
       title: 'Book Consultation',
@@ -205,13 +256,32 @@ const HomeScreen = ({ navigation }) => {
   const renderQuickAction = (action) => {
     if (!action.show) return null;
     
+    // Special styling for heart SOS button
+    if (action.isHeartSOS) {
+      return (
+        <TouchableOpacity
+          key={action.title}
+          style={[styles.quickActionContainer, { width: CARD_WIDTH }]}
+          onPress={action.onPress}
+        >
+          <View style={styles.heartSOSContainer}>
+            <Animated.View style={[styles.heartSOSButton, { transform: [{ scale: heartSOSAnimation }] }]}>
+              <Ionicons name={action.icon} size={40} color={COLORS.WHITE} />
+            </Animated.View>
+            <Text style={styles.heartSOSTitle}>{action.title}</Text>
+            <Text style={styles.heartSOSSubtitle}>{action.subtitle}</Text>
+          </View>
+        </TouchableOpacity>
+      );
+    }
+    
     return (
       <TouchableOpacity
         key={action.title}
-        style={styles.quickActionContainer}
+        style={[styles.quickActionContainer, { width: CARD_WIDTH }]}
         onPress={action.onPress}
       >
-        <Card style={styles.quickActionCard}>
+        <Card style={[styles.quickActionCard, { width: CARD_WIDTH, height: CARD_HEIGHT }]}>
           <View style={[styles.quickActionIcon, { backgroundColor: action.color + '20' }]}>
             <Ionicons name={action.icon} size={32} color={action.color} />
           </View>
@@ -476,11 +546,11 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   quickActionContainer: {
-    width: '48%',
     marginBottom: SPACING.MD,
   },
   quickActionCard: {
     alignItems: 'center',
+    justifyContent: 'center',
     paddingVertical: SPACING.LG,
   },
   quickActionIcon: {
@@ -502,6 +572,41 @@ const styles = StyleSheet.create({
     fontSize: FONT_SIZES.SM,
     color: COLORS.TEXT_SECONDARY,
     textAlign: 'center',
+  },
+  // Special styles for Heart SOS button
+  heartSOSContainer: {
+    alignItems: 'center',
+  },
+  heartSOSButton: {
+    width: 90,
+    height: 90,
+    borderRadius: 45,
+    backgroundColor: COLORS.ERROR,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: COLORS.ERROR,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.4,
+    shadowRadius: 12,
+    elevation: 12,
+    borderWidth: 3,
+    borderColor: COLORS.WHITE,
+    marginBottom: SPACING.SM,
+    // Add pulsing animation effect
+    transform: [{ scale: 1 }],
+  },
+  heartSOSTitle: {
+    fontSize: FONT_SIZES.MD,
+    fontWeight: 'bold',
+    color: COLORS.ERROR,
+    textAlign: 'center',
+    marginTop: SPACING.XS,
+  },
+  heartSOSSubtitle: {
+    fontSize: FONT_SIZES.SM,
+    color: COLORS.ERROR,
+    textAlign: 'center',
+    fontWeight: '600',
   },
   activityCard: {
     paddingVertical: SPACING.LG,
