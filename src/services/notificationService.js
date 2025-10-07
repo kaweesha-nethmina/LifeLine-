@@ -232,8 +232,14 @@ export class NotificationService {
         const pushToken = userDoc.data().pushToken;
         
         // Schedule push notification 1 hour before appointment
-        const appointmentTime = new Date(appointmentData.appointmentDate + 'T' + appointmentData.appointmentTime);
-        const reminderTime = new Date(appointmentTime.getTime() - 60 * 60 * 1000); // 1 hour before
+        const appointmentDateTime = new Date(`${appointmentData.appointmentDate}T${appointmentData.appointmentTime}`);
+        // Validate that the date is valid
+        if (isNaN(appointmentDateTime.getTime())) {
+          console.error('Invalid appointment date/time:', appointmentData.appointmentDate, appointmentData.appointmentTime);
+          return false;
+        }
+        
+        const reminderTime = new Date(appointmentDateTime.getTime() - 60 * 60 * 1000); // 1 hour before
         
         await PushNotificationService.scheduleAppointmentReminder({
           id: appointmentData.id,

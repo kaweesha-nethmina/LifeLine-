@@ -33,7 +33,7 @@
     ],
     "extra": {
       "eas": {
-        "projectId": "YOUR-ACTUAL-UUID-FROM-FIREBASE-CONSOLE"
+        "projectId": "lifelineplus-b7c27"
       }
     }
   }

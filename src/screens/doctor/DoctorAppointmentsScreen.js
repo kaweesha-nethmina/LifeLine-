@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
   View,
   Text,
@@ -172,6 +172,44 @@ const DoctorAppointmentsScreen = ({ navigation }) => {
     }
   };
 
+  // Function to check if an appointment is in the future
+  const isFutureAppointment = (appointment) => {
+    // Handle potential invalid date or time values
+    if (!appointment || !appointment.appointmentDate || !appointment.appointmentTime) {
+      return false;
+    }
+    
+    try {
+      const appointmentDateTime = new Date(`${appointment.appointmentDate}T${appointment.appointmentTime}`);
+      // Check if the date is valid
+      if (isNaN(appointmentDateTime.getTime())) {
+        return false;
+      }
+      
+      const now = new Date();
+      return appointmentDateTime > now; // Appointment is in the future
+    } catch (error) {
+      return false;
+    }
+  };
+
+  const getTodaysAppointments = () => {
+    const today = new Date().toDateString();
+    return appointments.filter(apt => {
+      // Handle potential invalid date values
+      if (!apt || !apt.appointmentDate) {
+        return false;
+      }
+      
+      try {
+        const aptDate = new Date(apt.appointmentDate).toDateString();
+        return aptDate === today;
+      } catch (error) {
+        return false;
+      }
+    });
+  };
+
   const handleAppointmentAction = (appointment, action) => {
     switch (action) {
       case 'confirm':
@@ -239,27 +277,26 @@ const DoctorAppointmentsScreen = ({ navigation }) => {
     }
   };
 
-  const filteredAppointments = appointments.filter(appointment => {
-    if (filterStatus === 'all') return true;
-    return appointment.status === filterStatus;
-  });
+  // Filter appointments based on selected filter
+  const filteredAppointments = useMemo(() => {
+    if (filterStatus === 'all') return appointments;
+    
+    // Special handling for "Today" filter
+    if (filterStatus === 'today') {
+      return getTodaysAppointments();
+    }
+    
+    // Special handling for "Upcoming" filter - should show confirmed appointments that are in the future
+    if (filterStatus === 'upcoming') {
+      return appointments.filter(appointment => 
+        appointment.status === CONSULTATION_STATUS.CONFIRMED && isFutureAppointment(appointment)
+      );
+    }
+    
+    return appointments.filter(appointment => appointment.status === filterStatus);
+  }, [appointments, filterStatus]);
 
-  const getTodaysAppointments = () => {
-    const today = new Date().toDateString();
-    return appointments.filter(apt => {
-      // Handle potential invalid date values
-      if (!apt || !apt.appointmentDate) {
-        return false;
-      }
-      
-      try {
-        const aptDate = new Date(apt.appointmentDate).toDateString();
-        return aptDate === today;
-      } catch (error) {
-        return false;
-      }
-    });
-  };
+  const todaysAppointments = useMemo(() => getTodaysAppointments(), [appointments]);
 
   const FilterButton = ({ status, title, active, onPress }) => (
     <TouchableOpacity
@@ -492,19 +529,17 @@ const DoctorAppointmentsScreen = ({ navigation }) => {
     }
   };
 
-  const todaysAppointments = getTodaysAppointments();
-
   return (
     <SafeAreaView style={styles.container}>
       {/* Header Stats */}
       <View style={styles.statsContainer}>
         <View style={styles.statCard}>
-          <Text style={styles.statNumber}>{todaysAppointments.length}</Text>
+          <Text style={styles.statNumber}>{getTodaysAppointments().length}</Text>
           <Text style={styles.statLabel}>Today</Text>
         </View>
         <View style={styles.statCard}>
           <Text style={styles.statNumber}>
-            {appointments.filter(apt => apt.status === CONSULTATION_STATUS.CONFIRMED).length}
+            {appointments.filter(apt => apt.status === CONSULTATION_STATUS.CONFIRMED && isFutureAppointment(apt)).length}
           </Text>
           <Text style={styles.statLabel}>Upcoming</Text>
         </View>
@@ -526,14 +561,26 @@ const DoctorAppointmentsScreen = ({ navigation }) => {
             onPress={() => setFilterStatus('all')}
           />
           <FilterButton
+            status="today"
+            title="Today"
+            active={filterStatus === 'today'}
+            onPress={() => setFilterStatus('today')}
+          />
+          <FilterButton
             status={CONSULTATION_STATUS.PENDING}
             title="Pending"
             active={filterStatus === CONSULTATION_STATUS.PENDING}
             onPress={() => setFilterStatus(CONSULTATION_STATUS.PENDING)}
           />
           <FilterButton
-            status={CONSULTATION_STATUS.CONFIRMED}
+            status="upcoming"
             title="Upcoming"
+            active={filterStatus === 'upcoming'}
+            onPress={() => setFilterStatus('upcoming')}
+          />
+          <FilterButton
+            status={CONSULTATION_STATUS.CONFIRMED}
+            title="Confirmed"
             active={filterStatus === CONSULTATION_STATUS.CONFIRMED}
             onPress={() => setFilterStatus(CONSULTATION_STATUS.CONFIRMED)}
           />
