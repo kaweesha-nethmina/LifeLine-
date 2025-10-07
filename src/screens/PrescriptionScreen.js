@@ -33,9 +33,9 @@ import {
 } from '../constants';
 import Card from '../components/Card';
 import Button from '../components/Button';
-
-// Remove the direct import of react-native-html-to-pdf that was causing issues
-// We'll handle PDF generation through a more robust approach
+import * as FileSystem from 'expo-file-system';
+import { getInfoAsync } from 'expo-file-system/legacy';
+import * as Print from 'expo-print';
 
 const PrescriptionScreen = ({ navigation }) => {
   const { user, userProfile } = useAuth();
@@ -485,223 +485,115 @@ const PrescriptionScreen = ({ navigation }) => {
       `;
     }
 
+    // Simplified HTML for better compatibility
     return `
       <!DOCTYPE html>
       <html>
         <head>
           <meta charset="utf-8">
           <title>Prescription Details</title>
-          <style>
-            body { 
-              font-family: Arial, sans-serif; 
-              margin: 30px; 
-              color: #333;
-              line-height: 1.6;
-            }
-            .header { 
-              text-align: center; 
-              margin-bottom: 30px; 
-              padding-bottom: 20px;
-              border-bottom: 2px solid #2E86AB;
-            }
-            .logo {
-              color: #2E86AB;
-              font-size: 28px;
-              font-weight: bold;
-              margin-bottom: 5px;
-            }
-            .subtitle { 
-              font-size: 20px; 
-              color: #666; 
-              margin-top: 5px; 
-            }
-            .section { 
-              margin-bottom: 25px; 
-              padding: 15px;
-              border-radius: 8px;
-              background-color: #f8f9fa;
-            }
-            .section-title { 
-              font-size: 20px; 
-              font-weight: bold; 
-              color: #2E86AB; 
-              margin-bottom: 15px;
-              padding-bottom: 8px;
-              border-bottom: 1px solid #eee;
-            }
-            .info-row { 
-              margin-bottom: 12px; 
-              display: flex;
-            }
-            .info-label { 
-              font-weight: bold; 
-              width: 200px;
-              min-width: 200px;
-            }
-            .info-value { 
-              flex: 1;
-            }
-            table { 
-              width: 100%; 
-              border-collapse: collapse;
-              margin: 15px 0;
-            }
-            th, td { 
-              padding: 12px; 
-              text-align: left; 
-              border: 1px solid #ddd; 
-            }
-            th { 
-              background-color: #2E86AB; 
-              color: white; 
-            }
-            tr:nth-child(even) { 
-              background-color: #f9f9f9; 
-            }
-            .footer {
-              margin-top: 40px; 
-              text-align: center; 
-              font-size: 12px; 
-              color: #888;
-              padding-top: 20px;
-              border-top: 1px solid #eee;
-            }
-            .signature-area {
-              margin-top: 50px;
-              display: flex;
-              justify-content: space-between;
-            }
-            .signature-box {
-              width: 45%;
-              border-top: 1px solid #333;
-              padding-top: 10px;
-              text-align: center;
-            }
-          </style>
         </head>
         <body>
-          <div class="header">
-            <div class="logo">LifeLine+ Healthcare</div>
-            <div class="subtitle">Prescription Details</div>
-          </div>
+          <h1>LifeLine+ Healthcare</h1>
+          <h2>Prescription Details</h2>
           
-          <div class="section">
-            <div class="section-title">Patient Information</div>
-            <div class="info-row">
-              <span class="info-label">Patient Name:</span>
-              <span class="info-value">${userProfile?.firstName || ''} ${userProfile?.lastName || ''}</span>
-            </div>
-            <div class="info-row">
-              <span class="info-label">Patient ID:</span>
-              <span class="info-value">${userProfile?.id || 'N/A'}</span>
-            </div>
-            <div class="info-row">
-              <span class="info-label">Prescription ID:</span>
-              <span class="info-value">${prescription.id || 'N/A'}</span>
-            </div>
-          </div>
+          <h3>Patient Information</h3>
+          <p><strong>Patient Name:</strong> ${userProfile?.firstName || ''} ${userProfile?.lastName || ''}</p>
+          <p><strong>Prescription ID:</strong> ${prescription.id || 'N/A'}</p>
           
-          <div class="section">
-            <div class="section-title">Doctor Information</div>
-            <div class="info-row">
-              <span class="info-label">Doctor Name:</span>
-              <span class="info-value">${prescription.doctorName || 'N/A'}</span>
-            </div>
-            <div class="info-row">
-              <span class="info-label">License Number:</span>
-              <span class="info-value">${prescription.doctorLicense || 'N/A'}</span>
-            </div>
-          </div>
+          <h3>Doctor Information</h3>
+          <p><strong>Doctor Name:</strong> ${prescription.doctorName || 'N/A'}</p>
+          <p><strong>License Number:</strong> ${prescription.doctorLicense || 'N/A'}</p>
           
-          <div class="section">
-            ${medicationsHTML}
-          </div>
+          ${medicationsHTML}
           
-          <div class="section">
-            <div class="section-title">Prescription Details</div>
-            <div class="info-row">
-              <span class="info-label">Start Date:</span>
-              <span class="info-value">${formatDate(prescription.startDate)}</span>
-            </div>
-            <div class="info-row">
-              <span class="info-label">End Date:</span>
-              <span class="info-value">${formatDate(prescription.endDate)}</span>
-            </div>
-            <div class="info-row">
-              <span class="info-label">Duration:</span>
-              <span class="info-value">${prescription.duration || 'N/A'} days</span>
-            </div>
-            <div class="info-row">
-              <span class="info-label">Refills:</span>
-              <span class="info-value">${prescription.refillsRemaining || 0} of ${prescription.refills || 0} refills remaining</span>
-            </div>
-            <div class="info-row">
-              <span class="info-label">Status:</span>
-              <span class="info-value">${prescription.status || 'N/A'}</span>
-            </div>
-          </div>
+          <h3>Prescription Details</h3>
+          <p><strong>Start Date:</strong> ${formatDate(prescription.startDate)}</p>
+          <p><strong>End Date:</strong> ${formatDate(prescription.endDate)}</p>
+          <p><strong>Duration:</strong> ${prescription.duration || 'N/A'} days</p>
+          <p><strong>Refills:</strong> ${prescription.refillsRemaining || 0} of ${prescription.refills || 0} refills remaining</p>
           
-          ${prescription.sideEffects ? `
-          <div class="section">
-            <div class="section-title">Possible Side Effects</div>
-            <p>${prescription.sideEffects}</p>
-          </div>
-          ` : ''}
+          ${prescription.sideEffects ? `<h3>Possible Side Effects</h3><p>${prescription.sideEffects}</p>` : ''}
+          ${prescription.notes ? `<h3>Additional Notes</h3><p>${prescription.notes}</p>` : ''}
           
-          ${prescription.notes ? `
-          <div class="section">
-            <div class="section-title">Additional Notes</div>
-            <p>${prescription.notes}</p>
-          </div>
-          ` : ''}
-          
-          <div class="signature-area">
-            <div class="signature-box">
-              Doctor's Signature
-            </div>
-            <div class="signature-box">
-              Date
-            </div>
-          </div>
-          
-          <div class="footer">
-            <p>This is an electronically generated prescription. Please consult your doctor if you have any questions.</p>
-            <p>© ${new Date().getFullYear()} LifeLine+ Healthcare. All rights reserved.</p>
-          </div>
+          <p><small>This is an electronically generated prescription. Please consult your doctor if you have any questions.</small></p>
+          <p><small>© ${new Date().getFullYear()} LifeLine+ Healthcare. All rights reserved.</small></p>
         </body>
       </html>
     `;
   };
 
+  // Function to create PDF from HTML content
+  const createPDF = async (htmlContent, fileName) => {
+    try {
+      console.log('Generating PDF with html content length:', htmlContent.length);
+      
+      // Generate PDF using expo-print
+      const { uri } = await Print.printToFileAsync({
+        html: htmlContent,
+        base64: false
+      });
+      
+      console.log('PDF generated at:', uri);
+      
+      // For newer versions of Expo, we can use the generated URI directly
+      // No need to copy the file as it's already in a shareable location
+      return uri;
+    } catch (error) {
+      console.error('Error creating PDF:', error);
+      throw new Error(`Failed to create PDF: ${error.message}`);
+    }
+  };
+
   // Function to download prescription as PDF
   const downloadPrescription = async (prescription) => {
     try {
+      console.log('Starting PDF download for prescription:', prescription.id);
+      
       // Check if prescription is valid
       if (!prescription) {
         Alert.alert('Error', 'No prescription selected');
         return;
       }
 
-      // Always fall back to sharing since PDF generation is not working
+      // Generate HTML content
+      const htmlContent = generatePrescriptionHTML(prescription);
+      console.log('Generated HTML content length:', htmlContent.length);
+      
+      // Create PDF
+      const fileName = `prescription_${prescription.id || 'unknown'}`;
+      const pdfUri = await createPDF(htmlContent, fileName);
+      console.log('PDF created at:', pdfUri);
+      
+      // The URI from Print.printToFileAsync is already a valid file path
+      // No need to check if it exists as expo-print handles this for us
+      
+      // Share the PDF
+      console.log('Sharing PDF...');
+      
+      // Use a more compatible approach for sharing files
+      // The URI from Print.printToFileAsync is already in the correct format
+      const shareOptions = {
+        url: pdfUri, // No need to add file:// prefix as it's already included
+        title: `Prescription - ${prescription.id || 'Unknown'}`,
+        type: 'application/pdf'
+      };
+      
+      const result = await Share.share(shareOptions);
+      console.log('Share result:', result);
+      
+    } catch (error) {
+      console.error('Error generating prescription PDF:', error);
+      // Show error alert
       Alert.alert(
-        'Share Prescription',
-        'Prescription details will be shared as text since PDF generation is not available on this device.',
+        'PDF Generation Failed',
+        `Failed to generate PDF: ${error.message}.`,
         [
           {
-            text: 'Cancel',
+            text: 'OK',
             style: 'cancel'
-          },
-          {
-            text: 'Share',
-            onPress: () => sharePrescription(prescription)
           }
         ]
-      );
-    } catch (error) {
-      console.error('Error preparing prescription share:', error);
-      Alert.alert(
-        'Share Error',
-        'Failed to prepare prescription for sharing. Please try again later.'
       );
     }
   };
@@ -769,8 +661,6 @@ Status: ${prescription.status || 'N/A'}
 ${prescription.sideEffects ? `Possible Side Effects:\n${prescription.sideEffects}\n\n` : ''}
 ${prescription.notes ? `Additional Notes:\n${prescription.notes}\n\n` : ''}
 
-Doctor's Signature: _________________     Date: _________________
-
 This is an electronically generated prescription. Please consult your doctor if you have any questions.
 
 © ${new Date().getFullYear()} LifeLine+ Healthcare. All rights reserved.
@@ -820,7 +710,7 @@ This is an electronically generated prescription. Please consult your doctor if 
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.downloadButton}
-              onPress={() => sharePrescription(selectedPrescription)}
+              onPress={() => downloadPrescription(selectedPrescription)}
             >
               <Ionicons name="share-outline" size={24} color={COLORS.PRIMARY} />
             </TouchableOpacity>
