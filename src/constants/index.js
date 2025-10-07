@@ -39,6 +39,7 @@ export const NOTIFICATION_TYPES = {
 // Colors (Modern Healthcare Theme)
 export const COLORS = {
   PRIMARY: '#2E86AB',
+  PRIMARYB: '#026932ff',
   SECONDARY: '#A23B72',
   ACCENT: '#F18F01',
   SUCCESS: '#4CAF50',

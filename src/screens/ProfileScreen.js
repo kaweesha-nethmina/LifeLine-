@@ -250,11 +250,11 @@ const ProfileScreen = ({ navigation }) => {
             </View>
           </TouchableOpacity>
           <Text style={styles.userName}>
-            {userProfile?.firstName} {userProfile?.lastName}
+            {userProfile?.firstName || ''} {userProfile?.lastName || ''}
           </Text>
-          <Text style={styles.userEmail}>{user?.email}</Text>
+          <Text style={styles.userEmail}>{user?.email || 'Email not available'}</Text>
           <Text style={styles.userRole}>
-            {userProfile?.role?.charAt(0).toUpperCase() + userProfile?.role?.slice(1)}
+            {userProfile?.role ? userProfile?.role?.charAt(0).toUpperCase() + userProfile?.role?.slice(1) : 'Role not set'}
           </Text>
         </Card>
 

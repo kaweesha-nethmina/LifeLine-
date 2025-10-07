@@ -1,5 +1,6 @@
 import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
+import Constants from 'expo-constants';
 import { auth } from './firebase';
 import { db, doc, setDoc } from 'firebase/firestore';
 
@@ -56,7 +57,20 @@ class PushNotificationService {
         });
       }
 
-      const token = (await Notifications.getExpoPushTokenAsync()).data;
+      // Get projectId from Constants
+      const projectId = Constants?.expoConfig?.extra?.eas?.projectId || 
+                       Constants?.expoConfig?.projectId ||
+                       null; // Don't use fallback that isn't a valid UUID
+      
+      // Only pass projectId if it's available and valid
+      let tokenResult;
+      if (projectId) {
+        tokenResult = await Notifications.getExpoPushTokenAsync({ projectId });
+      } else {
+        tokenResult = await Notifications.getExpoPushTokenAsync();
+      }
+      
+      const token = tokenResult.data;
       console.log('Push token:', token);
       return token;
     } catch (error) {
