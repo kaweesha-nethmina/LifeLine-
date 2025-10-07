@@ -1,40 +1,282 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   SafeAreaView,
   ScrollView,
-  TouchableOpacity
+  TouchableOpacity,
+  Alert,
+  Vibration,
+  Modal
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Card from '../components/Card';
 import Button from '../components/Button';
-import { COLORS, FONT_SIZES, SPACING } from '../constants';
+import { COLORS, FONT_SIZES, SPACING, EMERGENCY_STATUS } from '../constants';
+import { useAuth } from '../context/AuthContext';
+import LocationService from '../services/locationService';
+import { db, collection, addDoc, query, where, getDocs, doc, updateDoc } from '../services/firebase';
+import { serverTimestamp } from 'firebase/firestore';
 
 const EmergencyScreen = ({ navigation }) => {
+  const { user, userProfile } = useAuth();
+  const [isActivating, setIsActivating] = useState(false);
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [isEmergencyActive, setIsEmergencyActive] = useState(false);
+  const [emergencyId, setEmergencyId] = useState(null);
+  const [location, setLocation] = useState(null);
+  const locationSubscriptionRef = useRef(null);
+
   const emergencyContacts = [
     { name: 'Ambulance', number: '911', icon: 'medical' },
     { name: 'Fire Department', number: '911', icon: 'flame' },
     { name: 'Police', number: '911', icon: 'shield' },
   ];
 
+  // Clean up on unmount
+  useEffect(() => {
+    return () => {
+      if (locationSubscriptionRef.current) {
+        locationSubscriptionRef.current.remove();
+      }
+    };
+  }, []);
+
+  const activateSOS = async () => {
+    setShowConfirmation(false);
+    setIsActivating(true);
+    
+    try {
+      // Vibrate device
+      Vibration.vibrate([500, 500, 500], true); // Continuous vibration
+      
+      // Get current location
+      const currentLocation = await LocationService.getCurrentLocation();
+      setLocation(currentLocation);
+      
+      // Save emergency to Firebase with proper structure for emergency operators
+      const emergencyData = {
+        userId: user.uid,
+        patientName: userProfile?.firstName && userProfile?.lastName ? 
+          `${userProfile.firstName} ${userProfile.lastName}` : 
+          userProfile?.name || 'Unknown User',
+        phone: userProfile?.phone || 'Unknown',
+        age: userProfile?.age || 'N/A',
+        medicalHistory: userProfile?.medicalConditions?.join(', ') || 'None',
+        latitude: currentLocation.latitude,
+        longitude: currentLocation.longitude,
+        accuracy: currentLocation.accuracy,
+        location: `${currentLocation.latitude.toFixed(6)}, ${currentLocation.longitude.toFixed(6)}`,
+        timestamp: serverTimestamp(),
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+        status: EMERGENCY_STATUS.PENDING,
+        priority: 'high',
+        type: 'SOS Emergency',
+        description: 'Emergency SOS activated by user',
+        notes: '',
+        assignedUnit: null,
+        responseTime: null,
+        resolvedAt: null
+      };
+
+      const docRef = await addDoc(collection(db, 'emergencies'), emergencyData);
+      setEmergencyId(docRef.id);
+      setIsEmergencyActive(true);
+      
+      // Notify emergency operators
+      await notifyEmergencyOperators(emergencyData, docRef.id);
+      
+      // Start location tracking
+      startLocationTracking();
+      
+      // Show success alert
+      Alert.alert(
+        'Emergency Activated',
+        'Help is on the way. Emergency services have been notified.',
+        [{ text: 'OK' }]
+      );
+      
+    } catch (error) {
+      console.error('Error activating emergency:', error);
+      Vibration.cancel();
+      Alert.alert('Error', 'Failed to activate emergency. Please try again.');
+    } finally {
+      setIsActivating(false);
+    }
+  };
+
+  const startLocationTracking = async () => {
+    try {
+      locationSubscriptionRef.current = await LocationService.startLocationTracking(
+        async (newLocation) => {
+          setLocation(newLocation);
+          
+          // Update emergency location in Firebase
+          if (emergencyId) {
+            try {
+              const emergencyRef = doc(db, 'emergencies', emergencyId);
+              await updateDoc(emergencyRef, {
+                latitude: newLocation.latitude,
+                longitude: newLocation.longitude,
+                accuracy: newLocation.accuracy,
+                updatedAt: serverTimestamp()
+              });
+            } catch (error) {
+              console.error('Error updating emergency location:', error);
+            }
+          }
+        }
+      );
+    } catch (error) {
+      console.error('Error starting location tracking:', error);
+      Alert.alert('Location Error', 'Failed to start location tracking.');
+    }
+  };
+
+  const endEmergency = async () => {
+    try {
+      // Stop vibration
+      Vibration.cancel();
+      
+      // Stop location tracking
+      if (locationSubscriptionRef.current) {
+        locationSubscriptionRef.current.remove();
+        locationSubscriptionRef.current = null;
+      }
+      
+      // Update emergency status in Firebase
+      if (emergencyId) {
+        try {
+          const emergencyRef = doc(db, 'emergencies', emergencyId);
+          await updateDoc(emergencyRef, {
+            status: EMERGENCY_STATUS.COMPLETED,
+            resolvedAt: serverTimestamp(),
+            updatedAt: serverTimestamp()
+          });
+        } catch (error) {
+          console.error('Error updating emergency status:', error);
+        }
+      }
+      
+      setIsEmergencyActive(false);
+      setEmergencyId(null);
+      setLocation(null);
+      
+      Alert.alert(
+        'Emergency Ended',
+        'Emergency status has been deactivated.',
+        [{ text: 'OK' }]
+      );
+    } catch (error) {
+      console.error('Error ending emergency:', error);
+      Alert.alert('Error', 'Failed to end emergency. Please try again.');
+    }
+  };
+
+  const notifyEmergencyOperators = async (emergencyData, emergencyId) => {
+    try {
+      // Query all users with role 'emergency_operator'
+      const operatorsQuery = query(
+        collection(db, 'users'),
+        where('role', '==', 'emergency_operator')
+      );
+      
+      const operatorsSnapshot = await getDocs(operatorsQuery);
+      
+      // Create notifications for each emergency operator
+      const notificationPromises = [];
+      
+      operatorsSnapshot.forEach((doc) => {
+        const operator = doc.data();
+        if (operator.uid) {
+          const notificationData = {
+            userId: operator.uid,
+            title: 'Emergency Alert',
+            message: `SOS from ${emergencyData.patientName || 'Unknown User'} at location (${emergencyData.latitude.toFixed(6)}, ${emergencyData.longitude.toFixed(6)})`,
+            type: 'emergency',
+            category: 'emergency',
+            priority: 'urgent',
+            data: {
+              emergencyId: emergencyId,
+              userId: emergencyData.userId,
+              userName: emergencyData.patientName,
+              userPhone: emergencyData.phone,
+              latitude: emergencyData.latitude,
+              longitude: emergencyData.longitude,
+              timestamp: emergencyData.timestamp
+            },
+            actionUrl: `/emergency/${emergencyId}`
+          };
+          
+          // Create notification in Firebase
+          const notificationPromise = addDoc(collection(db, 'notifications'), {
+            ...notificationData,
+            timestamp: serverTimestamp(),
+            read: false
+          });
+          
+          notificationPromises.push(notificationPromise);
+        }
+      });
+      
+      // Wait for all notifications to be created
+      await Promise.all(notificationPromises);
+      
+      console.log(`Notified ${operatorsSnapshot.size} emergency operators`);
+    } catch (error) {
+      console.error('Error notifying emergency operators:', error);
+      // Don't throw error as this shouldn't prevent the emergency from being activated
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.scrollView}>
         <View style={styles.content}>
+          {/* Emergency Status */}
+          {isEmergencyActive && (
+            <Card style={styles.statusCard}>
+              <View style={styles.statusHeader}>
+                <Ionicons name="warning" size={24} color={COLORS.EMERGENCY} />
+                <Text style={styles.statusTitle}>Emergency Active</Text>
+              </View>
+              <Text style={styles.statusText}>
+                Emergency services have been notified. Help is on the way.
+              </Text>
+              {location && (
+                <Text style={styles.locationText}>
+                  Location: {location.latitude.toFixed(6)}, {location.longitude.toFixed(6)}
+                </Text>
+              )}
+            </Card>
+          )}
+
           {/* SOS Button */}
           <Card style={styles.sosCard}>
             <View style={styles.sosContainer}>
               <TouchableOpacity
-                style={styles.sosButton}
-                onPress={() => navigation.navigate('SOS')}
+                style={[
+                  styles.sosButton,
+                  isEmergencyActive && styles.sosButtonActive
+                ]}
+                onPress={isEmergencyActive ? endEmergency : () => setShowConfirmation(true)}
+                disabled={isActivating}
               >
-                <Ionicons name="warning" size={60} color={COLORS.WHITE} />
-                <Text style={styles.sosText}>SOS</Text>
+                <Ionicons 
+                  name={isEmergencyActive ? "stop-circle" : "warning"} 
+                  size={60} 
+                  color={isEmergencyActive ? COLORS.WHITE : COLORS.WHITE} 
+                />
+                <Text style={styles.sosText}>
+                  {isEmergencyActive ? 'STOP SOS' : 'SOS'}
+                </Text>
               </TouchableOpacity>
               <Text style={styles.sosDescription}>
-                Press and hold for 3 seconds in case of emergency
+                {isActivating ? 'Activating emergency...' : 
+                 isEmergencyActive ? 'Press to stop emergency' : 
+                 'Press to activate emergency SOS'}
               </Text>
             </View>
           </Card>
@@ -85,6 +327,36 @@ const EmergencyScreen = ({ navigation }) => {
           </View>
         </View>
       </ScrollView>
+
+      {/* Confirmation Modal */}
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={showConfirmation}
+        onRequestClose={() => setShowConfirmation(false)}
+      >
+        <View style={styles.overlay}>
+          <Card style={styles.confirmationCard}>
+            <Ionicons name="warning" size={48} color={COLORS.EMERGENCY} />
+            <Text style={styles.confirmationTitle}>Activate Emergency?</Text>
+            <Text style={styles.confirmationText}>
+              This will notify emergency services and your emergency contacts.
+            </Text>
+            <View style={styles.confirmationButtons}>
+              <Button
+                title="Cancel"
+                onPress={() => setShowConfirmation(false)}
+                style={styles.cancelButton}
+              />
+              <Button
+                title="Confirm"
+                onPress={activateSOS}
+                style={styles.confirmButton}
+              />
+            </View>
+          </Card>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -100,6 +372,32 @@ const styles = StyleSheet.create({
   content: {
     paddingHorizontal: SPACING.LG,
     paddingVertical: SPACING.MD,
+  },
+  statusCard: {
+    backgroundColor: COLORS.WHITE,
+    borderRadius: 8,
+    padding: SPACING.MD,
+    marginBottom: SPACING.LG,
+  },
+  statusHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: SPACING.SM,
+  },
+  statusTitle: {
+    fontSize: FONT_SIZES.LG,
+    fontWeight: 'bold',
+    color: COLORS.TEXT_PRIMARY,
+    marginLeft: SPACING.SM,
+  },
+  statusText: {
+    fontSize: FONT_SIZES.SM,
+    color: COLORS.TEXT_SECONDARY,
+    marginBottom: SPACING.SM,
+  },
+  locationText: {
+    fontSize: FONT_SIZES.SM,
+    color: COLORS.GRAY_MEDIUM,
   },
   sosCard: {
     backgroundColor: COLORS.EMERGENCY_LIGHT,
@@ -122,6 +420,9 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 8,
     elevation: 8,
+  },
+  sosButtonActive: {
+    backgroundColor: COLORS.ERROR,
   },
   sosText: {
     fontSize: FONT_SIZES.XL,
@@ -175,6 +476,49 @@ const styles = StyleSheet.create({
   },
   actionButton: {
     marginBottom: SPACING.MD,
+  },
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  confirmationCard: {
+    backgroundColor: COLORS.WHITE,
+    borderRadius: 8,
+    padding: SPACING.MD,
+    alignItems: 'center',
+    width: '80%',
+  },
+  confirmationTitle: {
+    fontSize: FONT_SIZES.XL,
+    fontWeight: 'bold',
+    color: COLORS.TEXT_PRIMARY,
+    marginBottom: SPACING.SM,
+  },
+  confirmationText: {
+    fontSize: FONT_SIZES.SM,
+    color: COLORS.TEXT_SECONDARY,
+    marginBottom: SPACING.LG,
+    textAlign: 'center',
+  },
+  confirmationButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+  },
+  cancelButton: {
+    backgroundColor: COLORS.ERROR,
+    borderRadius: 8,
+    paddingVertical: SPACING.SM,
+    flex: 1,
+    marginRight: SPACING.SM,
+  },
+  confirmButton: {
+    backgroundColor: COLORS.SUCCESS,
+    borderRadius: 8,
+    paddingVertical: SPACING.SM,
+    flex: 1,
   },
 });
 

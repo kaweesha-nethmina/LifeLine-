@@ -31,15 +31,6 @@ export const ProfileScreen = () => (
 );
 
 // Additional Screens
-export const SOSScreen = () => (
-  <SafeAreaView style={styles.container}>
-    <View style={styles.content}>
-      <Text style={styles.title}>SOS Emergency</Text>
-      <Text style={styles.subtitle}>Emergency SOS feature coming soon</Text>
-    </View>
-  </SafeAreaView>
-);
-
 export const EmergencyMapScreen = () => (
   <SafeAreaView style={styles.container}>
     <View style={styles.content}>

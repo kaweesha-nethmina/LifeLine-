@@ -62,7 +62,7 @@ This document summarizes the enhancements made to the LifeLine+ Healthcare appli
 8. **ErrorBoundary**: Provides graceful error handling for native module issues
 
 ### Key Screens
-- **SOSScreen**: Emergency activation with location tracking
+- **EmergencyScreen**: Emergency activation with location tracking
 - **EmergencyMapScreen**: Interactive map for emergency services
 - **ChatScreen**: Real-time messaging with push notifications
 - **BookingScreen**: Appointment scheduling with automated notifications
@@ -81,7 +81,7 @@ This document summarizes the enhancements made to the LifeLine+ Healthcare appli
 ## Role-based Functionality
 
 ### Patient Features
-- Emergency SOS activation
+- Emergency SOS activation through EmergencyScreen
 - Doctor appointment booking
 - Real-time chat with healthcare providers
 - Health records management
