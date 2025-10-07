@@ -5,7 +5,7 @@ import {
   StyleSheet,
   ImageBackground,
   StatusBar,
-  SafeAreaView
+  Image
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -14,27 +14,23 @@ import { COLORS, FONT_SIZES, SPACING, BORDER_RADIUS } from '../constants';
 
 const WelcomeScreen = ({ navigation }) => {
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor={COLORS.PRIMARY} />
+    <>
+      {/* <StatusBar barStyle="light-content" backgroundColor={COLORS.PRIMARY} /> */}
       
       <LinearGradient
-        colors={[COLORS.PRIMARY, COLORS.SECONDARY]}
+        colors={[COLORS.PRIMARY, COLORS.PRIMARYB]}
         style={styles.gradient}
       >
         <View style={styles.content}>
           {/* Header Section */}
           <View style={styles.header}>
             <View style={styles.logoContainer}>
-              <Ionicons 
-                name="medical" 
-                size={80} 
-                color={COLORS.WHITE} 
+              <Image 
+                source={require('../../assets/lifeline_logo.png')} 
+                style={styles.logo}
+                resizeMode="contain"
               />
             </View>
-            <Text style={styles.title}>LifeLine+</Text>
-            <Text style={styles.subtitle}>
-              Your Health, Our Priority
-            </Text>
           </View>
 
           {/* Features Section */}
@@ -88,14 +84,11 @@ const WelcomeScreen = ({ navigation }) => {
           </View>
         </View>
       </LinearGradient>
-    </SafeAreaView>
+    </>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
   gradient: {
     flex: 1,
   },
@@ -110,13 +103,17 @@ const styles = StyleSheet.create({
     marginTop: SPACING.XXL,
   },
   logoContainer: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    width: 250,
+    height: 250,
+    borderRadius: 150,
+    backgroundColor: 'rgba(0, 0, 0, 0.13)',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: SPACING.LG,
+  },
+  logo: {
+    width: 200,
+    height: 200,
   },
   title: {
     fontSize: FONT_SIZES.XXXL + 8,
