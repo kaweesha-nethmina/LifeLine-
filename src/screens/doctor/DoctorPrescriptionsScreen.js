@@ -155,6 +155,7 @@ const DoctorPrescriptionsScreen = ({ navigation, route }) => {
         patientName: patientName || 'Selected Patient',
         doctorId: userProfile?.uid || 'doctor_1',
         doctorName: `Dr. ${userProfile?.firstName} ${userProfile?.lastName}`,
+        doctorLicense: userProfile?.licenseNumber || 'N/A',
         ...prescriptionData,
         createdAt: serverTimestamp(),
         refillsRemaining: prescriptionData.refills || 0
@@ -637,7 +638,7 @@ const DoctorPrescriptionsScreen = ({ navigation, route }) => {
           refills: '2'
         }]);
         
-        Alert.alert('Success', 'Prescription created successfully with multiple medications');
+        // Success alert is shown in createPrescription function, no need to show it here
       } catch (error) {
         console.error('Error creating prescription:', error);
         Alert.alert('Error', 'Failed to create prescription');
@@ -1005,121 +1006,130 @@ const DoctorPrescriptionsScreen = ({ navigation, route }) => {
     <Modal
       visible={showDetailModal}
       animationType="slide"
-      presentationStyle="pageSheet"
+      transparent={true}
       onRequestClose={() => setShowDetailModal(false)}
     >
-      <SafeAreaView style={styles.modalContainer}>
-        <View style={styles.modalHeader}>
-          <Text style={styles.modalTitle}>Prescription Details</Text>
-          <TouchableOpacity
-            style={styles.closeButton}
-            onPress={() => setShowDetailModal(false)}
-          >
-            <Ionicons name="close" size={24} color={COLORS.TEXT_PRIMARY} />
-          </TouchableOpacity>
-        </View>
-        
-        {detailPrescription && (
-          <ScrollView style={styles.modalContent}>
-            <Card style={styles.detailCard}>
-              {/* Check if this is a multi-medication prescription */}
-              {detailPrescription.medications && detailPrescription.medications.length > 0 ? (
-                <>
-                  <Text style={styles.detailMedicationName}>
-                    Prescription with {detailPrescription.medications.length} Medications
-                  </Text>
-                  {detailPrescription.medications.map((med, index) => (
-                    <View key={index} style={styles.detailSection}>
-                      <Text style={[styles.detailSectionTitle, { marginBottom: SPACING.XS }]}>
-                        Medication #{index + 1}: {med.medicationName}
-                      </Text>
-                      <Text style={styles.detailText}>Dosage: {med.dosage}</Text>
-                      <Text style={styles.detailText}>Frequency: {med.frequency}</Text>
-                      {med.instructions && (
-                        <Text style={styles.detailText}>Instructions: {med.instructions}</Text>
-                      )}
+      <View style={styles.modalOverlay}>
+        <View style={styles.modalContent}>
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>Prescription Details</Text>
+            <TouchableOpacity
+              style={styles.closeButton}
+              onPress={() => setShowDetailModal(false)}
+            >
+              <Ionicons name="close" size={24} color={COLORS.TEXT_PRIMARY} />
+            </TouchableOpacity>
+          </View>
+          
+          {detailPrescription && (
+            <ScrollView style={styles.modalBody}>
+              <Card style={styles.detailCard}>
+                {/* Check if this is a multi-medication prescription */}
+                {detailPrescription.medications && detailPrescription.medications.length > 0 ? (
+                  <>
+                    <Text style={styles.detailMedicationName}>
+                      Prescription with {detailPrescription.medications.length} Medications
+                    </Text>
+                    {detailPrescription.medications.map((med, index) => (
+                      <View key={index} style={styles.detailSection}>
+                        <Text style={[styles.detailSectionTitle, { marginBottom: SPACING.XS }]}>
+                          Medication #{index + 1}: {med.medicationName}
+                        </Text>
+                        <Text style={styles.detailText}>Dosage: {med.dosage}</Text>
+                        <Text style={styles.detailText}>Frequency: {med.frequency}</Text>
+                        {med.instructions && (
+                          <Text style={styles.detailText}>Instructions: {med.instructions}</Text>
+                        )}
+                      </View>
+                    ))}
+                  </>
+                ) : (
+                  <>
+                    <Text style={styles.detailMedicationName}>
+                      {detailPrescription.medicationName}
+                    </Text>
+                    <Text style={styles.detailDosage}>{detailPrescription.dosage}</Text>
+                    
+                    <View style={styles.detailSection}>
+                      <Text style={styles.detailSectionTitle}>Instructions</Text>
+                      <Text style={styles.detailText}>{detailPrescription.instructions}</Text>
                     </View>
-                  ))}
-                </>
-              ) : (
-                <>
-                  <Text style={styles.detailMedicationName}>
-                    {detailPrescription.medicationName}
-                  </Text>
-                  <Text style={styles.detailDosage}>{detailPrescription.dosage}</Text>
-                  
-                  <View style={styles.detailSection}>
-                    <Text style={styles.detailSectionTitle}>Instructions</Text>
-                    <Text style={styles.detailText}>{detailPrescription.instructions}</Text>
-                  </View>
-                  
-                  <View style={styles.detailSection}>
-                    <Text style={styles.detailSectionTitle}>Frequency</Text>
-                    <Text style={styles.detailText}>{detailPrescription.frequency}</Text>
-                  </View>
-                </>
-              )}
-              
-              <View style={styles.detailSection}>
-                <Text style={styles.detailSectionTitle}>Duration</Text>
-                <Text style={styles.detailText}>
-                  {new Date(detailPrescription.startDate).toLocaleDateString()} to {new Date(detailPrescription.endDate).toLocaleDateString()}
-                </Text>
-              </View>
-              
-              <View style={styles.detailSection}>
-                <Text style={styles.detailSectionTitle}>Prescribed For</Text>
-                <Text style={styles.detailText}>
-                  {detailPrescription.patientName}
-                </Text>
-              </View>
-              
-              <View style={styles.detailSection}>
-                <Text style={styles.detailSectionTitle}>Prescribed By</Text>
-                <Text style={styles.detailText}>
-                  {detailPrescription.doctorName}
-                </Text>
-              </View>
-              
-              <View style={styles.detailSection}>
-                <Text style={styles.detailSectionTitle}>Refills</Text>
-                <Text style={styles.detailText}>
-                  {detailPrescription.refillsRemaining} of {detailPrescription.refills} refills remaining
-                </Text>
-              </View>
-              
-              {/* Action buttons */}
-              <View style={styles.buttonContainer}>
-                {/* Show edit button only if prescription is not expired */}
-                {new Date(detailPrescription.endDate) > new Date() && (
-                  <Button
-                    title="Edit Prescription"
-                    onPress={() => {
-                      setShowDetailModal(false);
-                      setSelectedPrescription(detailPrescription);
-                      setShowEditModal(true);
-                    }}
-                    style={styles.editButton}
-                  />
+                    
+                    <View style={styles.detailSection}>
+                      <Text style={styles.detailSectionTitle}>Frequency</Text>
+                      <Text style={styles.detailText}>{detailPrescription.frequency}</Text>
+                    </View>
+                  </>
                 )}
                 
-                {/* Show delete button for expired prescriptions */}
-                {new Date(detailPrescription.endDate) < new Date() && (
-                  <Button
-                    title="Delete Prescription"
-                    onPress={() => {
-                      setShowDetailModal(false);
-                      handlePrescriptionAction(detailPrescription, 'delete');
-                    }}
-                    style={styles.editButton}
-                    variant="danger"
-                  />
-                )}
-              </View>
-            </Card>
-          </ScrollView>
-        )}
-      </SafeAreaView>
+                <View style={styles.detailSection}>
+                  <Text style={styles.detailSectionTitle}>Duration</Text>
+                  <Text style={styles.detailText}>
+                    {new Date(detailPrescription.startDate).toLocaleDateString()} to {new Date(detailPrescription.endDate).toLocaleDateString()}
+                  </Text>
+                </View>
+                
+                <View style={styles.detailSection}>
+                  <Text style={styles.detailSectionTitle}>Prescribed For</Text>
+                  <Text style={styles.detailText}>
+                    {detailPrescription.patientName}
+                  </Text>
+                </View>
+                
+                <View style={styles.detailSection}>
+                  <Text style={styles.detailSectionTitle}>Prescribed By</Text>
+                  <Text style={styles.detailText}>
+                    {detailPrescription.doctorName}
+                  </Text>
+                </View>
+                
+                <View style={styles.detailSection}>
+                  <Text style={styles.detailSectionTitle}>Doctor License</Text>
+                  <Text style={styles.detailText}>
+                    {detailPrescription.doctorLicense || 'N/A'}
+                  </Text>
+                </View>
+                
+                <View style={styles.detailSection}>
+                  <Text style={styles.detailSectionTitle}>Refills</Text>
+                  <Text style={styles.detailText}>
+                    {detailPrescription.refillsRemaining} of {detailPrescription.refills} refills remaining
+                  </Text>
+                </View>
+                
+                {/* Action buttons */}
+                <View style={styles.buttonContainer}>
+                  {/* Show edit button only if prescription is not expired */}
+                  {new Date(detailPrescription.endDate) > new Date() && (
+                    <Button
+                      title="Edit Prescription"
+                      onPress={() => {
+                        setShowDetailModal(false);
+                        setSelectedPrescription(detailPrescription);
+                        setShowEditModal(true);
+                      }}
+                      style={styles.editButton}
+                    />
+                  )}
+                  
+                  {/* Show delete button for expired prescriptions */}
+                  {new Date(detailPrescription.endDate) < new Date() && (
+                    <Button
+                      title="Delete Prescription"
+                      onPress={() => {
+                        setShowDetailModal(false);
+                        handlePrescriptionAction(detailPrescription, 'delete');
+                      }}
+                      style={styles.editButton}
+                      variant="danger"
+                    />
+                  )}
+                </View>
+              </Card>
+            </ScrollView>
+          )}
+        </View>
+      </View>
     </Modal>
   );
 
@@ -1433,12 +1443,16 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  modalContent: {
+  centeredModalContent: {
     backgroundColor: COLORS.WHITE,
     borderRadius: BORDER_RADIUS.LG,
     padding: SPACING.LG,
     width: '90%',
     maxHeight: '90%',
+    margin: SPACING.MD,
+  },
+  modalBody: {
+    maxHeight: 400,
   },
   modalHeader: {
     flexDirection: 'row',
@@ -1470,9 +1484,10 @@ const styles = StyleSheet.create({
   },
   removeButton: {
     position: 'absolute',
-    top: -10,
-    right: -10,
+    top: -12,
+    right: -12,
     zIndex: 1,
+    padding: 12,
   },
   inputGroup: {
     marginBottom: SPACING.MD,
@@ -1522,6 +1537,14 @@ const styles = StyleSheet.create({
   modalActionButton: {
     flex: 1,
     marginHorizontal: SPACING.XS,
+  },
+  modalContent: {
+    backgroundColor: COLORS.WHITE,
+    borderRadius: BORDER_RADIUS.LG,
+    padding: SPACING.LG,
+    width: '90%',
+    maxWidth: 400,
+    maxHeight: '90%',
   },
   modalContainer: {
     flex: 1,
@@ -1576,14 +1599,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginTop: SPACING.LG,
     gap: SPACING.MD,
-  },
-  cancelButton: {
-    flex: 1,
-    marginRight: SPACING.SM,
-  },
-  saveButton: {
-    flex: 1,
-    marginLeft: SPACING.SM,
   },
 });
 

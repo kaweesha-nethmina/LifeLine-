@@ -255,14 +255,20 @@ const BookingScreen = ({ navigation, route }) => {
       }
       
       // Schedule appointment reminder
-      const reminderData = {
-        id: appointmentId,
-        doctorName: `${doctorData?.firstName} ${doctorData?.lastName}` || 'Doctor',
-        date: selectedDate,
-        time: selectedTime,
-      };
-      
-      await pushNotifications.scheduleAppointmentReminder(reminderData);
+      const appointmentDate = new Date(selectedDate);
+      // Validate that the date is valid
+      if (isNaN(appointmentDate.getTime())) {
+        console.error('Invalid appointment date:', selectedDate);
+      } else {
+        const reminderData = {
+          id: appointmentId,
+          doctorName: `${doctorData?.firstName} ${doctorData?.lastName}` || 'Doctor',
+          date: appointmentDate,
+          time: selectedTime,
+        };
+        
+        await pushNotifications.scheduleAppointmentReminder(reminderData);
+      }
       
       // Show success message
       Alert.alert(

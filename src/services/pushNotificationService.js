@@ -60,11 +60,11 @@ class PushNotificationService {
       // Get projectId from Constants
       const projectId = Constants?.expoConfig?.extra?.eas?.projectId || 
                        Constants?.expoConfig?.projectId ||
-                       null; // Don't use fallback that isn't a valid UUID
+                       null;
       
       // Only pass projectId if it's available and valid
       let tokenResult;
-      if (projectId) {
+      if (projectId && projectId.length > 10) {  // Simple check for valid UUID format
         tokenResult = await Notifications.getExpoPushTokenAsync({ projectId });
       } else {
         tokenResult = await Notifications.getExpoPushTokenAsync();
@@ -130,9 +130,17 @@ class PushNotificationService {
    */
   static async scheduleAppointmentReminder(appointmentData) {
     try {
-      const trigger = new Date(appointmentData.date);
+      const appointmentDate = new Date(appointmentData.date);
+      const oneHourBefore = new Date(appointmentDate);
       // Schedule 1 hour before appointment
-      trigger.setHours(trigger.getHours() - 1);
+      oneHourBefore.setHours(oneHourBefore.getHours() - 1);
+      
+      // Check if the reminder time is in the future
+      const now = new Date();
+      if (oneHourBefore <= now) {
+        console.log('Appointment reminder time has already passed, skipping scheduling');
+        return false;
+      }
       
       await Notifications.scheduleNotificationAsync({
         content: {
@@ -145,7 +153,7 @@ class PushNotificationService {
           },
           sound: 'default',
         },
-        trigger,
+        trigger: { type: 'date', date: oneHourBefore },
       });
       
       console.log('Appointment reminder scheduled:', appointmentData);
@@ -161,8 +169,21 @@ class PushNotificationService {
    */
   static async scheduleMedicationReminder(medicationData) {
     try {
+      // Validate time format
+      const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
+      if (!timeRegex.test(medicationData.time)) {
+        console.error('Invalid time format for medication reminder:', medicationData.time);
+        return false;
+      }
+      
       // Schedule daily at the specified time
       const [hours, minutes] = medicationData.time.split(':').map(Number);
+      
+      // Validate hours and minutes
+      if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
+        console.error('Invalid hours or minutes for medication reminder:', hours, minutes);
+        return false;
+      }
       
       await Notifications.scheduleNotificationAsync({
         content: {

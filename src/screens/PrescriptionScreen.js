@@ -179,6 +179,29 @@ const PrescriptionScreen = ({ navigation }) => {
     );
   };
 
+  const openDetailModal = async (prescription) => {
+    try {
+      // Get the latest prescription data from Firebase to ensure we have all fields
+      const prescriptionRef = doc(db, 'prescriptions', prescription.id);
+      const prescriptionDoc = await getDoc(prescriptionRef);
+      
+      if (prescriptionDoc.exists()) {
+        const prescriptionData = {
+          id: prescriptionDoc.id,
+          ...prescriptionDoc.data()
+        };
+        setSelectedPrescription(prescriptionData);
+        setDetailModalVisible(true);
+      }
+    } catch (error) {
+      console.error('Error fetching prescription details:', error);
+      Alert.alert('Error', 'Failed to fetch prescription details');
+      // Fallback to using the provided prescription data
+      setSelectedPrescription(prescription);
+      setDetailModalVisible(true);
+    }
+  };
+
   const openEditModal = (prescription) => {
     setSelectedPrescription(prescription);
     setEditFormData({
@@ -287,24 +310,32 @@ const PrescriptionScreen = ({ navigation }) => {
   const PrescriptionCard = ({ prescription }) => {
     // Check if this prescription has multiple medications
     const hasMultipleMedications = prescription.medications && prescription.medications.length > 1;
+    
+    // For single medication, get the first medication details
+    const firstMedication = prescription.medications && prescription.medications.length > 0 
+      ? prescription.medications[0] 
+      : null;
+    
+    // Display medication name - either from medications array or legacy medicationName field
     const displayMedication = hasMultipleMedications 
       ? `${prescription.medications.length} medications` 
-      : (prescription.medicationName || 'N/A');
+      : (firstMedication?.medicationName || prescription.medicationName || 'N/A');
 
+    // Display dosage - either from medications array or legacy dosage field
     const displayDosage = hasMultipleMedications
       ? 'Multiple dosages'
-      : (prescription.dosage || 'N/A');
+      : (firstMedication?.dosage || prescription.dosage || 'N/A');
 
+    // Display frequency - either from medications array or legacy frequency field
     const displayFrequency = hasMultipleMedications
       ? 'Multiple frequencies'
-      : (prescription.frequency || 'N/A');
+      : (firstMedication?.frequency || prescription.frequency || 'N/A');
 
     return (
       <Card style={styles.prescriptionCard}>
         <TouchableOpacity
           onPress={() => {
-            setSelectedPrescription(prescription);
-            setDetailModalVisible(true);
+            openDetailModal(prescription);
           }}
         >
           <View style={styles.prescriptionHeader}>
@@ -808,21 +839,42 @@ This is an electronically generated prescription. Please consult your doctor if 
               {/* Check if this is a multi-medication prescription */}
               {selectedPrescription.medications && selectedPrescription.medications.length > 0 ? (
                 <>
-                  <Text style={styles.detailMedicationName}>
-                    Prescription with {selectedPrescription.medications.length} Medications
-                  </Text>
-                  {selectedPrescription.medications.map((med, index) => (
-                    <View key={index} style={styles.detailSection}>
-                      <Text style={[styles.detailSectionTitle, { marginBottom: SPACING.XS }]}>
-                        Medication #{index + 1}: {med.medicationName}
+                  {selectedPrescription.medications.length > 1 ? (
+                    <>
+                      <Text style={styles.detailMedicationName}>
+                        Prescription with {selectedPrescription.medications.length} Medications
                       </Text>
-                      <Text style={styles.detailText}>Dosage: {med.dosage}</Text>
-                      <Text style={styles.detailText}>Frequency: {med.frequency}</Text>
-                      {med.instructions && (
-                        <Text style={styles.detailText}>Instructions: {med.instructions}</Text>
-                      )}
-                    </View>
-                  ))}
+                      {selectedPrescription.medications.map((med, index) => (
+                        <View key={index} style={styles.detailSection}>
+                          <Text style={[styles.detailSectionTitle, { marginBottom: SPACING.XS }]}>
+                            Medication #{index + 1}: {med.medicationName}
+                          </Text>
+                          <Text style={styles.detailText}>Dosage: {med.dosage}</Text>
+                          <Text style={styles.detailText}>Frequency: {med.frequency}</Text>
+                          {med.instructions && (
+                            <Text style={styles.detailText}>Instructions: {med.instructions}</Text>
+                          )}
+                        </View>
+                      ))}
+                    </>
+                  ) : (
+                    <>
+                      <Text style={styles.detailMedicationName}>
+                        {selectedPrescription.medications[0].medicationName}
+                      </Text>
+                      <Text style={styles.detailDosage}>{selectedPrescription.medications[0].dosage}</Text>
+                      
+                      <View style={styles.detailSection}>
+                        <Text style={styles.detailSectionTitle}>Instructions</Text>
+                        <Text style={styles.detailText}>{selectedPrescription.medications[0].instructions}</Text>
+                      </View>
+                      
+                      <View style={styles.detailSection}>
+                        <Text style={styles.detailSectionTitle}>Frequency</Text>
+                        <Text style={styles.detailText}>{selectedPrescription.medications[0].frequency}</Text>
+                      </View>
+                    </>
+                  )}
                 </>
               ) : (
                 <>
