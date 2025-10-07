@@ -1,4 +1,4 @@
-import { Audio } from 'expo-av';
+import { useAudioRecorder, useAudioPlayer, AudioModule, RecordingPresets } from 'expo-audio';
 import * as FileSystem from 'expo-file-system';
 
 /**
@@ -25,14 +25,14 @@ class TelemedicineService {
    */
   async initializeAudioRecording() {
     try {
-      const { status } = await Audio.requestPermissionsAsync();
-      if (status !== 'granted') {
+      const status = await AudioModule.requestRecordingPermissionsAsync();
+      if (!status.granted) {
         throw new Error('Audio recording permission not granted');
       }
 
-      await Audio.setAudioModeAsync({
-        allowsRecordingIOS: true,
-        playsInSilentModeIOS: true,
+      await AudioModule.setAudioModeAsync({
+        playsInSilentMode: true,
+        allowsRecording: true,
       });
 
       console.log('Audio recording initialized');
@@ -57,11 +57,13 @@ class TelemedicineService {
       // For now, we'll simulate with device microphone
       console.log('Starting stethoscope recording...');
       
-      const { recording } = await Audio.Recording.createAsync(
-        Audio.RecordingOptionsPresets.HIGH_QUALITY
-      );
+      // Create audio recorder with high quality preset
+      this.audioRecorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
       
-      this.audioRecording = recording;
+      // Prepare and start recording
+      await this.audioRecorder.prepareToRecordAsync();
+      await this.audioRecorder.recordAsync();
+      
       this.isRecording = true;
       
       console.log('Stethoscope recording started');
@@ -77,18 +79,19 @@ class TelemedicineService {
    */
   async stopStethoscopeRecording() {
     try {
-      if (!this.isRecording || !this.audioRecording) {
+      if (!this.isRecording || !this.audioRecorder) {
         console.log('No recording in progress');
         return null;
       }
 
       console.log('Stopping stethoscope recording...');
       
-      await this.audioRecording.stopAndUnloadAsync();
-      const uri = this.audioRecording.getURI();
+      // Stop recording and get the URI
+      await this.audioRecorder.stopAsync();
+      const uri = this.audioRecorder.uri;
       
       this.isRecording = false;
-      this.audioRecording = null;
+      this.audioRecorder = null;
       
       console.log('Stethoscope recording stopped. URI:', uri);
       return uri;
@@ -105,13 +108,14 @@ class TelemedicineService {
     try {
       console.log('Playing stethoscope recording:', uri);
       
-      const { sound } = await Audio.Sound.createAsync({ uri });
-      await sound.playAsync();
+      // Create audio player and play
+      const player = useAudioPlayer({ uri });
+      await player.playAsync();
       
       // Clean up after playback
-      sound.setOnPlaybackStatusUpdate((status) => {
+      player.setOnPlaybackStatusUpdate((status) => {
         if (status.didJustFinish) {
-          sound.unloadAsync();
+          player.unloadAsync();
         }
       });
       
