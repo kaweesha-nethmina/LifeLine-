@@ -7,7 +7,8 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
-  Alert
+  Alert,
+  Image
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Button from '../components/Button';
@@ -89,7 +90,11 @@ const LoginScreen = ({ navigation }) => {
             {/* Header */}
             <View style={styles.header}>
               <View style={styles.logoContainer}>
-                <Ionicons name="medical" size={60} color={COLORS.PRIMARY} />
+                <Image 
+                  source={require('../assets/lifeline_logo2.png')} 
+                  style={styles.logo}
+                  resizeMode="contain"
+                />
               </View>
               <Text style={styles.title}>Welcome Back</Text>
               <Text style={styles.subtitle}>
@@ -214,13 +219,15 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.XL,
   },
   logoContainer: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: COLORS.PRIMARY + '20',
+    width: 180,
+    height: 180,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: SPACING.LG,
+  },
+  logo: {
+    width: '100%',
+    height: '100%',
   },
   title: {
     fontSize: FONT_SIZES.XXL,
