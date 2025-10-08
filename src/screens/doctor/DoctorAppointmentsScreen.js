@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../context/AuthContext';
+import { useTheme } from '../../context/ThemeContext';
 import {
   collection,
   query,
@@ -38,6 +39,7 @@ import useProfilePicture from '../../hooks/useProfilePicture';
 
 const DoctorAppointmentsScreen = ({ navigation }) => {
   const { userProfile } = useAuth();
+  const { theme } = useTheme();
   const { fetchUserProfilePicture, getCachedProfilePicture } = useProfilePicture();
   const [appointments, setAppointments] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
@@ -300,12 +302,13 @@ const DoctorAppointmentsScreen = ({ navigation }) => {
 
   const FilterButton = ({ status, title, active, onPress }) => (
     <TouchableOpacity
-      style={[styles.filterButton, active && styles.activeFilterButton]}
+      style={[styles.filterButton, active && styles.activeFilterButton, { backgroundColor: active ? theme.PRIMARY : theme.GRAY_LIGHT }]}
       onPress={onPress}
     >
       <Text style={[
         styles.filterButtonText,
-        active && styles.activeFilterButtonText
+        active && styles.activeFilterButtonText,
+        { color: active ? theme.WHITE : theme.TEXT_SECONDARY }
       ]}>
         {title}
       </Text>
@@ -360,10 +363,10 @@ const DoctorAppointmentsScreen = ({ navigation }) => {
     }, [appointment.patientId, getCachedProfilePicture, fetchUserProfilePicture]);
 
     return (
-      <Card style={styles.appointmentCard}>
+      <Card style={[styles.appointmentCard, { backgroundColor: theme.CARD_BACKGROUND, borderColor: theme.BORDER }]}>
         <View style={styles.appointmentHeader}>
           <View style={styles.patientInfo}>
-            <View style={styles.patientAvatar}>
+            <View style={[styles.patientAvatar, { backgroundColor: theme.PRIMARY }]}>
               {profilePicture && profilePicture !== null ? (
                 <Image 
                   source={{ uri: profilePicture }} 
@@ -375,17 +378,17 @@ const DoctorAppointmentsScreen = ({ navigation }) => {
                   }}
                 />
               ) : (
-                <Text style={styles.patientInitial}>
+                <Text style={[styles.patientInitial, { color: theme.WHITE }]}>
                   {appointment.patientName ? appointment.patientName.charAt(0) : 'U'}
                 </Text>
               )}
             </View>
             <View style={styles.appointmentDetails}>
-              <Text style={styles.patientName}>{appointment.patientName || 'Unknown Patient'}</Text>
-              <Text style={styles.appointmentTime}>
+              <Text style={[styles.patientName, { color: theme.TEXT_PRIMARY }]}>{appointment.patientName || 'Unknown Patient'}</Text>
+              <Text style={[styles.appointmentTime, { color: theme.TEXT_SECONDARY }]}>
                 {formatAppointmentDateTime(appointment.appointmentDate, appointment.appointmentTime) || 'Date/Time not set'} • {appointment.duration || 30} min
               </Text>
-              <Text style={styles.appointmentType}>
+              <Text style={[styles.appointmentType, { color: theme.PRIMARY }]}>
                 {appointment.type === 'video' ? 'Video Consultation' : 
                  appointment.type === 'chat' ? 'Chat Consultation' : 
                  appointment.type === 'in-person' ? 'In-Person' : (appointment.type || 'Consultation')}
@@ -397,16 +400,16 @@ const DoctorAppointmentsScreen = ({ navigation }) => {
               <Ionicons 
                 name={getStatusIcon(appointment.status)} 
                 size={12} 
-                color={COLORS.WHITE} 
+                color={theme.WHITE} 
               />
-              <Text style={styles.statusText}>
+              <Text style={[styles.statusText, { color: theme.WHITE }]}>
                 {appointment.status ? appointment.status.replace('_', ' ').charAt(0).toUpperCase() + appointment.status.replace('_', ' ').slice(1) : 'Unknown'}
               </Text>
             </View>
           </View>
         </View>
 
-        <Text style={styles.appointmentReason}>{appointment.symptoms || 'No symptoms provided'}</Text>
+        <Text style={[styles.appointmentReason, { color: theme.TEXT_SECONDARY }]}>{appointment.symptoms || 'No symptoms provided'}</Text>
 
         <View style={styles.appointmentActions}>
           {canConfirm && (
@@ -441,7 +444,7 @@ const DoctorAppointmentsScreen = ({ navigation }) => {
               style={styles.iconButton}
               onPress={() => handleAppointmentAction(appointment, 'reschedule')}
             >
-              <Ionicons name="calendar-outline" size={20} color={COLORS.PRIMARY} />
+              <Ionicons name="calendar-outline" size={20} color={theme.PRIMARY} />
             </TouchableOpacity>
           )}
           {canCancel && (
@@ -449,7 +452,7 @@ const DoctorAppointmentsScreen = ({ navigation }) => {
               style={styles.iconButton}
               onPress={() => handleAppointmentAction(appointment, 'cancel')}
             >
-              <Ionicons name="close-outline" size={20} color={COLORS.ERROR} />
+              <Ionicons name="close-outline" size={20} color={theme.ERROR} />
             </TouchableOpacity>
           )}
           <TouchableOpacity
@@ -462,7 +465,7 @@ const DoctorAppointmentsScreen = ({ navigation }) => {
               patientName: appointment.patientName
             })}
           >
-            <Ionicons name="chatbubble-outline" size={20} color={COLORS.SUCCESS} />
+            <Ionicons name="chatbubble-outline" size={20} color={theme.SUCCESS} />
           </TouchableOpacity>
         </View>
       </Card>
@@ -530,29 +533,29 @@ const DoctorAppointmentsScreen = ({ navigation }) => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.BACKGROUND }]}>
       {/* Header Stats */}
-      <View style={styles.statsContainer}>
+      <View style={[styles.statsContainer, { backgroundColor: theme.CARD_BACKGROUND, borderBottomColor: theme.BORDER }]}>
         <View style={styles.statCard}>
-          <Text style={styles.statNumber}>{getTodaysAppointments().length}</Text>
-          <Text style={styles.statLabel}>Today</Text>
+          <Text style={[styles.statNumber, { color: theme.PRIMARY }]}>{getTodaysAppointments().length}</Text>
+          <Text style={[styles.statLabel, { color: theme.TEXT_SECONDARY }]}>Today</Text>
         </View>
         <View style={styles.statCard}>
-          <Text style={styles.statNumber}>
+          <Text style={[styles.statNumber, { color: theme.PRIMARY }]}>
             {appointments.filter(apt => apt.status === CONSULTATION_STATUS.CONFIRMED && isFutureAppointment(apt)).length}
           </Text>
-          <Text style={styles.statLabel}>Upcoming</Text>
+          <Text style={[styles.statLabel, { color: theme.TEXT_SECONDARY }]}>Upcoming</Text>
         </View>
         <View style={styles.statCard}>
-          <Text style={styles.statNumber}>
+          <Text style={[styles.statNumber, { color: theme.PRIMARY }]}>
             {appointments.filter(apt => apt.status === CONSULTATION_STATUS.COMPLETED).length}
           </Text>
-          <Text style={styles.statLabel}>Completed</Text>
+          <Text style={[styles.statLabel, { color: theme.TEXT_SECONDARY }]}>Completed</Text>
         </View>
       </View>
 
       {/* Filter Tabs */}
-      <View style={styles.filterContainer}>
+      <View style={[styles.filterContainer, { backgroundColor: theme.CARD_BACKGROUND, borderBottomColor: theme.BORDER }]}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
           <FilterButton
             status="all"
@@ -608,14 +611,14 @@ const DoctorAppointmentsScreen = ({ navigation }) => {
       {/* Appointments List */}
       <ScrollView
         style={styles.appointmentsList}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[theme.PRIMARY]} />}
         showsVerticalScrollIndicator={false}
       >
         {filteredAppointments.length === 0 ? (
-          <Card style={styles.emptyState}>
-            <Ionicons name="calendar-outline" size={64} color={COLORS.GRAY_MEDIUM} />
-            <Text style={styles.emptyTitle}>No Appointments</Text>
-            <Text style={styles.emptySubtitle}>
+          <Card style={[styles.emptyState, { backgroundColor: theme.CARD_BACKGROUND }]}>
+            <Ionicons name="calendar-outline" size={64} color={theme.GRAY_MEDIUM} />
+            <Text style={[styles.emptyTitle, { color: theme.TEXT_PRIMARY }]}>No Appointments</Text>
+            <Text style={[styles.emptySubtitle, { color: theme.TEXT_SECONDARY }]}>
               {filterStatus === 'all' 
                 ? 'You have no appointments scheduled.'
                 : `No ${filterStatus} appointments found.`
@@ -636,10 +639,10 @@ const DoctorAppointmentsScreen = ({ navigation }) => {
         transparent={true}
         onRequestClose={() => setShowRescheduleModal(false)}
       >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Reschedule Appointment</Text>
-            <Text style={styles.modalSubtitle}>
+        <View style={[styles.modalOverlay, { backgroundColor: 'rgba(0, 0, 0, 0.5)' }]}>
+          <View style={[styles.modalContent, { backgroundColor: theme.CARD_BACKGROUND }]}>
+            <Text style={[styles.modalTitle, { color: theme.TEXT_PRIMARY }]}>Reschedule Appointment</Text>
+            <Text style={[styles.modalSubtitle, { color: theme.TEXT_SECONDARY }]}>
               {selectedAppointment && `Patient: ${selectedAppointment.patientName}`}
             </Text>
             
@@ -726,6 +729,9 @@ const styles = StyleSheet.create({
   },
   appointmentCard: {
     marginBottom: SPACING.MD,
+    backgroundColor: COLORS.WHITE,
+    borderWidth: 1,
+    borderColor: COLORS.BORDER,
   },
   appointmentHeader: {
     flexDirection: 'row',
@@ -815,6 +821,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: SPACING.XXL,
     marginTop: SPACING.XL,
+    backgroundColor: COLORS.WHITE,
   },
   emptyTitle: {
     fontSize: FONT_SIZES.XL,

@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import {
   COLORS,
   FONT_SIZES,
@@ -28,6 +29,8 @@ import usePushNotifications from '../hooks/usePushNotifications';
 const BookingScreen = ({ navigation, route }) => {
   const { doctor } = route.params || {};
   const { user, userProfile } = useAuth();
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
   const pushNotifications = usePushNotifications();
   
   const [selectedDate, setSelectedDate] = useState('');
@@ -298,7 +301,11 @@ const BookingScreen = ({ navigation, route }) => {
       style={[
         styles.dateButton,
         selected && styles.selectedDate,
-        !dateItem.available && styles.unavailableDate
+        !dateItem.available && styles.unavailableDate,
+        { 
+          backgroundColor: selected ? theme.PRIMARY : dateItem.available ? theme.CARD_BACKGROUND : theme.GRAY_LIGHT,
+          borderColor: selected ? theme.PRIMARY : theme.BORDER
+        }
       ]}
       onPress={dateItem.available ? onPress : null}
       disabled={!dateItem.available}
@@ -306,7 +313,10 @@ const BookingScreen = ({ navigation, route }) => {
       <Text style={[
         styles.dateText,
         selected && styles.selectedDateText,
-        !dateItem.available && styles.unavailableDateText
+        !dateItem.available && styles.unavailableDateText,
+        { 
+          color: selected ? theme.WHITE : dateItem.available ? theme.TEXT_PRIMARY : theme.GRAY_MEDIUM
+        }
       ]}>
         {dateItem.display}
       </Text>
@@ -318,7 +328,11 @@ const BookingScreen = ({ navigation, route }) => {
       style={[
         styles.timeButton,
         selected && styles.selectedTime,
-        !timeItem.available && styles.unavailableTime
+        !timeItem.available && styles.unavailableTime,
+        { 
+          backgroundColor: selected ? theme.PRIMARY : timeItem.available ? theme.CARD_BACKGROUND : theme.GRAY_LIGHT,
+          borderColor: selected ? theme.PRIMARY : theme.BORDER
+        }
       ]}
       onPress={timeItem.available ? onPress : null}
       disabled={!timeItem.available}
@@ -326,7 +340,10 @@ const BookingScreen = ({ navigation, route }) => {
       <Text style={[
         styles.timeText,
         selected && styles.selectedTimeText,
-        !timeItem.available && styles.unavailableTimeText
+        !timeItem.available && styles.unavailableTimeText,
+        { 
+          color: selected ? theme.WHITE : timeItem.available ? theme.TEXT_PRIMARY : theme.GRAY_MEDIUM
+        }
       ]}>
         {timeItem.time}
       </Text>
@@ -335,20 +352,20 @@ const BookingScreen = ({ navigation, route }) => {
 
   const AppointmentTypeButton = ({ type, title, icon, description, selected, onPress }) => (
     <TouchableOpacity
-      style={[styles.typeButton, selected && styles.selectedType]}
+      style={[styles.typeButton, selected && styles.selectedType, { backgroundColor: selected ? theme.PRIMARY + '10' : theme.CARD_BACKGROUND, borderColor: selected ? theme.PRIMARY : theme.BORDER }]}
       onPress={onPress}
     >
-      <View style={[styles.typeIcon, selected && styles.selectedTypeIcon]}>
-        <Ionicons name={icon} size={24} color={selected ? COLORS.WHITE : COLORS.PRIMARY} />
+      <View style={[styles.typeIcon, selected && styles.selectedTypeIcon, { backgroundColor: selected ? theme.PRIMARY : theme.GRAY_LIGHT }]}>
+        <Ionicons name={icon} size={24} color={selected ? theme.WHITE : theme.PRIMARY} />
       </View>
       <View style={styles.typeInfo}>
-        <Text style={[styles.typeTitle, selected && styles.selectedTypeTitle]}>{title}</Text>
-        <Text style={[styles.typeDescription, selected && styles.selectedTypeDescription]}>
+        <Text style={[styles.typeTitle, selected && styles.selectedTypeTitle, { color: selected ? theme.PRIMARY : theme.TEXT_PRIMARY }]}>{title}</Text>
+        <Text style={[styles.typeDescription, selected && styles.selectedTypeDescription, { color: selected ? theme.TEXT_PRIMARY : theme.TEXT_SECONDARY }]}>
           {description}
         </Text>
       </View>
       {selected && (
-        <Ionicons name="checkmark-circle" size={24} color={COLORS.PRIMARY} />
+        <Ionicons name="checkmark-circle" size={24} color={theme.PRIMARY} />
       )}
     </TouchableOpacity>
   );
@@ -356,9 +373,9 @@ const BookingScreen = ({ navigation, route }) => {
   // Show loading state while fetching doctor data
   if (!doctorData && doctor?.id) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, { backgroundColor: theme.BACKGROUND }]}>
         <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>Loading doctor information...</Text>
+          <Text style={[styles.errorText, { color: theme.ERROR }]}>Loading doctor information...</Text>
         </View>
       </SafeAreaView>
     );
@@ -366,9 +383,9 @@ const BookingScreen = ({ navigation, route }) => {
 
   if (!doctor) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, { backgroundColor: theme.BACKGROUND }]}>
         <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>Doctor information not available</Text>
+          <Text style={[styles.errorText, { color: theme.ERROR }]}>Doctor information not available</Text>
           <Button title="Go Back" onPress={() => navigation.goBack()} />
         </View>
       </SafeAreaView>
@@ -376,24 +393,24 @@ const BookingScreen = ({ navigation, route }) => {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.BACKGROUND }]}>
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* Doctor Info */}
-        <Card style={styles.doctorCard}>
+        <Card style={[styles.doctorCard, { backgroundColor: theme.CARD_BACKGROUND, borderColor: theme.BORDER }]}>
           <View style={styles.doctorInfo}>
-            <View style={styles.doctorAvatar}>
-              <Ionicons name="person" size={32} color={COLORS.WHITE} />
+            <View style={[styles.doctorAvatar, { backgroundColor: theme.PRIMARY }]}>
+              <Ionicons name="person" size={32} color={theme.WHITE} />
             </View>
             <View style={styles.doctorDetails}>
-              <Text style={styles.doctorName}>
+              <Text style={[styles.doctorName, { color: theme.TEXT_PRIMARY }]}>
                 {doctorData ? `${doctorData.firstName} ${doctorData.lastName}` : doctor.name}
               </Text>
-              <Text style={styles.doctorSpecialization}>
+              <Text style={[styles.doctorSpecialization, { color: theme.TEXT_SECONDARY }]}>
                 {doctorData?.specialization || doctor.specialization}
               </Text>
               <View style={styles.consultationFee}>
-                <Ionicons name="card" size={16} color={COLORS.SUCCESS} />
-                <Text style={styles.feeText}>
+                <Ionicons name="card" size={16} color={theme.SUCCESS} />
+                <Text style={[styles.feeText, { color: theme.SUCCESS }]}>
                   Consultation: LKR {doctorData?.consultationFee || doctor.consultationFee}
                 </Text>
               </View>
@@ -403,7 +420,7 @@ const BookingScreen = ({ navigation, route }) => {
 
         {/* Appointment Status */}
         {appointmentStatus && (
-          <Card style={styles.statusCard}>
+          <Card style={[styles.statusCard, { backgroundColor: theme.GRAY_LIGHT, borderColor: theme.BORDER }]}>
             <View style={styles.statusHeader}>
               <Ionicons 
                 name={
@@ -413,18 +430,18 @@ const BookingScreen = ({ navigation, route }) => {
                 } 
                 size={24} 
                 color={
-                  appointmentStatus === CONSULTATION_STATUS.CONFIRMED ? COLORS.SUCCESS :
-                  appointmentStatus === CONSULTATION_STATUS.CANCELLED ? COLORS.ERROR :
-                  COLORS.WARNING
+                  appointmentStatus === CONSULTATION_STATUS.CONFIRMED ? theme.SUCCESS :
+                  appointmentStatus === CONSULTATION_STATUS.CANCELLED ? theme.ERROR :
+                  theme.WARNING
                 } 
               />
-              <Text style={styles.statusTitle}>
+              <Text style={[styles.statusTitle, { color: theme.TEXT_PRIMARY }]}>
                 {appointmentStatus === CONSULTATION_STATUS.CONFIRMED ? 'Confirmed' :
                  appointmentStatus === CONSULTATION_STATUS.CANCELLED ? 'Cancelled' :
                  'Pending Confirmation'}
               </Text>
             </View>
-            <Text style={styles.statusText}>
+            <Text style={[styles.statusText, { color: theme.TEXT_SECONDARY }]}>
               {appointmentStatus === CONSULTATION_STATUS.CONFIRMED ? 'Your appointment has been confirmed.' :
                appointmentStatus === CONSULTATION_STATUS.CANCELLED ? 'Your appointment has been cancelled.' :
                'Your appointment is pending confirmation from the doctor.'}
@@ -433,8 +450,8 @@ const BookingScreen = ({ navigation, route }) => {
         )}
 
         {/* Appointment Type */}
-        <Card style={styles.section}>
-          <Text style={styles.sectionTitle}>Select Consultation Type</Text>
+        <Card style={[styles.section, { backgroundColor: theme.CARD_BACKGROUND, borderColor: theme.BORDER }]}>
+          <Text style={[styles.sectionTitle, { color: theme.TEXT_PRIMARY }]}>Select Consultation Type</Text>
           
           <AppointmentTypeButton
             type="video"
@@ -465,8 +482,8 @@ const BookingScreen = ({ navigation, route }) => {
         </Card>
 
         {/* Date Selection */}
-        <Card style={styles.section}>
-          <Text style={styles.sectionTitle}>Select Date</Text>
+        <Card style={[styles.section, { backgroundColor: theme.CARD_BACKGROUND, borderColor: theme.BORDER }]}>
+          <Text style={[styles.sectionTitle, { color: theme.TEXT_PRIMARY }]}>Select Date</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.dateScroll}>
             {availableDates.map((dateItem) => (
               <DateButton
@@ -481,8 +498,8 @@ const BookingScreen = ({ navigation, route }) => {
 
         {/* Time Selection */}
         {selectedDate && (
-          <Card style={styles.section}>
-            <Text style={styles.sectionTitle}>Select Time</Text>
+          <Card style={[styles.section, { backgroundColor: theme.CARD_BACKGROUND, borderColor: theme.BORDER }]}>
+            <Text style={[styles.sectionTitle, { color: theme.TEXT_PRIMARY }]}>Select Time</Text>
             <View style={styles.timeGrid}>
               {availableTimes.length > 0 ? (
                 availableTimes.map((timeItem) => (
@@ -494,23 +511,24 @@ const BookingScreen = ({ navigation, route }) => {
                   />
                 ))
               ) : (
-                <Text style={styles.noTimesText}>No available times for this date</Text>
+                <Text style={[styles.noTimesText, { color: theme.TEXT_SECONDARY }]}>No available times for this date</Text>
               )}
             </View>
           </Card>
         )}
 
         {/* Symptoms/Reason */}
-        <Card style={styles.section}>
-          <Text style={styles.sectionTitle}>Describe Your Symptoms</Text>
-          <Text style={styles.sectionSubtitle}>
+        <Card style={[styles.section, { backgroundColor: theme.CARD_BACKGROUND, borderColor: theme.BORDER }]}>
+          <Text style={[styles.sectionTitle, { color: theme.TEXT_PRIMARY }]}>Describe Your Symptoms</Text>
+          <Text style={[styles.sectionSubtitle, { color: theme.TEXT_SECONDARY }]}>
             Please provide details about your health concerns or reason for consultation
           </Text>
           <TextInput
-            style={styles.symptomsInput}
+            style={[styles.symptomsInput, { backgroundColor: theme.CARD_BACKGROUND, borderColor: theme.BORDER, color: theme.TEXT_PRIMARY }]}
             value={symptoms}
             onChangeText={setSymptoms}
             placeholder="Describe your symptoms, concerns, or reason for visit..."
+            placeholderTextColor={theme.TEXT_SECONDARY}
             multiline
             numberOfLines={4}
             textAlignVertical="top"
@@ -519,37 +537,37 @@ const BookingScreen = ({ navigation, route }) => {
 
         {/* Booking Summary */}
         {selectedDate && selectedTime && (
-          <Card style={styles.summaryCard}>
-            <Text style={styles.summaryTitle}>Appointment Summary</Text>
+          <Card style={[styles.summaryCard, { backgroundColor: theme.PRIMARY + '10', borderColor: theme.BORDER }]}>
+            <Text style={[styles.summaryTitle, { color: theme.PRIMARY }]}>Appointment Summary</Text>
             
             <View style={styles.summaryRow}>
-              <Text style={styles.summaryLabel}>Doctor:</Text>
-              <Text style={styles.summaryValue}>
+              <Text style={[styles.summaryLabel, { color: theme.TEXT_SECONDARY }]}>Doctor:</Text>
+              <Text style={[styles.summaryValue, { color: theme.TEXT_PRIMARY }]}>
                 {doctorData ? `${doctorData.firstName} ${doctorData.lastName}` : doctor.name}
               </Text>
             </View>
             
             <View style={styles.summaryRow}>
-              <Text style={styles.summaryLabel}>Date:</Text>
-              <Text style={styles.summaryValue}>{formatDate(selectedDate)}</Text>
+              <Text style={[styles.summaryLabel, { color: theme.TEXT_SECONDARY }]}>Date:</Text>
+              <Text style={[styles.summaryValue, { color: theme.TEXT_PRIMARY }]}>{formatDate(selectedDate)}</Text>
             </View>
             
             <View style={styles.summaryRow}>
-              <Text style={styles.summaryLabel}>Time:</Text>
-              <Text style={styles.summaryValue}>{selectedTime}</Text>
+              <Text style={[styles.summaryLabel, { color: theme.TEXT_SECONDARY }]}>Time:</Text>
+              <Text style={[styles.summaryValue, { color: theme.TEXT_PRIMARY }]}>{selectedTime}</Text>
             </View>
             
             <View style={styles.summaryRow}>
-              <Text style={styles.summaryLabel}>Type:</Text>
-              <Text style={styles.summaryValue}>
+              <Text style={[styles.summaryLabel, { color: theme.TEXT_SECONDARY }]}>Type:</Text>
+              <Text style={[styles.summaryValue, { color: theme.TEXT_PRIMARY }]}>
                 {appointmentType === 'video' ? 'Video Call' : 
                  appointmentType === 'chat' ? 'Chat' : 'In-Person'}
               </Text>
             </View>
             
             <View style={styles.summaryRow}>
-              <Text style={styles.summaryLabel}>Fee:</Text>
-              <Text style={[styles.summaryValue, styles.feeAmount]}>
+              <Text style={[styles.summaryLabel, { color: theme.TEXT_SECONDARY }]}>Fee:</Text>
+              <Text style={[styles.summaryValue, styles.feeAmount, { color: theme.SUCCESS }]}>
                 LKR {doctorData?.consultationFee || doctor.consultationFee}
               </Text>
             </View>
@@ -568,71 +586,75 @@ const BookingScreen = ({ navigation, route }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (theme) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.BACKGROUND,
+    backgroundColor: theme.BACKGROUND,
+  },
+  header: {
+    paddingHorizontal: SPACING.MD,
+    paddingVertical: SPACING.LG,
+    backgroundColor: theme.CARD_BACKGROUND,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.BORDER,
+  },
+  backButton: {
+    padding: SPACING.SM,
+  },
+  headerTitle: {
+    fontSize: FONT_SIZES.XL,
+    fontWeight: 'bold',
+    color: theme.TEXT_PRIMARY,
+    marginBottom: SPACING.XS,
+  },
+  headerSubtitle: {
+    fontSize: FONT_SIZES.MD,
+    color: theme.TEXT_SECONDARY,
   },
   content: {
     flex: 1,
     padding: SPACING.MD,
   },
-  errorContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: SPACING.LG,
-  },
-  errorText: {
-    fontSize: FONT_SIZES.LG,
-    color: COLORS.ERROR,
-    marginBottom: SPACING.LG,
-  },
   doctorCard: {
     marginBottom: SPACING.MD,
+    backgroundColor: theme.CARD_BACKGROUND,
+    borderWidth: 1,
+    borderColor: theme.BORDER,
   },
-  doctorInfo: {
+  doctorHeader: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginBottom: SPACING.MD,
   },
   doctorAvatar: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: COLORS.PRIMARY,
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: theme.PRIMARY,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: SPACING.MD,
   },
-  doctorDetails: {
+  doctorInfo: {
     flex: 1,
   },
   doctorName: {
     fontSize: FONT_SIZES.LG,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginBottom: SPACING.XS / 2,
   },
   doctorSpecialization: {
-    fontSize: FONT_SIZES.MD,
-    color: COLORS.TEXT_SECONDARY,
-    marginBottom: SPACING.SM,
-  },
-  consultationFee: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  feeText: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.SUCCESS,
-    fontWeight: '600',
-    marginLeft: SPACING.XS,
+    color: theme.PRIMARY,
   },
   statusCard: {
     marginBottom: SPACING.MD,
-    backgroundColor: COLORS.GRAY_LIGHT,
+    backgroundColor: theme.BUTTON_SECONDARY,
     padding: SPACING.MD,
     borderRadius: BORDER_RADIUS.MD,
+    borderWidth: 1,
+    borderColor: theme.BORDER,
   },
   statusHeader: {
     flexDirection: 'row',
@@ -642,26 +664,29 @@ const styles = StyleSheet.create({
   statusTitle: {
     fontSize: FONT_SIZES.MD,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginLeft: SPACING.SM,
   },
   statusText: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     marginLeft: 36, // Align with status title
   },
   section: {
     marginBottom: SPACING.MD,
+    backgroundColor: theme.CARD_BACKGROUND,
+    borderWidth: 1,
+    borderColor: theme.BORDER,
   },
   sectionTitle: {
     fontSize: FONT_SIZES.LG,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginBottom: SPACING.MD,
   },
   sectionSubtitle: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     marginBottom: SPACING.MD,
   },
   typeButton: {
@@ -670,24 +695,24 @@ const styles = StyleSheet.create({
     padding: SPACING.MD,
     borderRadius: BORDER_RADIUS.MD,
     borderWidth: 2,
-    borderColor: COLORS.BORDER,
+    borderColor: theme.BORDER,
     marginBottom: SPACING.SM,
+    backgroundColor: theme.CARD_BACKGROUND,
   },
   selectedType: {
-    borderColor: COLORS.PRIMARY,
-    backgroundColor: COLORS.PRIMARY + '10',
+    borderColor: theme.PRIMARY,
   },
   typeIcon: {
     width: 50,
     height: 50,
     borderRadius: 25,
-    backgroundColor: COLORS.GRAY_LIGHT,
+    backgroundColor: theme.BUTTON_SECONDARY,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: SPACING.MD,
   },
   selectedTypeIcon: {
-    backgroundColor: COLORS.PRIMARY,
+    backgroundColor: theme.PRIMARY,
   },
   typeInfo: {
     flex: 1,
@@ -695,18 +720,18 @@ const styles = StyleSheet.create({
   typeTitle: {
     fontSize: FONT_SIZES.MD,
     fontWeight: '600',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginBottom: SPACING.XS / 2,
   },
   selectedTypeTitle: {
-    color: COLORS.PRIMARY,
+    color: theme.PRIMARY,
   },
   typeDescription: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
   },
   selectedTypeDescription: {
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
   },
   dateScroll: {
     marginBottom: SPACING.SM,
@@ -716,29 +741,30 @@ const styles = StyleSheet.create({
     paddingVertical: SPACING.SM,
     borderRadius: BORDER_RADIUS.MD,
     borderWidth: 1,
-    borderColor: COLORS.BORDER,
+    borderColor: theme.BORDER,
     marginRight: SPACING.SM,
     minWidth: 80,
     alignItems: 'center',
+    backgroundColor: theme.CARD_BACKGROUND,
   },
   selectedDate: {
-    backgroundColor: COLORS.PRIMARY,
-    borderColor: COLORS.PRIMARY,
+    backgroundColor: theme.PRIMARY,
+    borderColor: theme.PRIMARY,
   },
   unavailableDate: {
-    backgroundColor: COLORS.GRAY_LIGHT,
+    backgroundColor: theme.BUTTON_SECONDARY,
     opacity: 0.5,
   },
   dateText: {
     fontSize: FONT_SIZES.SM,
     fontWeight: '600',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
   },
   selectedDateText: {
-    color: COLORS.WHITE,
+    color: theme.WHITE,
   },
   unavailableDateText: {
-    color: COLORS.GRAY_MEDIUM,
+    color: theme.TEXT_SECONDARY,
   },
   timeGrid: {
     flexDirection: 'row',
@@ -749,48 +775,52 @@ const styles = StyleSheet.create({
     paddingVertical: SPACING.SM,
     borderRadius: BORDER_RADIUS.MD,
     borderWidth: 1,
-    borderColor: COLORS.BORDER,
+    borderColor: theme.BORDER,
     marginRight: SPACING.SM,
     marginBottom: SPACING.SM,
     minWidth: 80,
     alignItems: 'center',
+    backgroundColor: theme.CARD_BACKGROUND,
   },
   selectedTime: {
-    backgroundColor: COLORS.PRIMARY,
-    borderColor: COLORS.PRIMARY,
+    backgroundColor: theme.PRIMARY,
+    borderColor: theme.PRIMARY,
   },
   unavailableTime: {
-    backgroundColor: COLORS.GRAY_LIGHT,
+    backgroundColor: theme.BUTTON_SECONDARY,
     opacity: 0.5,
   },
   timeText: {
     fontSize: FONT_SIZES.SM,
     fontWeight: '600',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
   },
   selectedTimeText: {
-    color: COLORS.WHITE,
+    color: theme.WHITE,
   },
   unavailableTimeText: {
-    color: COLORS.GRAY_MEDIUM,
+    color: theme.TEXT_SECONDARY,
   },
   symptomsInput: {
     borderWidth: 1,
-    borderColor: COLORS.BORDER,
+    borderColor: theme.BORDER,
     borderRadius: BORDER_RADIUS.MD,
     padding: SPACING.MD,
     fontSize: FONT_SIZES.MD,
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     minHeight: 100,
+    backgroundColor: theme.INPUT_BACKGROUND,
   },
   summaryCard: {
-    backgroundColor: COLORS.PRIMARY + '10',
+    backgroundColor: theme.PRIMARY + '10',
     marginBottom: SPACING.MD,
+    borderWidth: 1,
+    borderColor: theme.BORDER,
   },
   summaryTitle: {
     fontSize: FONT_SIZES.LG,
     fontWeight: 'bold',
-    color: COLORS.PRIMARY,
+    color: theme.PRIMARY,
     marginBottom: SPACING.MD,
   },
   summaryRow: {
@@ -801,16 +831,16 @@ const styles = StyleSheet.create({
   },
   summaryLabel: {
     fontSize: FONT_SIZES.MD,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     fontWeight: '500',
   },
   summaryValue: {
     fontSize: FONT_SIZES.MD,
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     fontWeight: '600',
   },
   feeAmount: {
-    color: COLORS.SUCCESS,
+    color: theme.SUCCESS,
     fontSize: FONT_SIZES.LG,
   },
   bookButton: {

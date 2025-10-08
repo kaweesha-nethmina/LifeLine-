@@ -8,11 +8,14 @@ import {
   TouchableOpacity
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '../context/ThemeContext';
 import Button from '../components/Button';
 import Card from '../components/Card';
 import { COLORS, FONT_SIZES, SPACING, BORDER_RADIUS, USER_ROLES } from '../constants';
 
 const RoleSelectionScreen = ({ navigation }) => {
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
   const [selectedRole, setSelectedRole] = useState(null);
 
   const roles = [
@@ -76,51 +79,61 @@ const RoleSelectionScreen = ({ navigation }) => {
       <Card
         style={[
           styles.roleCard,
-          selectedRole === role.id && styles.selectedRoleCard
+          selectedRole === role.id && styles.selectedRoleCard,
+          { 
+            backgroundColor: selectedRole === role.id ? theme.PRIMARY + '10' : theme.CARD_BACKGROUND,
+            borderColor: selectedRole === role.id ? theme.PRIMARY : theme.BORDER
+          }
         ]}
       >
         <View style={styles.roleHeader}>
           <View style={[
             styles.roleIconContainer,
-            selectedRole === role.id && styles.selectedRoleIconContainer
+            selectedRole === role.id && styles.selectedRoleIconContainer,
+            { 
+              backgroundColor: selectedRole === role.id ? theme.PRIMARY : theme.PRIMARY + '20'
+            }
           ]}>
             <Ionicons 
               name={role.icon} 
               size={32} 
-              color={selectedRole === role.id ? COLORS.WHITE : COLORS.PRIMARY} 
+              color={selectedRole === role.id ? theme.WHITE : theme.PRIMARY} 
             />
           </View>
           <View style={styles.roleTitleContainer}>
             <Text style={[
               styles.roleTitle,
-              selectedRole === role.id && styles.selectedRoleTitle
+              selectedRole === role.id && styles.selectedRoleTitle,
+              { 
+                color: selectedRole === role.id ? theme.PRIMARY : theme.TEXT_PRIMARY
+              }
             ]}>
               {role.title}
             </Text>
-            <Text style={styles.roleDescription}>
+            <Text style={[styles.roleDescription, { color: theme.TEXT_SECONDARY }]}>
               {role.description}
             </Text>
           </View>
         </View>
 
         <View style={styles.featuresContainer}>
-          <Text style={styles.featuresHeader}>Key Features:</Text>
+          <Text style={[styles.featuresHeader, { color: theme.TEXT_PRIMARY }]}>Key Features:</Text>
           {role.features.map((feature, index) => (
             <View key={index} style={styles.featureItem}>
               <Ionicons 
                 name="checkmark-circle" 
                 size={16} 
-                color={COLORS.SUCCESS} 
+                color={theme.SUCCESS} 
               />
-              <Text style={styles.featureText}>{feature}</Text>
+              <Text style={[styles.featureText, { color: theme.TEXT_SECONDARY }]}>{feature}</Text>
             </View>
           ))}
         </View>
 
         {selectedRole === role.id && (
-          <View style={styles.selectedIndicator}>
-            <Ionicons name="checkmark-circle" size={24} color={COLORS.PRIMARY} />
-            <Text style={styles.selectedText}>Selected</Text>
+          <View style={[styles.selectedIndicator, { borderTopColor: theme.BORDER }]}>
+            <Ionicons name="checkmark-circle" size={24} color={theme.PRIMARY} />
+            <Text style={[styles.selectedText, { color: theme.PRIMARY }]}>Selected</Text>
           </View>
         )}
       </Card>
@@ -128,12 +141,12 @@ const RoleSelectionScreen = ({ navigation }) => {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.BACKGROUND }]}>
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         <View style={styles.content}>
           <View style={styles.header}>
-            <Text style={styles.title}>Choose Your Role</Text>
-            <Text style={styles.subtitle}>
+            <Text style={[styles.title, { color: theme.TEXT_PRIMARY }]}>Choose Your Role</Text>
+            <Text style={[styles.subtitle, { color: theme.TEXT_SECONDARY }]}>
               Select how you'll be using LifeLine+ to get personalized features
             </Text>
           </View>
@@ -165,10 +178,10 @@ const RoleSelectionScreen = ({ navigation }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (theme) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.BACKGROUND,
+    backgroundColor: theme.BACKGROUND,
   },
   scrollView: {
     flex: 1,
@@ -184,12 +197,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: FONT_SIZES.XXL,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginBottom: SPACING.SM,
   },
   subtitle: {
     fontSize: FONT_SIZES.MD,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     textAlign: 'center',
     lineHeight: 22,
   },
@@ -201,11 +214,11 @@ const styles = StyleSheet.create({
   },
   roleCard: {
     borderWidth: 2,
-    borderColor: COLORS.BORDER,
+    borderColor: theme.BORDER,
+    backgroundColor: theme.CARD_BACKGROUND,
   },
   selectedRoleCard: {
-    borderColor: COLORS.PRIMARY,
-    backgroundColor: COLORS.PRIMARY + '10',
+    borderColor: theme.PRIMARY,
   },
   roleHeader: {
     flexDirection: 'row',
@@ -216,13 +229,13 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: COLORS.PRIMARY + '20',
+    backgroundColor: theme.PRIMARY + '20',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: SPACING.MD,
   },
   selectedRoleIconContainer: {
-    backgroundColor: COLORS.PRIMARY,
+    backgroundColor: theme.PRIMARY,
   },
   roleTitleContainer: {
     flex: 1,
@@ -230,15 +243,15 @@ const styles = StyleSheet.create({
   roleTitle: {
     fontSize: FONT_SIZES.LG,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginBottom: SPACING.XS,
   },
   selectedRoleTitle: {
-    color: COLORS.PRIMARY,
+    color: theme.PRIMARY,
   },
   roleDescription: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     lineHeight: 20,
   },
   featuresContainer: {
@@ -247,7 +260,7 @@ const styles = StyleSheet.create({
   featuresHeader: {
     fontSize: FONT_SIZES.SM,
     fontWeight: '600',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginBottom: SPACING.SM,
   },
   featureItem: {
@@ -257,7 +270,7 @@ const styles = StyleSheet.create({
   },
   featureText: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     marginLeft: SPACING.SM,
     flex: 1,
   },
@@ -268,12 +281,12 @@ const styles = StyleSheet.create({
     marginTop: SPACING.MD,
     paddingTop: SPACING.MD,
     borderTopWidth: 1,
-    borderTopColor: COLORS.BORDER,
+    borderTopColor: theme.BORDER,
   },
   selectedText: {
     fontSize: FONT_SIZES.SM,
     fontWeight: '600',
-    color: COLORS.PRIMARY,
+    color: theme.PRIMARY,
     marginLeft: SPACING.SM,
   },
   actionContainer: {

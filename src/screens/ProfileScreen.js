@@ -7,33 +7,27 @@ import {
   ScrollView,
   TouchableOpacity,
   Alert,
-  Modal,
-  TextInput,
   Image,
   Switch
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import { supabaseStorage } from '../services/supabase';
-import { COLORS, FONT_SIZES, SPACING, BORDER_RADIUS } from '../constants';
+import { COLORS, FONT_SIZES, SPACING, BORDER_RADIUS, USER_ROLES } from '../constants';
 import Button from '../components/Button';
 import Card from '../components/Card';
 import { testNotificationSystem } from '../utils/notificationTestUtils';
+import ProfileEditModal from '../components/ProfileEditModal';
 
 const ProfileScreen = ({ navigation }) => {
-  const { user, userProfile, logout, updateUserProfile } = useAuth();
+  const { user, userProfile, logout, updateUserProfile, isPatient, isDoctor, isEmergencyOperator } = useAuth();
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
   const [isEditModalVisible, setEditModalVisible] = useState(false);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [isHeartPatient, setIsHeartPatient] = useState(false);
-  const [editForm, setEditForm] = useState({
-    firstName: userProfile?.firstName || '',
-    lastName: userProfile?.lastName || '',
-    phone: userProfile?.phone || '',
-    emergencyContact: userProfile?.emergencyContact || '',
-    bloodType: userProfile?.bloodType || '',
-    allergies: userProfile?.allergies?.join(', ') || ''
-  });
 
   // Initialize heart patient status from user profile
   useEffect(() => {
@@ -76,21 +70,6 @@ const ProfileScreen = ({ navigation }) => {
       // Revert the toggle if update fails
       setIsHeartPatient(!value);
       Alert.alert('Error', 'Failed to update heart patient status');
-    }
-  };
-
-  const handleUpdateProfile = async () => {
-    const updatedData = {
-      ...editForm,
-      allergies: editForm.allergies.split(',').map(item => item.trim()).filter(item => item)
-    };
-
-    const result = await updateUserProfile(updatedData);
-    if (result.success) {
-      setEditModalVisible(false);
-      Alert.alert('Success', 'Profile updated successfully!');
-    } else {
-      Alert.alert('Error', result.error || 'Failed to update profile');
     }
   };
 
@@ -233,41 +212,41 @@ const ProfileScreen = ({ navigation }) => {
   };
 
   const ProfileItem = ({ icon, label, value, onPress, toggle }) => (
-    <TouchableOpacity style={styles.profileItem} onPress={onPress}>
+    <TouchableOpacity style={[styles.profileItem, { borderBottomColor: theme.BORDER }]} onPress={onPress}>
       <View style={styles.itemLeft}>
-        <Ionicons name={icon} size={24} color={COLORS.PRIMARY} />
+        <Ionicons name={icon} size={24} color={theme.PRIMARY} />
         <View style={styles.itemText}>
-          <Text style={styles.itemLabel}>{label}</Text>
+          <Text style={[styles.itemLabel, { color: theme.TEXT_SECONDARY }]}>{label}</Text>
           {toggle ? (
             <View style={styles.toggleContainer}>
-              <Text style={styles.toggleLabel}>Heart Patient</Text>
+              <Text style={[styles.toggleLabel, { color: theme.TEXT_PRIMARY }]}>Heart Patient</Text>
               <Switch
-                trackColor={{ false: COLORS.GRAY_MEDIUM, true: COLORS.PRIMARY }}
-                thumbColor={isHeartPatient ? COLORS.WHITE : COLORS.WHITE}
+                trackColor={{ false: theme.GRAY_MEDIUM, true: theme.PRIMARY }}
+                thumbColor={isHeartPatient ? theme.WHITE : theme.WHITE}
                 onValueChange={handleHeartPatientToggle}
                 value={isHeartPatient}
               />
             </View>
           ) : (
-            <Text style={styles.itemValue}>{value || 'Not set'}</Text>
+            <Text style={[styles.itemValue, { color: theme.TEXT_PRIMARY }]}>{value || 'Not set'}</Text>
           )}
         </View>
       </View>
-      {onPress && !toggle && <Ionicons name="chevron-forward" size={20} color={COLORS.GRAY_MEDIUM} />}
+      {onPress && !toggle && <Ionicons name="chevron-forward" size={20} color={theme.GRAY_MEDIUM} />}
     </TouchableOpacity>
   );
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.BACKGROUND }]}>
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* Header */}
-        <Card style={styles.headerCard}>
+        <Card style={[styles.headerCard, { backgroundColor: theme.CARD_BACKGROUND }]}>
           <TouchableOpacity 
             style={styles.avatarContainer}
             onPress={handleAvatarPress}
             disabled={isUploadingAvatar}
           >
-            <View style={styles.avatar}>
+            <View style={[styles.avatar, { backgroundColor: theme.PRIMARY }]}>
               {userProfile?.profilePictureURL ? (
                 <Image 
                   source={{ uri: userProfile.profilePictureURL }} 
@@ -275,30 +254,30 @@ const ProfileScreen = ({ navigation }) => {
                   onError={() => console.log('Avatar image load error')}
                 />
               ) : (
-                <Ionicons name="person" size={48} color={COLORS.WHITE} />
+                <Ionicons name="person" size={48} color={theme.WHITE} />
               )}
               {isUploadingAvatar && (
                 <View style={styles.uploadingOverlay}>
-                  <Ionicons name="cloud-upload" size={24} color={COLORS.WHITE} />
+                  <Ionicons name="cloud-upload" size={24} color={theme.WHITE} />
                 </View>
               )}
             </View>
-            <View style={styles.cameraIcon}>
-              <Ionicons name="camera" size={16} color={COLORS.WHITE} />
+            <View style={[styles.cameraIcon, { backgroundColor: theme.SUCCESS, borderColor: theme.WHITE }]}>
+              <Ionicons name="camera" size={16} color={theme.WHITE} />
             </View>
           </TouchableOpacity>
-          <Text style={styles.userName}>
+          <Text style={[styles.userName, { color: theme.TEXT_PRIMARY }]}>
             {userProfile?.firstName || ''} {userProfile?.lastName || ''}
           </Text>
-          <Text style={styles.userEmail}>{user?.email || 'Email not available'}</Text>
-          <Text style={styles.userRole}>
+          <Text style={[styles.userEmail, { color: theme.TEXT_SECONDARY }]}>{user?.email || 'Email not available'}</Text>
+          <Text style={[styles.userRole, { color: theme.PRIMARY, backgroundColor: theme.GRAY_LIGHT }]}>
             {userProfile?.role ? userProfile?.role?.charAt(0).toUpperCase() + userProfile?.role?.slice(1) : 'Role not set'}
           </Text>
         </Card>
 
         {/* Personal Information */}
-        <Card style={styles.section}>
-          <Text style={styles.sectionTitle}>Personal Information</Text>
+        <Card style={[styles.section, { backgroundColor: theme.CARD_BACKGROUND }]}>
+          <Text style={[styles.sectionTitle, { color: theme.TEXT_PRIMARY }]}>Personal Information</Text>
           
           <ProfileItem
             icon="person-outline"
@@ -332,37 +311,83 @@ const ProfileScreen = ({ navigation }) => {
         </Card>
 
         {/* Medical Information */}
-        <Card style={styles.section}>
-          <Text style={styles.sectionTitle}>Medical Information</Text>
-          
-          <ProfileItem
-            icon="heart"
-            label="Heart Patient Status"
-            toggle={true}
-          />
-          
-          <ProfileItem
-            icon="water-outline"
-            label="Blood Type"
-            value={userProfile?.bloodType}
-          />
-          
-          <ProfileItem
-            icon="warning-outline"
-            label="Allergies"
-            value={userProfile?.allergies?.join(', ')}
-          />
-          
-          <ProfileItem
-            icon="call-outline"
-            label="Emergency Contact"
-            value={userProfile?.emergencyContact}
-          />
-        </Card>
+        {(isPatient || isDoctor) && (
+          <Card style={[styles.section, { backgroundColor: theme.CARD_BACKGROUND }]}>
+            <Text style={[styles.sectionTitle, { color: theme.TEXT_PRIMARY }]}>Medical Information</Text>
+            
+            <ProfileItem
+              icon="heart"
+              label="Heart Patient Status"
+              toggle={true}
+            />
+            
+            <ProfileItem
+              icon="water-outline"
+              label="Blood Type"
+              value={userProfile?.bloodType}
+            />
+            
+            <ProfileItem
+              icon="warning-outline"
+              label="Allergies"
+              value={userProfile?.allergies?.join(', ')}
+            />
+            
+            <ProfileItem
+              icon="call-outline"
+              label="Emergency Contact"
+              value={userProfile?.emergencyContact}
+            />
+          </Card>
+        )}
+
+        {/* Doctor Information */}
+        {isDoctor && (
+          <Card style={[styles.section, { backgroundColor: theme.CARD_BACKGROUND }]}>
+            <Text style={[styles.sectionTitle, { color: theme.TEXT_PRIMARY }]}>Professional Information</Text>
+            
+            <ProfileItem
+              icon="business-outline"
+              label="Specialization"
+              value={userProfile?.specialization}
+            />
+            
+            <ProfileItem
+              icon="card-outline"
+              label="License Number"
+              value={userProfile?.licenseNumber}
+            />
+            
+            <ProfileItem
+              icon="time-outline"
+              label="Experience"
+              value={userProfile?.experience ? `${userProfile.experience} years` : ''}
+            />
+          </Card>
+        )}
+
+        {/* Emergency Operator Information */}
+        {isEmergencyOperator && (
+          <Card style={[styles.section, { backgroundColor: theme.CARD_BACKGROUND }]}>
+            <Text style={[styles.sectionTitle, { color: theme.TEXT_PRIMARY }]}>Professional Information</Text>
+            
+            <ProfileItem
+              icon="business-outline"
+              label="Department"
+              value={userProfile?.department}
+            />
+            
+            <ProfileItem
+              icon="briefcase-outline"
+              label="Position"
+              value={userProfile?.position}
+            />
+          </Card>
+        )}
 
         {/* Account Actions */}
-        <Card style={styles.section}>
-          <Text style={styles.sectionTitle}>Account</Text>
+        <Card style={[styles.section, { backgroundColor: theme.CARD_BACKGROUND }]}>
+          <Text style={[styles.sectionTitle, { color: theme.TEXT_PRIMARY }]}>Account</Text>
           
           <ProfileItem
             icon="create-outline"
@@ -385,119 +410,31 @@ const ProfileScreen = ({ navigation }) => {
             onPress={handleTestNotifications}
           />
           
-          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-            <Ionicons name="log-out-outline" size={24} color={COLORS.ERROR} />
-            <Text style={styles.logoutText}>Logout</Text>
+          <TouchableOpacity style={[styles.logoutButton, { marginTop: SPACING.MD }]} onPress={handleLogout}>
+            <Ionicons name="log-out-outline" size={24} color={theme.ERROR} />
+            <Text style={[styles.logoutText, { color: theme.ERROR, marginLeft: SPACING.MD }]}>Logout</Text>
           </TouchableOpacity>
         </Card>
       </ScrollView>
 
       {/* Edit Profile Modal */}
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={isEditModalVisible}
-        onRequestClose={() => setEditModalVisible(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Edit Profile</Text>
-              <TouchableOpacity onPress={() => setEditModalVisible(false)}>
-                <Ionicons name="close" size={24} color={COLORS.GRAY_DARK} />
-              </TouchableOpacity>
-            </View>
-            
-            <ScrollView style={styles.modalForm}>
-              <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>First Name</Text>
-                <TextInput
-                  style={styles.input}
-                  value={editForm.firstName}
-                  onChangeText={(text) => setEditForm({...editForm, firstName: text})}
-                  placeholder="Enter first name"
-                />
-              </View>
-              
-              <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Last Name</Text>
-                <TextInput
-                  style={styles.input}
-                  value={editForm.lastName}
-                  onChangeText={(text) => setEditForm({...editForm, lastName: text})}
-                  placeholder="Enter last name"
-                />
-              </View>
-              
-              <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Phone Number</Text>
-                <TextInput
-                  style={styles.input}
-                  value={editForm.phone}
-                  onChangeText={(text) => setEditForm({...editForm, phone: text})}
-                  placeholder="Enter phone number"
-                  keyboardType="phone-pad"
-                />
-              </View>
-              
-              <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Emergency Contact</Text>
-                <TextInput
-                  style={styles.input}
-                  value={editForm.emergencyContact}
-                  onChangeText={(text) => setEditForm({...editForm, emergencyContact: text})}
-                  placeholder="Enter emergency contact"
-                  keyboardType="phone-pad"
-                />
-              </View>
-              
-              <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Blood Type</Text>
-                <TextInput
-                  style={styles.input}
-                  value={editForm.bloodType}
-                  onChangeText={(text) => setEditForm({...editForm, bloodType: text})}
-                  placeholder="Enter blood type (e.g., A+, B-, O+)"
-                />
-              </View>
-              
-              <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Allergies</Text>
-                <TextInput
-                  style={[styles.input, styles.textArea]}
-                  value={editForm.allergies}
-                  onChangeText={(text) => setEditForm({...editForm, allergies: text})}
-                  placeholder="Enter allergies (separated by commas)"
-                  multiline
-                  numberOfLines={3}
-                />
-              </View>
-            </ScrollView>
-            
-            <View style={styles.modalActions}>
-              <Button
-                title="Cancel"
-                onPress={() => setEditModalVisible(false)}
-                variant="outline"
-                style={styles.modalButton}
-              />
-              <Button
-                title="Update"
-                onPress={handleUpdateProfile}
-                style={styles.modalButton}
-              />
-            </View>
-          </View>
-        </View>
-      </Modal>
+      <ProfileEditModal
+        isVisible={isEditModalVisible}
+        onClose={() => setEditModalVisible(false)}
+        userProfile={userProfile}
+        onUpdateProfile={updateUserProfile}
+        isPatient={isPatient}
+        isDoctor={isDoctor}
+        isEmergencyOperator={isEmergencyOperator}
+      />
     </SafeAreaView>
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (theme) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.BACKGROUND,
+    backgroundColor: theme.BACKGROUND,
   },
   content: {
     flex: 1,
@@ -507,6 +444,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: SPACING.XL,
     marginBottom: SPACING.MD,
+    backgroundColor: theme.CARD_BACKGROUND,
   },
   avatarContainer: {
     position: 'relative',
@@ -516,7 +454,7 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 50,
-    backgroundColor: COLORS.PRIMARY,
+    backgroundColor: theme.PRIMARY,
     justifyContent: 'center',
     alignItems: 'center',
     overflow: 'hidden',
@@ -544,28 +482,28 @@ const styles = StyleSheet.create({
     width: 30,
     height: 30,
     borderRadius: 15,
-    backgroundColor: COLORS.SUCCESS,
+    backgroundColor: theme.SUCCESS,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: COLORS.WHITE,
+    borderColor: theme.WHITE,
   },
   userName: {
     fontSize: FONT_SIZES.XXL,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginBottom: SPACING.XS,
   },
   userEmail: {
     fontSize: FONT_SIZES.MD,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     marginBottom: SPACING.XS,
   },
   userRole: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.PRIMARY,
+    color: theme.PRIMARY,
     fontWeight: '600',
-    backgroundColor: COLORS.GRAY_LIGHT,
+    backgroundColor: theme.GRAY_LIGHT,
     paddingHorizontal: SPACING.MD,
     paddingVertical: SPACING.XS,
     borderRadius: BORDER_RADIUS.MD,
@@ -576,7 +514,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: FONT_SIZES.LG,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginBottom: SPACING.MD,
   },
   profileItem: {
@@ -585,7 +523,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: SPACING.MD,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.BORDER,
+    borderBottomColor: theme.BORDER,
   },
   itemLeft: {
     flexDirection: 'row',
@@ -598,12 +536,12 @@ const styles = StyleSheet.create({
   },
   itemLabel: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     marginBottom: SPACING.XS / 2,
   },
   itemValue: {
     fontSize: FONT_SIZES.MD,
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     fontWeight: '500',
   },
   toggleContainer: {
@@ -613,7 +551,7 @@ const styles = StyleSheet.create({
   },
   toggleLabel: {
     fontSize: FONT_SIZES.MD,
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     fontWeight: '500',
   },
   logoutButton: {
@@ -624,68 +562,9 @@ const styles = StyleSheet.create({
   },
   logoutText: {
     fontSize: FONT_SIZES.MD,
-    color: COLORS.ERROR,
+    color: theme.ERROR,
     fontWeight: '600',
     marginLeft: SPACING.MD,
-  },
-  // Modal Styles
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: COLORS.OVERLAY,
-    justifyContent: 'flex-end',
-  },
-  modalContent: {
-    backgroundColor: COLORS.WHITE,
-    borderTopLeftRadius: BORDER_RADIUS.XL,
-    borderTopRightRadius: BORDER_RADIUS.XL,
-    maxHeight: '90%',
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: SPACING.LG,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.BORDER,
-  },
-  modalTitle: {
-    fontSize: FONT_SIZES.XL,
-    fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
-  },
-  modalForm: {
-    flex: 1,
-    padding: SPACING.LG,
-  },
-  inputGroup: {
-    marginBottom: SPACING.LG,
-  },
-  inputLabel: {
-    fontSize: FONT_SIZES.SM,
-    fontWeight: '600',
-    color: COLORS.TEXT_PRIMARY,
-    marginBottom: SPACING.XS,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: COLORS.BORDER,
-    borderRadius: BORDER_RADIUS.MD,
-    padding: SPACING.MD,
-    fontSize: FONT_SIZES.MD,
-    color: COLORS.TEXT_PRIMARY,
-    backgroundColor: COLORS.WHITE,
-  },
-  textArea: {
-    height: 80,
-    textAlignVertical: 'top',
-  },
-  modalActions: {
-    flexDirection: 'row',
-    padding: SPACING.LG,
-    gap: SPACING.MD,
-  },
-  modalButton: {
-    flex: 1,
   },
 });
 

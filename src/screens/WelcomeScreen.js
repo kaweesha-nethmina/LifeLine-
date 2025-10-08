@@ -9,16 +9,20 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '../context/ThemeContext';
 import Button from '../components/Button';
 import { COLORS, FONT_SIZES, SPACING, BORDER_RADIUS } from '../constants';
 
 const WelcomeScreen = ({ navigation }) => {
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
+
   return (
     <>
       {/* <StatusBar barStyle="light-content" backgroundColor={COLORS.PRIMARY} /> */}
       
       <LinearGradient
-        colors={[COLORS.PRIMARY, COLORS.PRIMARYB]}
+        colors={[theme.PRIMARY, theme.PRIMARYB]}
         style={styles.gradient}
       >
         <View style={styles.content}>
@@ -41,22 +45,22 @@ const WelcomeScreen = ({ navigation }) => {
             
             <View style={styles.featuresList}>
               <View style={styles.feature}>
-                <Ionicons name="call" size={24} color={COLORS.WHITE} />
+                <Ionicons name="call" size={24} color={theme.WHITE} />
                 <Text style={styles.featureText}>24/7 Emergency Support</Text>
               </View>
               
               <View style={styles.feature}>
-                <Ionicons name="videocam" size={24} color={COLORS.WHITE} />
+                <Ionicons name="videocam" size={24} color={theme.WHITE} />
                 <Text style={styles.featureText}>Video Consultations</Text>
               </View>
               
               <View style={styles.feature}>
-                <Ionicons name="location" size={24} color={COLORS.WHITE} />
+                <Ionicons name="location" size={24} color={theme.WHITE} />
                 <Text style={styles.featureText}>GPS Emergency Location</Text>
               </View>
               
               <View style={styles.feature}>
-                <Ionicons name="folder" size={24} color={COLORS.WHITE} />
+                <Ionicons name="folder" size={24} color={theme.WHITE} />
                 <Text style={styles.featureText}>Digital Health Records</Text>
               </View>
             </View>
@@ -70,7 +74,7 @@ const WelcomeScreen = ({ navigation }) => {
               variant="outline"
               size="large"
               style={styles.getStartedButton}
-              textStyle={{ color: COLORS.WHITE }}
+              textStyle={{ color: theme.WHITE }}
             />
             
             <Button
@@ -79,7 +83,7 @@ const WelcomeScreen = ({ navigation }) => {
               variant="outline"
               size="medium"
               style={[styles.signInButton, { borderColor: 'transparent' }]}
-              textStyle={{ color: COLORS.WHITE, fontWeight: '400' }}
+              textStyle={{ color: theme.WHITE, fontWeight: '400' }}
             />
           </View>
         </View>
@@ -88,7 +92,7 @@ const WelcomeScreen = ({ navigation }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (theme) => StyleSheet.create({
   gradient: {
     flex: 1,
   },
@@ -118,12 +122,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: FONT_SIZES.XXXL + 8,
     fontWeight: 'bold',
-    color: COLORS.WHITE,
+    color: theme.WHITE,
     marginBottom: SPACING.SM,
   },
   subtitle: {
     fontSize: FONT_SIZES.LG,
-    color: COLORS.WHITE,
+    color: theme.WHITE,
     textAlign: 'center',
     opacity: 0.9,
   },
@@ -133,7 +137,7 @@ const styles = StyleSheet.create({
   featuresTitle: {
     fontSize: FONT_SIZES.XL,
     fontWeight: '600',
-    color: COLORS.WHITE,
+    color: theme.WHITE,
     textAlign: 'center',
     marginBottom: SPACING.LG,
   },
@@ -148,7 +152,7 @@ const styles = StyleSheet.create({
   },
   featureText: {
     fontSize: FONT_SIZES.MD,
-    color: COLORS.WHITE,
+    color: theme.WHITE,
     marginLeft: SPACING.MD,
     opacity: 0.9,
   },
@@ -156,7 +160,7 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   getStartedButton: {
-    borderColor: COLORS.WHITE,
+    borderColor: theme.WHITE,
     borderWidth: 2,
     marginBottom: SPACING.MD,
   },

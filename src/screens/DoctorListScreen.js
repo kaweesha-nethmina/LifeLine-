@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import {
   collection,
   query,
@@ -33,7 +34,7 @@ import Button from '../components/Button';
 import useProfilePicture from '../hooks/useProfilePicture';
 
 // Separate DoctorCard component to avoid re-creating it on every render
-const DoctorCard = ({ doctor, onViewProfile, onBookAppointment, chatMode }) => {
+const DoctorCard = ({ doctor, onViewProfile, onBookAppointment, chatMode, theme }) => { // Add theme prop
   const { fetchUserProfilePicture, getCachedProfilePicture } = useProfilePicture();
   const [profilePicture, setProfilePicture] = useState(null);
   const [loadingProfilePicture, setLoadingProfilePicture] = useState(false);
@@ -72,9 +73,9 @@ const DoctorCard = ({ doctor, onViewProfile, onBookAppointment, chatMode }) => {
   }, [doctor.id, getCachedProfilePicture, fetchUserProfilePicture]);
 
   return (
-    <Card style={styles.doctorCard}>
+    <Card style={[styles.doctorCard, { backgroundColor: theme.CARD_BACKGROUND, borderColor: theme.BORDER }]}>
       <View style={styles.doctorHeader}>
-        <View style={styles.doctorAvatar}>
+        <View style={[styles.doctorAvatar, { backgroundColor: theme.PRIMARY }]}>
           {profilePicture && profilePicture !== null ? (
             <Image 
               source={{ uri: profilePicture }} 
@@ -86,24 +87,24 @@ const DoctorCard = ({ doctor, onViewProfile, onBookAppointment, chatMode }) => {
               }}
             />
           ) : (
-            <Ionicons name="person" size={32} color={COLORS.WHITE} />
+            <Ionicons name="person" size={32} color={theme.WHITE} />
           )}
         </View>
         <View style={styles.doctorInfo}>
-          <Text style={styles.doctorName}>{doctor.name}</Text>
-          <Text style={styles.doctorSpecialization}>{doctor.specialization}</Text>
+          <Text style={[styles.doctorName, { color: theme.TEXT_PRIMARY }]}>{doctor.name}</Text>
+          <Text style={[styles.doctorSpecialization, { color: theme.PRIMARY }]}>{doctor.specialization}</Text>
           <View style={styles.ratingContainer}>
-            <Ionicons name="star" size={16} color={COLORS.WARNING} />
-            <Text style={styles.rating}>{doctor.rating}</Text>
-            <Text style={styles.reviewCount}>({doctor.reviewCount} reviews)</Text>
+            <Ionicons name="star" size={16} color={theme.WARNING} />
+            <Text style={[styles.rating, { color: theme.TEXT_SECONDARY }]}>{doctor.rating}</Text>
+            <Text style={[styles.reviewCount, { color: theme.TEXT_SECONDARY }]}>({doctor.reviewCount} reviews)</Text>
           </View>
         </View>
         <View style={styles.availabilityContainer}>
           <View style={[
             styles.availabilityBadge,
-            { backgroundColor: doctor.availableNow ? COLORS.SUCCESS : COLORS.GRAY_MEDIUM }
+            { backgroundColor: doctor.availableNow ? theme.SUCCESS : theme.GRAY_MEDIUM }
           ]}>
-            <Text style={styles.availabilityText}>
+            <Text style={[styles.availabilityText, { color: theme.WHITE }]}>
               {doctor.availableNow ? 'Available' : 'Offline'}
             </Text>
           </View>
@@ -131,6 +132,8 @@ const DoctorCard = ({ doctor, onViewProfile, onBookAppointment, chatMode }) => {
 
 const DoctorListScreen = ({ navigation, route }) => {
   const { userProfile } = useAuth();
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
   const [doctors, setDoctors] = useState([]);
   const [filteredDoctors, setFilteredDoctors] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -328,13 +331,20 @@ const DoctorListScreen = ({ navigation, route }) => {
     <TouchableOpacity
       style={[
         styles.specializationChip,
-        isSelected && styles.selectedChip
+        isSelected && styles.selectedChip,
+        { 
+          backgroundColor: isSelected ? theme.PRIMARY : theme.GRAY_LIGHT,
+          borderColor: theme.BORDER
+        }
       ]}
       onPress={onPress}
     >
       <Text style={[
         styles.chipText,
-        isSelected && styles.selectedChipText
+        isSelected && styles.selectedChipText,
+        { 
+          color: isSelected ? theme.WHITE : theme.TEXT_SECONDARY
+        }
       ]}>
         {specialization}
       </Text>
@@ -342,30 +352,30 @@ const DoctorListScreen = ({ navigation, route }) => {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.BACKGROUND }]}>
       {/* Search Section */}
-      <View style={styles.searchSection}>
+      <View style={[styles.searchSection, { backgroundColor: theme.CARD_BACKGROUND, borderBottomColor: theme.BORDER }]}>
         <View style={styles.header}>
-          <Text style={styles.title}>{chatMode ? 'Select a Doctor to Chat' : 'Find a Doctor'}</Text>
-          <Text style={styles.subtitle}>
+          <Text style={[styles.title, { color: theme.TEXT_PRIMARY }]}>{chatMode ? 'Select a Doctor to Chat' : 'Find a Doctor'}</Text>
+          <Text style={[styles.subtitle, { color: theme.TEXT_SECONDARY }]}>
             {chatMode 
               ? 'Choose a doctor to start a conversation' 
               : 'Browse and connect with healthcare providers'}
           </Text>
         </View>
         
-        <View style={styles.searchBar}>
-          <Ionicons name="search-outline" size={20} color={COLORS.GRAY_MEDIUM} />
+        <View style={[styles.searchBar, { backgroundColor: theme.GRAY_LIGHT, borderColor: theme.BORDER }]}>
+          <Ionicons name="search-outline" size={20} color={theme.GRAY_MEDIUM} />
           <TextInput
-            style={styles.searchInput}
+            style={[styles.searchInput, { color: theme.TEXT_PRIMARY }]}
             placeholder="Search doctors..."
             value={searchQuery}
             onChangeText={setSearchQuery}
-            placeholderTextColor={COLORS.GRAY_MEDIUM}
+            placeholderTextColor={theme.GRAY_MEDIUM}
           />
           {searchQuery.length > 0 && (
             <TouchableOpacity onPress={() => setSearchQuery('')}>
-              <Ionicons name="close-circle" size={20} color={COLORS.GRAY_MEDIUM} />
+              <Ionicons name="close-circle" size={20} color={theme.GRAY_MEDIUM} />
             </TouchableOpacity>
           )}
         </View>
@@ -379,13 +389,20 @@ const DoctorListScreen = ({ navigation, route }) => {
           <TouchableOpacity
             style={[
               styles.specializationChip,
-              !selectedSpecialization && styles.selectedChip
+              !selectedSpecialization && styles.selectedChip,
+              { 
+                backgroundColor: !selectedSpecialization ? theme.PRIMARY : theme.GRAY_LIGHT,
+                borderColor: theme.BORDER
+              }
             ]}
             onPress={() => setSelectedSpecialization('')}
           >
             <Text style={[
               styles.chipText,
-              !selectedSpecialization && styles.selectedChipText
+              !selectedSpecialization && styles.selectedChipText,
+              { 
+                color: !selectedSpecialization ? theme.WHITE : theme.TEXT_SECONDARY
+              }
             ]}>
               All Specializations
             </Text>
@@ -396,13 +413,20 @@ const DoctorListScreen = ({ navigation, route }) => {
               key={specialization}
               style={[
                 styles.specializationChip,
-                selectedSpecialization === specialization && styles.selectedChip
+                selectedSpecialization === specialization && styles.selectedChip,
+                { 
+                  backgroundColor: selectedSpecialization === specialization ? theme.PRIMARY : theme.GRAY_LIGHT,
+                  borderColor: theme.BORDER
+                }
               ]}
               onPress={() => setSelectedSpecialization(selectedSpecialization === specialization ? '' : specialization)}
             >
               <Text style={[
                 styles.chipText,
-                selectedSpecialization === specialization && styles.selectedChipText
+                selectedSpecialization === specialization && styles.selectedChipText,
+                { 
+                  color: selectedSpecialization === specialization ? theme.WHITE : theme.TEXT_SECONDARY
+                }
               ]}>
                 {specialization}
               </Text>
@@ -412,17 +436,24 @@ const DoctorListScreen = ({ navigation, route }) => {
         
         {/* Sort Options */}
         <View style={styles.sortContainer}>
-          <Text style={styles.sortLabel}>Sort by:</Text>
+          <Text style={[styles.sortLabel, { color: theme.TEXT_SECONDARY }]}>Sort by:</Text>
           <TouchableOpacity
             style={[
               styles.sortOption,
-              sortBy === 'rating' && styles.selectedSortOption
+              sortBy === 'rating' && styles.selectedSortOption,
+              { 
+                backgroundColor: sortBy === 'rating' ? theme.PRIMARY : theme.GRAY_LIGHT,
+                borderColor: theme.BORDER
+              }
             ]}
             onPress={() => setSortBy('rating')}
           >
             <Text style={[
               styles.sortOptionText,
-              sortBy === 'rating' && styles.selectedSortOptionText
+              sortBy === 'rating' && styles.selectedSortOptionText,
+              { 
+                color: sortBy === 'rating' ? theme.WHITE : theme.TEXT_SECONDARY
+              }
             ]}>
               Rating
             </Text>
@@ -431,13 +462,20 @@ const DoctorListScreen = ({ navigation, route }) => {
           <TouchableOpacity
             style={[
               styles.sortOption,
-              sortBy === 'experience' && styles.selectedSortOption
+              sortBy === 'experience' && styles.selectedSortOption,
+              { 
+                backgroundColor: sortBy === 'experience' ? theme.PRIMARY : theme.GRAY_LIGHT,
+                borderColor: theme.BORDER
+              }
             ]}
             onPress={() => setSortBy('experience')}
           >
             <Text style={[
               styles.sortOptionText,
-              sortBy === 'experience' && styles.selectedSortOptionText
+              sortBy === 'experience' && styles.selectedSortOptionText,
+              { 
+                color: sortBy === 'experience' ? theme.WHITE : theme.TEXT_SECONDARY
+              }
             ]}>
               Experience
             </Text>
@@ -446,23 +484,30 @@ const DoctorListScreen = ({ navigation, route }) => {
           <TouchableOpacity
             style={[
               styles.sortOption,
-              sortBy === 'availability' && styles.selectedSortOption
+              sortBy === 'availability' && styles.selectedSortOption,
+              { 
+                backgroundColor: sortBy === 'availability' ? theme.PRIMARY : theme.GRAY_LIGHT,
+                borderColor: theme.BORDER
+              }
             ]}
             onPress={() => setSortBy('availability')}
           >
             <Text style={[
               styles.sortOptionText,
-              sortBy === 'availability' && styles.selectedSortOptionText
+              sortBy === 'availability' && styles.selectedSortOptionText,
+              { 
+                color: sortBy === 'availability' ? theme.WHITE : theme.TEXT_SECONDARY
+              }
             ]}>
               Availability
             </Text>
           </TouchableOpacity>
           
           <TouchableOpacity
-            style={styles.sortOption}
+            style={[styles.sortOption, { backgroundColor: theme.GRAY_LIGHT, borderColor: theme.BORDER }]}
             onPress={() => setUrgent(!urgent)}
           >
-            <Text style={styles.sortOptionText}>
+            <Text style={[styles.sortOptionText, { color: theme.TEXT_SECONDARY }]}>
               {urgent ? 'All Doctors' : 'Available Now'}
             </Text>
           </TouchableOpacity>
@@ -470,8 +515,8 @@ const DoctorListScreen = ({ navigation, route }) => {
       </View>
 
       {/* Results */}
-      <View style={styles.resultsContainer}>
-        <Text style={styles.resultsCount}>
+      <View style={[styles.resultsContainer, { backgroundColor: theme.BACKGROUND }]}>
+        <Text style={[styles.resultsCount, { color: theme.TEXT_SECONDARY }]}>
           {loading ? 'Loading...' : `${filteredDoctors.length} doctors found`}
           {urgent && ' (Available Now)'}
         </Text>
@@ -479,14 +524,14 @@ const DoctorListScreen = ({ navigation, route }) => {
         <ScrollView style={styles.doctorsList} showsVerticalScrollIndicator={false}>
           {loading ? (
             <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color={COLORS.PRIMARY} />
-              <Text style={styles.loadingText}>Finding doctors for you...</Text>
+              <ActivityIndicator size="large" color={theme.PRIMARY} />
+              <Text style={[styles.loadingText, { color: theme.TEXT_SECONDARY }]}>Finding doctors for you...</Text>
             </View>
           ) : filteredDoctors.length === 0 ? (
             <View style={styles.emptyState}>
-              <Ionicons name="medical-outline" size={64} color={COLORS.GRAY_MEDIUM} />
-              <Text style={styles.emptyTitle}>No Doctors Found</Text>
-              <Text style={styles.emptySubtitle}>
+              <Ionicons name="medical-outline" size={64} color={theme.GRAY_MEDIUM} />
+              <Text style={[styles.emptyTitle, { color: theme.TEXT_PRIMARY }]}>No Doctors Found</Text>
+              <Text style={[styles.emptySubtitle, { color: theme.TEXT_SECONDARY }]}>
                 Try adjusting your search criteria or filters
               </Text>
             </View>
@@ -498,6 +543,7 @@ const DoctorListScreen = ({ navigation, route }) => {
                 onViewProfile={handleViewProfile}
                 onBookAppointment={handleBookAppointment}
                 chatMode={chatMode}
+                theme={theme} // Pass theme to DoctorCard
               />
             ))
           )}
@@ -507,65 +553,89 @@ const DoctorListScreen = ({ navigation, route }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (theme) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.BACKGROUND,
+    backgroundColor: theme.BACKGROUND,
   },
   header: {
-    marginBottom: SPACING.MD,
+    paddingHorizontal: SPACING.MD,
+    paddingVertical: SPACING.LG,
+    backgroundColor: theme.CARD_BACKGROUND,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.BORDER,
   },
   title: {
-    fontSize: FONT_SIZES.XXL,
+    fontSize: FONT_SIZES.XL,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginBottom: SPACING.XS,
   },
   subtitle: {
     fontSize: FONT_SIZES.MD,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
   },
-  searchSection: {
-    padding: SPACING.MD,
-    backgroundColor: COLORS.WHITE,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.BORDER,
-  },
-  searchBar: {
+  searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.GRAY_LIGHT,
-    borderRadius: BORDER_RADIUS.MD,
-    paddingHorizontal: SPACING.MD,
-    paddingVertical: SPACING.SM,
-    marginBottom: SPACING.MD,
+    margin: SPACING.MD,
+    marginBottom: 0,
   },
   searchInput: {
     flex: 1,
+    height: 40,
+    borderWidth: 1,
+    borderColor: theme.BORDER,
+    borderRadius: BORDER_RADIUS.MD,
+    paddingHorizontal: SPACING.MD,
     fontSize: FONT_SIZES.MD,
-    color: COLORS.TEXT_PRIMARY,
+    backgroundColor: theme.INPUT_BACKGROUND,
+    color: theme.TEXT_PRIMARY,
+  },
+  filterButton: {
     marginLeft: SPACING.SM,
+    padding: SPACING.SM,
+    backgroundColor: theme.BUTTON_SECONDARY,
+    borderRadius: BORDER_RADIUS.MD,
   },
-  filterScroll: {
-    marginBottom: SPACING.MD,
+  content: {
+    flex: 1,
   },
-  specializationChip: {
+  filterSection: {
+    padding: SPACING.MD,
+    backgroundColor: theme.CARD_BACKGROUND,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.BORDER,
+  },
+  sectionTitle: {
+    fontSize: FONT_SIZES.MD,
+    fontWeight: '600',
+    color: theme.TEXT_PRIMARY,
+    marginBottom: SPACING.SM,
+  },
+  chipsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+  },
+  chip: {
     paddingHorizontal: SPACING.MD,
     paddingVertical: SPACING.SM,
     borderRadius: BORDER_RADIUS.XL,
-    backgroundColor: COLORS.GRAY_LIGHT,
+    backgroundColor: theme.BUTTON_SECONDARY,
     marginRight: SPACING.SM,
+    borderWidth: 1,
+    borderColor: theme.BORDER,
   },
   selectedChip: {
-    backgroundColor: COLORS.PRIMARY,
+    backgroundColor: theme.PRIMARY,
   },
   chipText: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     fontWeight: '500',
   },
   selectedChipText: {
-    color: COLORS.WHITE,
+    color: theme.WHITE,
   },
   sortContainer: {
     flexDirection: 'row',
@@ -574,7 +644,7 @@ const styles = StyleSheet.create({
   },
   sortLabel: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     marginRight: SPACING.SM,
   },
   sortOption: {
@@ -583,26 +653,29 @@ const styles = StyleSheet.create({
     borderRadius: BORDER_RADIUS.SM,
     marginRight: SPACING.SM,
     marginBottom: SPACING.XS,
-    backgroundColor: COLORS.GRAY_LIGHT,
+    backgroundColor: theme.BUTTON_SECONDARY,
+    borderWidth: 1,
+    borderColor: theme.BORDER,
   },
   selectedSortOption: {
-    backgroundColor: COLORS.PRIMARY,
+    backgroundColor: theme.PRIMARY,
   },
   sortOptionText: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     fontWeight: '500',
   },
   selectedSortOptionText: {
-    color: COLORS.WHITE,
+    color: theme.WHITE,
   },
   resultsContainer: {
     flex: 1,
     padding: SPACING.MD,
+    backgroundColor: theme.BACKGROUND,
   },
   resultsCount: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     marginBottom: SPACING.MD,
   },
   doctorsList: {
@@ -610,6 +683,9 @@ const styles = StyleSheet.create({
   },
   doctorCard: {
     marginBottom: SPACING.MD,
+    backgroundColor: theme.CARD_BACKGROUND,
+    borderWidth: 1,
+    borderColor: theme.BORDER,
   },
   doctorHeader: {
     flexDirection: 'row',
@@ -620,7 +696,7 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 25,
-    backgroundColor: COLORS.PRIMARY,
+    backgroundColor: theme.PRIMARY,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: SPACING.MD,
@@ -638,12 +714,12 @@ const styles = StyleSheet.create({
   doctorName: {
     fontSize: FONT_SIZES.MD,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginBottom: SPACING.XS / 2,
   },
   doctorSpecialization: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.PRIMARY,
+    color: theme.PRIMARY,
     marginBottom: SPACING.XS / 2,
   },
   ratingContainer: {
@@ -652,14 +728,14 @@ const styles = StyleSheet.create({
   },
   rating: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     fontWeight: '600',
     marginLeft: SPACING.XS / 2,
     marginRight: SPACING.XS,
   },
   reviewCount: {
     fontSize: FONT_SIZES.XS,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
   },
   availabilityContainer: {
     alignItems: 'flex-end',
@@ -671,7 +747,7 @@ const styles = StyleSheet.create({
   },
   availabilityText: {
     fontSize: FONT_SIZES.XS,
-    color: COLORS.WHITE,
+    color: theme.WHITE,
     fontWeight: '600',
   },
   doctorActions: {
@@ -691,7 +767,7 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: SPACING.MD,
     fontSize: FONT_SIZES.MD,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
   },
   emptyState: {
     flex: 1,
@@ -702,13 +778,13 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: FONT_SIZES.XL,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginTop: SPACING.MD,
     marginBottom: SPACING.XS,
   },
   emptySubtitle: {
     fontSize: FONT_SIZES.MD,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     textAlign: 'center',
     paddingHorizontal: SPACING.LG,
   },

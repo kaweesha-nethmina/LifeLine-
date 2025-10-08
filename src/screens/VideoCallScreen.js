@@ -9,6 +9,7 @@ import {
   Dimensions,
   Platform
 } from 'react-native';
+import { useTheme } from '../context/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
 // Conditional import for RTCView
 import { useAuth } from '../context/AuthContext';
@@ -36,6 +37,8 @@ const { width, height } = Dimensions.get('window');
 
 const VideoCallScreen = ({ navigation, route }) => {
   const { userProfile } = useAuth();
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
   const { 
     appointmentId, 
     consultationId,
@@ -493,14 +496,14 @@ const VideoCallScreen = ({ navigation, route }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (theme) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.BLACK,
+    backgroundColor: theme.BLACK,
   },
   endedContainer: {
     flex: 1,
-    backgroundColor: COLORS.WHITE,
+    backgroundColor: theme.BACKGROUND,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -510,18 +513,18 @@ const styles = StyleSheet.create({
   endedTitle: {
     fontSize: FONT_SIZES.XXL,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginTop: SPACING.LG,
     marginBottom: SPACING.SM,
   },
   endedSubtitle: {
     fontSize: FONT_SIZES.LG,
-    color: COLORS.PRIMARY,
+    color: theme.PRIMARY,
     marginBottom: SPACING.SM,
   },
   endedMessage: {
     fontSize: FONT_SIZES.MD,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     textAlign: 'center',
   },
   header: {
@@ -538,7 +541,7 @@ const styles = StyleSheet.create({
   participantName: {
     fontSize: FONT_SIZES.LG,
     fontWeight: 'bold',
-    color: COLORS.WHITE,
+    color: theme.WHITE,
     marginBottom: SPACING.XS / 2,
   },
   statusContainer: {
@@ -554,10 +557,11 @@ const styles = StyleSheet.create({
     fontSize: FONT_SIZES.SM,
     marginLeft: SPACING.XS / 2,
     fontWeight: '500',
+    color: theme.WHITE,
   },
   duration: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.WHITE,
+    color: theme.WHITE,
     fontWeight: '500',
   },
   minimizeButton: {
@@ -576,7 +580,7 @@ const styles = StyleSheet.create({
     width: 120,
     height: 120,
     borderRadius: 60,
-    backgroundColor: COLORS.PRIMARY,
+    backgroundColor: theme.PRIMARY,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: SPACING.LG,
@@ -584,11 +588,11 @@ const styles = StyleSheet.create({
   avatarText: {
     fontSize: FONT_SIZES.XXL,
     fontWeight: 'bold',
-    color: COLORS.WHITE,
+    color: theme.WHITE,
   },
   connectingText: {
     fontSize: FONT_SIZES.LG,
-    color: COLORS.WHITE,
+    color: theme.WHITE,
     marginBottom: SPACING.MD,
   },
   loadingDots: {
@@ -598,7 +602,7 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: COLORS.PRIMARY,
+    backgroundColor: theme.PRIMARY,
     marginHorizontal: SPACING.XS / 2,
   },
   mainVideo: {
@@ -611,7 +615,7 @@ const styles = StyleSheet.create({
   },
   videoPlaceholderText: {
     fontSize: FONT_SIZES.LG,
-    color: COLORS.WHITE,
+    color: theme.WHITE,
     marginTop: SPACING.MD,
   },
   videoOff: {
@@ -619,7 +623,7 @@ const styles = StyleSheet.create({
   },
   videoOffText: {
     fontSize: FONT_SIZES.MD,
-    color: COLORS.WHITE,
+    color: theme.WHITE,
     marginTop: SPACING.SM,
   },
   selfVideo: {
@@ -629,25 +633,25 @@ const styles = StyleSheet.create({
     width: 120,
     height: 160,
     borderRadius: BORDER_RADIUS.MD,
-    backgroundColor: COLORS.GRAY_DARK,
+    backgroundColor: theme.GRAY_DARK,
     overflow: 'hidden',
   },
   selfVideoPlaceholder: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: COLORS.PRIMARY,
+    backgroundColor: theme.PRIMARY,
   },
   selfVideoText: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.WHITE,
+    color: theme.WHITE,
     fontWeight: '500',
   },
   selfVideoOff: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: COLORS.GRAY_DARK,
+    backgroundColor: theme.GRAY_DARK,
   },
   remoteVideo: {
     width: '100%',
@@ -658,26 +662,26 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   retryButton: {
-    backgroundColor: COLORS.PRIMARY,
+    backgroundColor: theme.PRIMARY,
     paddingHorizontal: SPACING.LG,
     paddingVertical: SPACING.MD,
     borderRadius: BORDER_RADIUS.MD,
     marginTop: SPACING.LG,
   },
   retryButtonText: {
-    color: COLORS.WHITE,
+    color: theme.WHITE,
     fontSize: FONT_SIZES.MD,
     fontWeight: 'bold',
   },
   backButton: {
-    backgroundColor: COLORS.GRAY_MEDIUM,
+    backgroundColor: theme.GRAY_MEDIUM,
     paddingHorizontal: SPACING.LG,
     paddingVertical: SPACING.MD,
     borderRadius: BORDER_RADIUS.MD,
     marginTop: SPACING.MD,
   },
   backButtonText: {
-    color: COLORS.WHITE,
+    color: theme.WHITE,
     fontSize: FONT_SIZES.MD,
     fontWeight: 'bold',
   },
@@ -703,13 +707,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   controlButtonActive: {
-    backgroundColor: COLORS.ERROR,
+    backgroundColor: theme.ERROR,
   },
   endCallButton: {
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: COLORS.ERROR,
+    backgroundColor: theme.ERROR,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -719,14 +723,14 @@ const styles = StyleSheet.create({
     left: SPACING.MD,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.EMERGENCY,
+    backgroundColor: theme.EMERGENCY,
     paddingHorizontal: SPACING.MD,
     paddingVertical: SPACING.SM,
     borderRadius: BORDER_RADIUS.XL,
   },
   emergencyText: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.WHITE,
+    color: theme.WHITE,
     fontWeight: 'bold',
     marginLeft: SPACING.XS,
   },

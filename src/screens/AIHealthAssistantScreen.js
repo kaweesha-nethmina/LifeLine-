@@ -15,6 +15,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import {
   COLORS,
   FONT_SIZES,
@@ -34,35 +35,40 @@ const SymptomCheckerTab = ({
   textInputRef,
   scrollViewRef,
   assessment,
-  getSeverityColor
+  getSeverityColor,
+  theme // Add theme prop
 }) => (
   <KeyboardAvoidingView
-    style={styles.keyboardAvoidingView}
+    style={[styles.keyboardAvoidingView, { backgroundColor: theme.BACKGROUND }]}
     behavior={Platform.OS === "ios" ? "padding" : "height"}
     keyboardVerticalOffset={Platform.OS === "ios" ? 64 : 0}
   >
     <ScrollView
       ref={scrollViewRef}
-      style={styles.tabContent}
+      style={[styles.tabContent, { backgroundColor: theme.BACKGROUND }]}
       showsVerticalScrollIndicator={false}
       keyboardShouldPersistTaps="handled"
       automaticallyAdjustKeyboardInsets={true}
-      contentContainerStyle={styles.scrollViewContent}
+      contentContainerStyle={[styles.scrollViewContent, { backgroundColor: theme.BACKGROUND }]}
     >
-      <Card style={styles.inputCard}>
-        <Text style={styles.sectionTitle}>Describe Your Symptoms</Text>
-        <Text style={styles.subtitle}>
+      <Card style={[styles.inputCard, { backgroundColor: theme.CARD_BACKGROUND, borderColor: theme.BORDER }]}>
+        <Text style={[styles.sectionTitle, { color: theme.TEXT_PRIMARY }]}>Describe Your Symptoms</Text>
+        <Text style={[styles.subtitle, { color: theme.TEXT_SECONDARY }]}>
           Enter your symptoms separated by commas or new lines. For example: "headache, fever, fatigue"
         </Text>
 
         <View style={styles.textInputContainer}>
           <TextInput
             ref={textInputRef}
-            style={styles.symptomsInput}
+            style={[styles.symptomsInput, { 
+              borderColor: theme.BORDER, 
+              backgroundColor: theme.WHITE, 
+              color: theme.TEXT_PRIMARY 
+            }]}
             value={symptoms}
             onChangeText={handleSymptomsChange}
             placeholder="e.g., headache, fever, cough, fatigue..."
-            placeholderTextColor={COLORS.GRAY_MEDIUM}
+            placeholderTextColor={theme.GRAY_MEDIUM}
             multiline
             numberOfLines={4}
             textAlignVertical="top"
@@ -80,7 +86,7 @@ const SymptomCheckerTab = ({
       </Card>
 
       {assessment && (
-        <Card style={styles.assessmentCard}>
+        <Card style={[styles.assessmentCard, { backgroundColor: theme.CARD_BACKGROUND, borderColor: theme.BORDER }]}>
           <View style={styles.assessmentHeader}>
             <Ionicons 
               name={assessment.severity === 'severe' ? 'warning' : 'information-circle'} 
@@ -94,13 +100,13 @@ const SymptomCheckerTab = ({
           
           {assessment.conditions.length > 0 && (
             <View style={styles.conditionsSection}>
-              <Text style={styles.sectionTitle}>Possible Conditions</Text>
+              <Text style={[styles.sectionTitle, { color: theme.TEXT_PRIMARY }]}>Possible Conditions</Text>
               {assessment.conditions.map((condition, index) => (
-                <View key={index} style={styles.conditionCard}>
-                  <Text style={styles.conditionName}>{condition.name}</Text>
-                  <Text style={styles.conditionDescription}>{condition.description}</Text>
-                  <Text style={styles.whenToSeeDoctor}>
-                    <Text style={styles.whenToSeeDoctorLabel}>When to see a doctor: </Text>
+                <View key={index} style={[styles.conditionCard, { backgroundColor: theme.GRAY_LIGHT }]}>
+                  <Text style={[styles.conditionName, { color: theme.TEXT_PRIMARY }]}>{condition.name}</Text>
+                  <Text style={[styles.conditionDescription, { color: theme.TEXT_SECONDARY }]}>{condition.description}</Text>
+                  <Text style={[styles.whenToSeeDoctor, { color: theme.TEXT_SECONDARY }]}>
+                    <Text style={[styles.whenToSeeDoctorLabel, { color: theme.TEXT_PRIMARY }]}>When to see a doctor: </Text>
                     {condition.when_to_see_doctor}
                   </Text>
                 </View>
@@ -110,35 +116,35 @@ const SymptomCheckerTab = ({
           
           {assessment.recommendations.length > 0 && (
             <View style={styles.recommendationsSection}>
-              <Text style={styles.sectionTitle}>Recommendations</Text>
+              <Text style={[styles.sectionTitle, { color: theme.TEXT_PRIMARY }]}>Recommendations</Text>
               {assessment.recommendations.map((recommendation, index) => (
                 <View key={index} style={styles.recommendationItem}>
-                  <Ionicons name="checkmark-circle" size={16} color={COLORS.SUCCESS} />
-                  <Text style={styles.recommendationText}>{recommendation}</Text>
+                  <Ionicons name="checkmark-circle" size={16} color={theme.SUCCESS} />
+                  <Text style={[styles.recommendationText, { color: theme.TEXT_PRIMARY }]}>{recommendation}</Text>
               </View>
               ))}
             </View>
           )}
           
-          <View style={styles.disclaimerCard}>
-            <Ionicons name="warning" size={16} color={COLORS.WARNING} />
-            <Text style={styles.disclaimerText}>{assessment.disclaimer}</Text>
+          <View style={[styles.disclaimerCard, { backgroundColor: theme.WARNING + '10', borderColor: theme.WARNING }]}>
+            <Ionicons name="warning" size={16} color={theme.WARNING} />
+            <Text style={[styles.disclaimerText, { color: theme.TEXT_SECONDARY }]}>{assessment.disclaimer}</Text>
           </View>
         </Card>
       )}
 
       {!assessment && (
-        <Card style={styles.infoCard}>
+        <Card style={[styles.infoCard, { backgroundColor: theme.INFO + '10', borderColor: theme.INFO }]}>
           <View style={styles.infoHeader}>
-            <Ionicons name="bulb" size={24} color={COLORS.INFO} />
-            <Text style={styles.infoTitle}>How It Works</Text>
+            <Ionicons name="bulb" size={24} color={theme.INFO} />
+            <Text style={[styles.infoTitle, { color: theme.INFO }]}>How It Works</Text>
           </View>
-          <Text style={styles.infoText}>
+          <Text style={[styles.infoText, { color: theme.TEXT_SECONDARY }]}>
             Our AI Health Assistant analyzes your symptoms to provide preliminary insights.
             It's designed to help you understand potential conditions and decide when to seek
             medical attention, but it's not a substitute for professional medical advice.
           </Text>
-          <Text style={styles.infoText}>
+          <Text style={[styles.infoText, { color: theme.TEXT_SECONDARY }]}>
             In case of emergency symptoms like chest pain, difficulty breathing, or severe
             injuries, please call emergency services immediately.
           </Text>
@@ -148,17 +154,17 @@ const SymptomCheckerTab = ({
   </KeyboardAvoidingView>
 );
 
-const HealthScoreTab = ({ healthScore, getHealthScoreColor }) => (
-  <ScrollView style={styles.tabContent} showsVerticalScrollIndicator={false}>
+const HealthScoreTab = ({ healthScore, getHealthScoreColor, theme }) => ( // Add theme prop
+  <ScrollView style={[styles.tabContent, { backgroundColor: theme.BACKGROUND }]} showsVerticalScrollIndicator={false}>
     {healthScore && (
-      <Card style={styles.healthScoreCard}>
-        <Text style={styles.healthScoreTitle}>Your Health Score</Text>
+      <Card style={[styles.healthScoreCard, { backgroundColor: theme.CARD_BACKGROUND, borderColor: theme.BORDER }]}>
+        <Text style={[styles.healthScoreTitle, { color: theme.TEXT_PRIMARY }]}>Your Health Score</Text>
         
         <View style={styles.scoreContainer}>
           <Text style={[styles.scoreText, { color: getHealthScoreColor(healthScore.score) }]}>
             {healthScore.score}
           </Text>
-          <Text style={styles.scoreMax}>/100</Text>
+          <Text style={[styles.scoreMax, { color: theme.TEXT_SECONDARY }]}>/100</Text>
         </View>
         
         <Text style={[styles.scoreStatus, { color: getHealthScoreColor(healthScore.score) }]}>
@@ -166,41 +172,41 @@ const HealthScoreTab = ({ healthScore, getHealthScoreColor }) => (
         </Text>
         
         <View style={styles.scoreBreakdown}>
-          <Text style={styles.sectionTitle}>Score Breakdown</Text>
+          <Text style={[styles.sectionTitle, { color: theme.TEXT_PRIMARY }]}>Score Breakdown</Text>
           {healthScore.breakdown.map((item, index) => (
-            <View key={index} style={styles.breakdownItem}>
-              <Text style={styles.breakdownFactor}>{item.factor}</Text>
-              <Text style={[styles.breakdownImpact, { color: item.impact >= 0 ? COLORS.SUCCESS : COLORS.ERROR }]}>
+            <View key={index} style={[styles.breakdownItem, { borderBottomColor: theme.BORDER }]}>
+              <Text style={[styles.breakdownFactor, { color: theme.TEXT_PRIMARY }]}>{item.factor}</Text>
+              <Text style={[styles.breakdownImpact, { color: item.impact >= 0 ? theme.SUCCESS : theme.ERROR }]}>
                 {item.impact > 0 ? '+' : ''}{item.impact}
               </Text>
-              <Text style={styles.breakdownReason}>{item.reason}</Text>
+              <Text style={[styles.breakdownReason, { color: theme.TEXT_SECONDARY }]}>{item.reason}</Text>
             </View>
           ))}
         </View>
       </Card>
     )}
 
-    <Card style={styles.recommendationsCard}>
-      <Text style={styles.sectionTitle}>Personalized Recommendations</Text>
+    <Card style={[styles.recommendationsCard, { backgroundColor: theme.CARD_BACKGROUND, borderColor: theme.BORDER }]}>
+      <Text style={[styles.sectionTitle, { color: theme.TEXT_PRIMARY }]}>Personalized Recommendations</Text>
       {healthScore?.recommendations.map((recommendation, index) => (
         <View key={index} style={styles.recommendationItem}>
-          <Ionicons name="checkmark-circle" size={16} color={COLORS.SUCCESS} />
-          <Text style={styles.recommendationText}>{recommendation}</Text>
+          <Ionicons name="checkmark-circle" size={16} color={theme.SUCCESS} />
+          <Text style={[styles.recommendationText, { color: theme.TEXT_PRIMARY }]}>{recommendation}</Text>
         </View>
       ))}
     </Card>
 
-    <Card style={styles.infoCard}>
+    <Card style={[styles.infoCard, { backgroundColor: theme.INFO + '10', borderColor: theme.INFO }]}>
       <View style={styles.infoHeader}>
-        <Ionicons name="bar-chart" size={24} color={COLORS.INFO} />
-        <Text style={styles.infoTitle}>Understanding Your Health Score</Text>
+        <Ionicons name="bar-chart" size={24} color={theme.INFO} />
+        <Text style={[styles.infoTitle, { color: theme.INFO }]}>Understanding Your Health Score</Text>
       </View>
-      <Text style={styles.infoText}>
+      <Text style={[styles.infoText, { color: theme.TEXT_SECONDARY }]}>
         Your health score is calculated based on various factors including your age, 
         medical history, and lifestyle habits. It's designed to give you a general 
         overview of your health status.
       </Text>
-      <Text style={styles.infoText}>
+      <Text style={[styles.infoText, { color: theme.TEXT_SECONDARY }]}>
         A higher score indicates better overall health, while a lower score suggests 
         areas where you might want to focus on improvement.
       </Text>
@@ -210,6 +216,8 @@ const HealthScoreTab = ({ healthScore, getHealthScoreColor }) => (
 
 const AIHealthAssistantScreen = ({ navigation }) => {
   const { userProfile } = useAuth();
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
   const [symptoms, setSymptoms] = useState('');
   const [assessment, setAssessment] = useState(null);
   const [healthScore, setHealthScore] = useState(null);
@@ -258,45 +266,45 @@ const AIHealthAssistantScreen = ({ navigation }) => {
   };
 
   const getHealthScoreColor = (score) => {
-    if (score >= 80) return COLORS.SUCCESS;
-    if (score >= 60) return COLORS.WARNING;
-    if (score >= 40) return COLORS.INFO;
-    return COLORS.ERROR;
+    if (score >= 80) return theme.SUCCESS;
+    if (score >= 60) return theme.WARNING;
+    if (score >= 40) return theme.INFO;
+    return theme.ERROR;
   };
 
   const getSeverityColor = (severity) => {
     switch (severity) {
-      case 'severe': return COLORS.ERROR;
-      case 'moderate': return COLORS.WARNING;
-      case 'mild': return COLORS.SUCCESS;
-      default: return COLORS.GRAY_MEDIUM;
+      case 'severe': return theme.ERROR;
+      case 'moderate': return theme.WARNING;
+      case 'mild': return theme.SUCCESS;
+      default: return theme.GRAY_MEDIUM;
     }
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.BACKGROUND }]}>
       {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.title}>AI Health Assistant</Text>
-        <Text style={styles.subtitle}>Symptom checker and health insights</Text>
+      <View style={[styles.header, { backgroundColor: theme.CARD_BACKGROUND, borderBottomColor: theme.BORDER }]}>
+        <Text style={[styles.title, { color: theme.TEXT_PRIMARY }]}>AI Health Assistant</Text>
+        <Text style={[styles.subtitle, { color: theme.TEXT_SECONDARY }]}>Symptom checker and health insights</Text>
       </View>
 
       {/* Tab Selector */}
-      <View style={styles.tabContainer}>
+      <View style={[styles.tabContainer, { backgroundColor: theme.CARD_BACKGROUND, borderBottomColor: theme.BORDER }]}>
         <TouchableOpacity
-          style={[styles.tab, activeTab === 'symptomChecker' && styles.activeTab]}
+          style={[styles.tab, activeTab === 'symptomChecker' && styles.activeTab, { borderBottomColor: theme.PRIMARY }]}
           onPress={() => setActiveTab('symptomChecker')}
         >
-          <Text style={[styles.tabText, activeTab === 'symptomChecker' && styles.activeTabText]}>
+          <Text style={[styles.tabText, activeTab === 'symptomChecker' && styles.activeTabText, { color: activeTab === 'symptomChecker' ? theme.PRIMARY : theme.TEXT_SECONDARY }]}>
             Symptom Checker
           </Text>
         </TouchableOpacity>
         
         <TouchableOpacity
-          style={[styles.tab, activeTab === 'healthScore' && styles.activeTab]}
+          style={[styles.tab, activeTab === 'healthScore' && styles.activeTab, { borderBottomColor: theme.PRIMARY }]}
           onPress={() => setActiveTab('healthScore')}
         >
-          <Text style={[styles.tabText, activeTab === 'healthScore' && styles.activeTabText]}>
+          <Text style={[styles.tabText, activeTab === 'healthScore' && styles.activeTabText, { color: activeTab === 'healthScore' ? theme.PRIMARY : theme.TEXT_SECONDARY }]}>
             Health Score
           </Text>
         </TouchableOpacity>
@@ -313,94 +321,101 @@ const AIHealthAssistantScreen = ({ navigation }) => {
           scrollViewRef={scrollViewRef}
           assessment={assessment}
           getSeverityColor={getSeverityColor}
+          theme={theme} // Pass theme to SymptomCheckerTab
         />
       ) : (
         <HealthScoreTab 
           healthScore={healthScore}
           getHealthScoreColor={getHealthScoreColor}
+          theme={theme} // Pass theme to HealthScoreTab
         />
       )}
     </SafeAreaView>
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (theme) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.BACKGROUND,
+    backgroundColor: theme.BACKGROUND,
   },
-  
-  keyboardAvoidingView: {
-    flex: 1,
-  },
-  
-  scrollViewContent: {
-    paddingBottom: 20,
-  },
-  
   header: {
     paddingHorizontal: SPACING.MD,
-    paddingVertical: SPACING.MD,
-    backgroundColor: COLORS.WHITE,
+    paddingVertical: SPACING.LG,
+    backgroundColor: theme.CARD_BACKGROUND,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.BORDER,
+    borderBottomColor: theme.BORDER,
   },
   title: {
-    fontSize: FONT_SIZES.XXL,
+    fontSize: FONT_SIZES.XL,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginBottom: SPACING.XS,
   },
   subtitle: {
     fontSize: FONT_SIZES.MD,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
   },
   tabContainer: {
     flexDirection: 'row',
-    backgroundColor: COLORS.WHITE,
+    backgroundColor: theme.CARD_BACKGROUND,
+    paddingHorizontal: SPACING.MD,
+    paddingVertical: SPACING.SM,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.BORDER,
+    borderBottomColor: theme.BORDER,
   },
-  tab: {
+  tabButton: {
     flex: 1,
-    paddingVertical: SPACING.MD,
+    paddingVertical: SPACING.SM,
     alignItems: 'center',
   },
   activeTab: {
-    borderBottomWidth: 3,
-    borderBottomColor: COLORS.PRIMARY,
+    borderBottomWidth: 2,
+    borderBottomColor: theme.PRIMARY,
   },
   tabText: {
-    fontSize: FONT_SIZES.MD,
-    color: COLORS.TEXT_SECONDARY,
+    fontSize: FONT_SIZES.SM,
     fontWeight: '600',
+    color: theme.TEXT_SECONDARY,
   },
   activeTabText: {
-    color: COLORS.PRIMARY,
+    color: theme.PRIMARY,
+  },
+  keyboardAvoidingView: {
+    flex: 1,
+    backgroundColor: theme.BACKGROUND,
   },
   tabContent: {
     flex: 1,
     padding: SPACING.MD,
+    backgroundColor: theme.BACKGROUND,
+  },
+  scrollViewContent: {
+    backgroundColor: theme.BACKGROUND,
   },
   inputCard: {
     marginBottom: SPACING.MD,
+    backgroundColor: theme.CARD_BACKGROUND,
+    borderWidth: 1,
+    borderColor: theme.BORDER,
   },
   sectionTitle: {
     fontSize: FONT_SIZES.LG,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginBottom: SPACING.MD,
   },
   symptomsInput: {
     borderWidth: 1,
-    borderColor: COLORS.BORDER,
+    borderColor: theme.BORDER,
     borderRadius: BORDER_RADIUS.MD,
     paddingHorizontal: SPACING.MD,
     paddingVertical: SPACING.SM,
     fontSize: FONT_SIZES.MD,
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginBottom: SPACING.MD,
     minHeight: 100,
+    backgroundColor: theme.INPUT_BACKGROUND,
   },
   textInputContainer: {
     marginBottom: SPACING.MD,
@@ -410,6 +425,9 @@ const styles = StyleSheet.create({
   },
   assessmentCard: {
     marginBottom: SPACING.MD,
+    backgroundColor: theme.CARD_BACKGROUND,
+    borderWidth: 1,
+    borderColor: theme.BORDER,
   },
   assessmentHeader: {
     flexDirection: 'row',
@@ -426,7 +444,7 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.MD,
   },
   conditionCard: {
-    backgroundColor: COLORS.GRAY_LIGHT,
+    backgroundColor: theme.BUTTON_SECONDARY,
     borderRadius: BORDER_RADIUS.MD,
     padding: SPACING.MD,
     marginBottom: SPACING.SM,
@@ -434,20 +452,21 @@ const styles = StyleSheet.create({
   conditionName: {
     fontSize: FONT_SIZES.MD,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginBottom: SPACING.XS,
   },
   conditionDescription: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     marginBottom: SPACING.XS,
   },
   whenToSeeDoctor: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
   },
   whenToSeeDoctorLabel: {
     fontWeight: 'bold',
+    color: theme.TEXT_PRIMARY,
   },
   recommendationsSection: {
     marginBottom: SPACING.MD,
@@ -459,13 +478,13 @@ const styles = StyleSheet.create({
   },
   recommendationText: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginLeft: SPACING.SM,
     flex: 1,
   },
   disclaimerCard: {
-    backgroundColor: COLORS.WARNING + '10',
-    borderColor: COLORS.WARNING,
+    backgroundColor: theme.WARNING + '10',
+    borderColor: theme.WARNING,
     borderWidth: 1,
     borderRadius: BORDER_RADIUS.MD,
     padding: SPACING.MD,
@@ -473,13 +492,13 @@ const styles = StyleSheet.create({
   },
   disclaimerText: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     marginLeft: SPACING.SM,
     flex: 1,
   },
   infoCard: {
-    backgroundColor: COLORS.INFO + '10',
-    borderColor: COLORS.INFO,
+    backgroundColor: theme.INFO + '10',
+    borderColor: theme.INFO,
     borderWidth: 1,
   },
   infoHeader: {
@@ -490,23 +509,26 @@ const styles = StyleSheet.create({
   infoTitle: {
     fontSize: FONT_SIZES.LG,
     fontWeight: 'bold',
-    color: COLORS.INFO,
+    color: theme.INFO,
     marginLeft: SPACING.SM,
   },
   infoText: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     lineHeight: 20,
     marginBottom: SPACING.SM,
   },
   healthScoreCard: {
     marginBottom: SPACING.MD,
     alignItems: 'center',
+    backgroundColor: theme.CARD_BACKGROUND,
+    borderWidth: 1,
+    borderColor: theme.BORDER,
   },
   healthScoreTitle: {
     fontSize: FONT_SIZES.LG,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginBottom: SPACING.MD,
   },
   scoreContainer: {
@@ -520,7 +542,7 @@ const styles = StyleSheet.create({
   },
   scoreMax: {
     fontSize: FONT_SIZES.LG,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     marginBottom: SPACING.XS,
   },
   scoreStatus: {
@@ -534,12 +556,12 @@ const styles = StyleSheet.create({
   breakdownItem: {
     paddingVertical: SPACING.SM,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.BORDER,
+    borderBottomColor: theme.BORDER,
   },
   breakdownFactor: {
     fontSize: FONT_SIZES.MD,
     fontWeight: '600',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginBottom: SPACING.XS / 2,
   },
   breakdownImpact: {
@@ -549,10 +571,13 @@ const styles = StyleSheet.create({
   },
   breakdownReason: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
   },
   recommendationsCard: {
     marginBottom: SPACING.MD,
+    backgroundColor: theme.CARD_BACKGROUND,
+    borderWidth: 1,
+    borderColor: theme.BORDER,
   },
 });
 

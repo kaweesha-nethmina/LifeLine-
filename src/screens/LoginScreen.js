@@ -7,16 +7,20 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
-  Alert
+  Alert,
+  Image
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Button from '../components/Button';
 import Input from '../components/Input';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import { COLORS, FONT_SIZES, SPACING } from '../constants';
 
 const LoginScreen = ({ navigation }) => {
   const { login, loading, error, clearError } = useAuth();
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -75,7 +79,7 @@ const LoginScreen = ({ navigation }) => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.BACKGROUND }]}>
       <KeyboardAvoidingView 
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardView}
@@ -89,10 +93,14 @@ const LoginScreen = ({ navigation }) => {
             {/* Header */}
             <View style={styles.header}>
               <View style={styles.logoContainer}>
-                <Ionicons name="medical" size={60} color={COLORS.PRIMARY} />
+                <Image 
+                  source={require('../assets/lifeline_logo2.png')} 
+                  style={styles.logo}
+                  resizeMode="contain"
+                />
               </View>
-              <Text style={styles.title}>Welcome Back</Text>
-              <Text style={styles.subtitle}>
+              <Text style={[styles.title, { color: theme.TEXT_PRIMARY }]}>Welcome Back</Text>
+              <Text style={[styles.subtitle, { color: theme.TEXT_SECONDARY }]}>
                 Sign in to access your LifeLine+ account
               </Text>
             </View>
@@ -108,8 +116,14 @@ const LoginScreen = ({ navigation }) => {
                 autoCapitalize="none"
                 error={formErrors.email}
                 leftIcon={
-                  <Ionicons name="mail-outline" size={20} color={COLORS.GRAY_MEDIUM} />
+                  <Ionicons name="mail-outline" size={20} color={theme.GRAY_MEDIUM} />
                 }
+                inputStyle={{ 
+                  backgroundColor: theme.CARD_BACKGROUND, 
+                  color: theme.TEXT_PRIMARY,
+                  borderColor: theme.BORDER
+                }}
+                labelStyle={{ color: theme.TEXT_PRIMARY }}
               />
 
               <Input
@@ -120,8 +134,14 @@ const LoginScreen = ({ navigation }) => {
                 secureTextEntry
                 error={formErrors.password}
                 leftIcon={
-                  <Ionicons name="lock-closed-outline" size={20} color={COLORS.GRAY_MEDIUM} />
+                  <Ionicons name="lock-closed-outline" size={20} color={theme.GRAY_MEDIUM} />
                 }
+                inputStyle={{ 
+                  backgroundColor: theme.CARD_BACKGROUND, 
+                  color: theme.TEXT_PRIMARY,
+                  borderColor: theme.BORDER
+                }}
+                labelStyle={{ color: theme.TEXT_PRIMARY }}
               />
 
               <Button
@@ -130,13 +150,13 @@ const LoginScreen = ({ navigation }) => {
                 variant="outline"
                 size="small"
                 style={styles.forgotPasswordButton}
-                textStyle={{ color: COLORS.PRIMARY, fontSize: FONT_SIZES.SM }}
+                textStyle={{ color: theme.PRIMARY, fontSize: FONT_SIZES.SM }}
               />
 
               {error && (
-                <View style={styles.errorContainer}>
-                  <Ionicons name="alert-circle" size={20} color={COLORS.ERROR} />
-                  <Text style={styles.errorText}>{error}</Text>
+                <View style={[styles.errorContainer, { backgroundColor: theme.ERROR + '20' }]}>
+                  <Ionicons name="alert-circle" size={20} color={theme.ERROR} />
+                  <Text style={[styles.errorText, { color: theme.ERROR }]}>{error}</Text>
                 </View>
               )}
 
@@ -152,7 +172,7 @@ const LoginScreen = ({ navigation }) => {
 
             {/* Footer */}
             <View style={styles.footer}>
-              <Text style={styles.footerText}>
+              <Text style={[styles.footerText, { color: theme.TEXT_SECONDARY }]}>
                 Don't have an account?{' '}
               </Text>
               <Button
@@ -161,14 +181,14 @@ const LoginScreen = ({ navigation }) => {
                 variant="outline"
                 size="small"
                 style={styles.signUpButton}
-                textStyle={{ color: COLORS.PRIMARY }}
+                textStyle={{ color: theme.PRIMARY }}
               />
             </View>
 
             {/* Emergency Access */}
-            <View style={styles.emergencyContainer}>
-              <Text style={styles.emergencyTitle}>Emergency Access</Text>
-              <Text style={styles.emergencyText}>
+            <View style={[styles.emergencyContainer, { borderTopColor: theme.BORDER }]}>
+              <Text style={[styles.emergencyTitle, { color: theme.TEXT_PRIMARY }]}>Emergency Access</Text>
+              <Text style={[styles.emergencyText, { color: theme.TEXT_SECONDARY }]}>
                 In case of emergency, you can access basic features without logging in
               </Text>
               <Button
@@ -184,7 +204,7 @@ const LoginScreen = ({ navigation }) => {
                 variant="emergency"
                 size="medium"
                 style={styles.emergencyButton}
-                icon={<Ionicons name="warning" size={20} color={COLORS.WHITE} />}
+                icon={<Ionicons name="warning" size={20} color={theme.WHITE} />}
               />
             </View>
           </View>
@@ -194,10 +214,10 @@ const LoginScreen = ({ navigation }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (theme) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.WHITE,
+    backgroundColor: theme.BACKGROUND,
   },
   keyboardView: {
     flex: 1,
@@ -214,23 +234,25 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.XL,
   },
   logoContainer: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: COLORS.PRIMARY + '20',
+    width: 150,
+    height: 150,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: SPACING.LG,
   },
+  logo: {
+    width: '100%',
+    height: '100%',
+  },
   title: {
     fontSize: FONT_SIZES.XXL,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginBottom: SPACING.SM,
   },
   subtitle: {
     fontSize: FONT_SIZES.MD,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     textAlign: 'center',
     lineHeight: 22,
   },
@@ -246,14 +268,14 @@ const styles = StyleSheet.create({
   errorContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.ERROR + '20',
+    backgroundColor: theme.ERROR + '20',
     padding: SPACING.MD,
     borderRadius: 8,
     marginBottom: SPACING.LG,
   },
   errorText: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.ERROR,
+    color: theme.ERROR,
     marginLeft: SPACING.SM,
     flex: 1,
   },
@@ -268,7 +290,7 @@ const styles = StyleSheet.create({
   },
   footerText: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
   },
   signUpButton: {
     backgroundColor: 'transparent',
@@ -281,17 +303,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingTop: SPACING.LG,
     borderTopWidth: 1,
-    borderTopColor: COLORS.BORDER,
+    borderTopColor: theme.BORDER,
   },
   emergencyTitle: {
     fontSize: FONT_SIZES.MD,
     fontWeight: '600',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginBottom: SPACING.SM,
   },
   emergencyText: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     textAlign: 'center',
     marginBottom: SPACING.MD,
     lineHeight: 20,

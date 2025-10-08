@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import {
   COLORS,
   FONT_SIZES,
@@ -24,6 +25,8 @@ import useNotifications from '../hooks/useNotifications';
 
 const NotificationsScreen = ({ navigation }) => {
   const { user, userProfile } = useAuth();
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
   const [filter, setFilter] = useState('all'); // all, unread, appointment, health
   
   // Use the custom notifications hook
@@ -150,17 +153,17 @@ const NotificationsScreen = ({ navigation }) => {
   const getNotificationColor = (type) => {
     switch (type) {
       case NOTIFICATION_TYPES.APPOINTMENT:
-        return COLORS.PRIMARY;
+        return theme.PRIMARY;
       case NOTIFICATION_TYPES.EMERGENCY:
-        return COLORS.EMERGENCY;
+        return theme.EMERGENCY;
       case NOTIFICATION_TYPES.REMINDER:
-        return COLORS.WARNING;
+        return theme.WARNING;
       case NOTIFICATION_TYPES.HEALTH_TIP:
-        return COLORS.SUCCESS;
+        return theme.SUCCESS;
       case NOTIFICATION_TYPES.CONSULTATION:
-        return COLORS.INFO;
+        return theme.INFO;
       default:
-        return COLORS.GRAY_MEDIUM;
+        return theme.GRAY_MEDIUM;
     }
   };
 
@@ -187,36 +190,38 @@ const NotificationsScreen = ({ navigation }) => {
       <TouchableOpacity
         style={[
           styles.notificationCard,
-          !notification.read && styles.unreadNotification
+          !notification.read && styles.unreadNotification,
+          { backgroundColor: theme.CARD_BACKGROUND, borderLeftColor: theme.PRIMARY }
         ]}
         onPress={() => handleNotificationPress(notification)}
       >
         <View style={styles.notificationContent}>
           <View style={[styles.notificationIcon, { backgroundColor: iconColor }]}>
-            <Ionicons name={iconName} size={20} color={COLORS.WHITE} />
+            <Ionicons name={iconName} size={20} color={theme.WHITE} />
           </View>
           
           <View style={styles.notificationText}>
             <Text style={[
               styles.notificationTitle,
-              !notification.read && styles.unreadTitle
+              !notification.read && styles.unreadTitle,
+              { color: notification.read ? theme.TEXT_SECONDARY : theme.TEXT_PRIMARY }
             ]}>
               {notification.title}
             </Text>
-            <Text style={styles.notificationMessage} numberOfLines={2}>
+            <Text style={[styles.notificationMessage, { color: theme.TEXT_SECONDARY }]} numberOfLines={2}>
               {notification.message}
             </Text>
-            <Text style={styles.notificationTime}>{timeAgo}</Text>
+            <Text style={[styles.notificationTime, { color: theme.TEXT_SECONDARY }]}>{timeAgo}</Text>
           </View>
           
-          {!notification.read && <View style={styles.unreadDot} />}
+          {!notification.read && <View style={[styles.unreadDot, { backgroundColor: theme.PRIMARY }]} />}
         </View>
         
         <TouchableOpacity
           style={styles.deleteButton}
           onPress={() => handleDeleteNotification(notification.id)}
         >
-          <Ionicons name="close" size={20} color={COLORS.GRAY_MEDIUM} />
+          <Ionicons name="close" size={20} color={theme.GRAY_MEDIUM} />
         </TouchableOpacity>
       </TouchableOpacity>
     );
@@ -224,12 +229,22 @@ const NotificationsScreen = ({ navigation }) => {
 
   const FilterButton = ({ title, value, active, onPress }) => (
     <TouchableOpacity
-      style={[styles.filterButton, active && styles.activeFilterButton]}
+      style={[
+        styles.filterButton,
+        active && styles.activeFilterButton,
+        { 
+          backgroundColor: active ? theme.PRIMARY : theme.GRAY_LIGHT,
+          borderColor: theme.BORDER
+        }
+      ]}
       onPress={onPress}
     >
       <Text style={[
         styles.filterButtonText,
-        active && styles.activeFilterButtonText
+        active && styles.activeFilterButtonText,
+        { 
+          color: active ? theme.WHITE : theme.TEXT_SECONDARY
+        }
       ]}>
         {title}
       </Text>
@@ -237,26 +252,29 @@ const NotificationsScreen = ({ navigation }) => {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.BACKGROUND }]}>
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { backgroundColor: theme.CARD_BACKGROUND, borderBottomColor: theme.BORDER }]}>
         <View style={styles.headerLeft}>
-          <Text style={styles.title}>Notifications</Text>
+          <Text style={[styles.title, { color: theme.TEXT_PRIMARY }]}>Notifications</Text>
           {unreadCount > 0 && (
-            <View style={styles.unreadBadge}>
+            <View style={[styles.unreadBadge, { backgroundColor: theme.EMERGENCY }]}>
               <Text style={styles.unreadBadgeText}>{unreadCount}</Text>
             </View>
           )}
         </View>
         {unreadCount > 0 && (
-          <TouchableOpacity style={styles.markAllButton} onPress={handleMarkAllAsRead}>
-            <Text style={styles.markAllText}>Mark all read</Text>
+          <TouchableOpacity 
+            style={[styles.markAllButton, { backgroundColor: theme.PRIMARY }]} 
+            onPress={handleMarkAllAsRead}
+          >
+            <Text style={[styles.markAllText, { color: theme.WHITE }]}>Mark all read</Text>
           </TouchableOpacity>
         )}
       </View>
 
       {/* Filter Tabs */}
-      <View style={styles.filterContainer}>
+      <View style={[styles.filterContainer, { backgroundColor: theme.CARD_BACKGROUND, borderBottomColor: theme.BORDER }]}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
           <FilterButton
             title={`All (${notifications.length})`}
@@ -288,23 +306,23 @@ const NotificationsScreen = ({ navigation }) => {
       {/* Loading State */}
       {loading ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={COLORS.PRIMARY} />
-          <Text style={styles.loadingText}>Loading notifications...</Text>
+          <ActivityIndicator size="large" color={theme.PRIMARY} />
+          <Text style={[styles.loadingText, { color: theme.TEXT_SECONDARY }]}>Loading notifications...</Text>
         </View>
       ) : (
         /* Notifications List */
         <ScrollView
           style={styles.notificationsList}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[theme.PRIMARY]} />
           }
           showsVerticalScrollIndicator={false}
         >
           {filteredNotifications.length === 0 ? (
-            <Card style={styles.emptyState}>
-              <Ionicons name="notifications-outline" size={64} color={COLORS.GRAY_MEDIUM} />
-              <Text style={styles.emptyTitle}>No Notifications</Text>
-              <Text style={styles.emptySubtitle}>
+            <Card style={[styles.emptyState, { backgroundColor: theme.CARD_BACKGROUND }]}>
+              <Ionicons name="notifications-outline" size={64} color={theme.GRAY_MEDIUM} />
+              <Text style={[styles.emptyTitle, { color: theme.TEXT_PRIMARY }]}>No Notifications</Text>
+              <Text style={[styles.emptySubtitle, { color: theme.TEXT_SECONDARY }]}>
                 {filter === 'all' 
                   ? "You're all caught up! No new notifications."
                   : `No ${filter} notifications to display.`
@@ -335,10 +353,10 @@ const getTimeAgo = (timestamp) => {
   return notificationTime.toLocaleDateString();
 };
 
-const styles = StyleSheet.create({
+const getStyles = (theme) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.BACKGROUND,
+    backgroundColor: theme.BACKGROUND,
   },
   header: {
     flexDirection: 'row',
@@ -346,9 +364,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: SPACING.MD,
     paddingVertical: SPACING.MD,
-    backgroundColor: COLORS.WHITE,
+    backgroundColor: theme.CARD_BACKGROUND,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.BORDER,
+    borderBottomColor: theme.BORDER,
   },
   headerLeft: {
     flexDirection: 'row',
@@ -357,10 +375,10 @@ const styles = StyleSheet.create({
   title: {
     fontSize: FONT_SIZES.XXL,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
   },
   unreadBadge: {
-    backgroundColor: COLORS.EMERGENCY,
+    backgroundColor: theme.EMERGENCY,
     borderRadius: BORDER_RADIUS.CIRCLE,
     minWidth: 20,
     height: 20,
@@ -369,45 +387,45 @@ const styles = StyleSheet.create({
     marginLeft: SPACING.SM,
   },
   unreadBadgeText: {
-    color: COLORS.WHITE,
+    color: theme.WHITE,
     fontSize: FONT_SIZES.XS,
     fontWeight: 'bold',
   },
   markAllButton: {
     paddingHorizontal: SPACING.MD,
     paddingVertical: SPACING.SM,
-    backgroundColor: COLORS.PRIMARY,
+    backgroundColor: theme.PRIMARY,
     borderRadius: BORDER_RADIUS.SM,
   },
   markAllText: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.WHITE,
+    color: theme.WHITE,
     fontWeight: '600',
   },
   filterContainer: {
-    backgroundColor: COLORS.WHITE,
+    backgroundColor: theme.CARD_BACKGROUND,
     paddingHorizontal: SPACING.MD,
     paddingVertical: SPACING.SM,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.BORDER,
+    borderBottomColor: theme.BORDER,
   },
   filterButton: {
     paddingHorizontal: SPACING.MD,
     paddingVertical: SPACING.SM,
     borderRadius: BORDER_RADIUS.XL,
     marginRight: SPACING.SM,
-    backgroundColor: COLORS.GRAY_LIGHT,
+    backgroundColor: theme.BUTTON_SECONDARY,
   },
   activeFilterButton: {
-    backgroundColor: COLORS.PRIMARY,
+    backgroundColor: theme.PRIMARY,
   },
   filterButtonText: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     fontWeight: '500',
   },
   activeFilterButtonText: {
-    color: COLORS.WHITE,
+    color: theme.WHITE,
   },
   notificationsList: {
     flex: 1,
@@ -422,42 +440,45 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: SPACING.MD,
     fontSize: FONT_SIZES.MD,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
   },
   emptyState: {
     alignItems: 'center',
     paddingVertical: SPACING.XXL,
     marginTop: SPACING.XL,
+    backgroundColor: theme.CARD_BACKGROUND,
   },
   emptyTitle: {
     fontSize: FONT_SIZES.XL,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginTop: SPACING.MD,
     marginBottom: SPACING.XS,
   },
   emptySubtitle: {
     fontSize: FONT_SIZES.MD,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     textAlign: 'center',
   },
   notificationCard: {
-    backgroundColor: COLORS.WHITE,
+    backgroundColor: theme.CARD_BACKGROUND,
     borderRadius: BORDER_RADIUS.MD,
     padding: SPACING.MD,
     marginBottom: SPACING.SM,
     flexDirection: 'row',
     alignItems: 'flex-start',
     justifyContent: 'space-between',
-    shadowColor: COLORS.BLACK,
+    shadowColor: theme.BLACK,
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
     elevation: 2,
+    borderLeftWidth: 4,
+    borderLeftColor: theme.PRIMARY,
   },
   unreadNotification: {
     borderLeftWidth: 4,
-    borderLeftColor: COLORS.PRIMARY,
+    borderLeftColor: theme.PRIMARY,
   },
   notificationContent: {
     flex: 1,
@@ -478,7 +499,7 @@ const styles = StyleSheet.create({
   notificationTitle: {
     fontSize: FONT_SIZES.MD,
     fontWeight: '600',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginBottom: SPACING.XS / 2,
   },
   unreadTitle: {
@@ -486,19 +507,19 @@ const styles = StyleSheet.create({
   },
   notificationMessage: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     lineHeight: 18,
     marginBottom: SPACING.XS / 2,
   },
   notificationTime: {
     fontSize: FONT_SIZES.XS,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
   },
   unreadDot: {
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: COLORS.PRIMARY,
+    backgroundColor: theme.PRIMARY,
     marginLeft: SPACING.SM,
     marginTop: SPACING.XS,
   },

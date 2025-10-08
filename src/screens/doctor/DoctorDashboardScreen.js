@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../context/AuthContext';
+import { useTheme } from '../../context/ThemeContext';
 import {
   collection,
   query,
@@ -37,6 +38,7 @@ import useProfilePicture from '../../hooks/useProfilePicture';
 
 const DoctorDashboardScreen = ({ navigation }) => {
   const { userProfile } = useAuth();
+  const { theme } = useTheme();
   const { fetchUserProfilePicture, getCachedProfilePicture } = useProfilePicture();
   const [dashboardData, setDashboardData] = useState({
     todayAppointments: [],
@@ -317,41 +319,41 @@ const DoctorDashboardScreen = ({ navigation }) => {
   };
 
   const QuickActionCard = ({ title, subtitle, icon, color, onPress, badge }) => (
-    <TouchableOpacity style={styles.quickActionCard} onPress={onPress}>
+    <TouchableOpacity style={[styles.quickActionCard, { backgroundColor: theme.CARD_BACKGROUND }]} onPress={onPress}>
       <View style={[styles.actionIcon, { backgroundColor: color }]}>
-        <Ionicons name={icon} size={24} color={COLORS.WHITE} />
+        <Ionicons name={icon} size={24} color={theme.WHITE} />
         {badge && badge > 0 && (
           <View style={styles.badge}>
-            <Text style={styles.badgeText}>{badge}</Text>
+            <Text style={[styles.badgeText, { color: theme.WHITE }]}>{badge}</Text>
           </View>
         )}
       </View>
-      <Text style={styles.actionTitle}>{title || 'Action'}</Text>
-      <Text style={styles.actionSubtitle}>{subtitle || 'Description'}</Text>
+      <Text style={[styles.actionTitle, { color: theme.TEXT_PRIMARY }]}>{title || 'Action'}</Text>
+      <Text style={[styles.actionSubtitle, { color: theme.TEXT_SECONDARY }]}>{subtitle || 'Description'}</Text>
     </TouchableOpacity>
   );
 
   const StatisticCard = ({ label, value, icon, color, trend }) => (
-    <Card style={styles.statisticCard}>
+    <Card style={[styles.statisticCard, { backgroundColor: theme.CARD_BACKGROUND, borderColor: theme.BORDER }]}>
       <View style={styles.statisticHeader}>
         <View style={[styles.statisticIcon, { backgroundColor: color }]}>
-          <Ionicons name={icon} size={20} color={COLORS.WHITE} />
+          <Ionicons name={icon} size={20} color={theme.WHITE} />
         </View>
         {trend && (
           <View style={styles.trendContainer}>
             <Ionicons 
               name={trend > 0 ? 'trending-up' : 'trending-down'} 
               size={16} 
-              color={trend > 0 ? COLORS.SUCCESS : COLORS.ERROR} 
+              color={trend > 0 ? theme.SUCCESS : theme.ERROR} 
             />
-            <Text style={[styles.trendText, { color: trend > 0 ? COLORS.SUCCESS : COLORS.ERROR }]}>
+            <Text style={[styles.trendText, { color: trend > 0 ? theme.SUCCESS : theme.ERROR }]}>
               {Math.abs(trend)}%
             </Text>
           </View>
         )}
       </View>
-      <Text style={styles.statisticValue}>{value}</Text>
-      <Text style={styles.statisticLabel}>{label}</Text>
+      <Text style={[styles.statisticValue, { color: theme.TEXT_PRIMARY }]}>{value}</Text>
+      <Text style={[styles.statisticLabel, { color: theme.TEXT_SECONDARY }]}>{label}</Text>
     </Card>
   );
 
@@ -433,10 +435,10 @@ const DoctorDashboardScreen = ({ navigation }) => {
     }, [appointment.patientId, getCachedProfilePicture, fetchUserProfilePicture]);
 
     return (
-      <Card style={styles.appointmentCard}>
+      <Card style={[styles.appointmentCard, { backgroundColor: theme.CARD_BACKGROUND, borderColor: theme.BORDER }]}>
         <View style={styles.appointmentHeader}>
           <View style={styles.patientInfo}>
-            <View style={styles.patientAvatar}>
+            <View style={[styles.patientAvatar, { backgroundColor: theme.PRIMARY }]}>
               {profilePicture && profilePicture !== null ? (
                 <Image 
                   source={{ uri: profilePicture }} 
@@ -448,17 +450,17 @@ const DoctorDashboardScreen = ({ navigation }) => {
                   }}
                 />
               ) : (
-                <Text style={styles.patientInitial}>
+                <Text style={[styles.patientInitial, { color: theme.WHITE }]}>
                   {appointment.patientName ? appointment.patientName.charAt(0) : 'U'}
                 </Text>
               )}
             </View>
             <View style={styles.appointmentDetails}>
-              <Text style={styles.patientName}>{appointment.patientName || 'Unknown Patient'}</Text>
-              <Text style={styles.appointmentTime}>
+              <Text style={[styles.patientName, { color: theme.TEXT_PRIMARY }]}>{appointment.patientName || 'Unknown Patient'}</Text>
+              <Text style={[styles.appointmentTime, { color: theme.PRIMARY }]}>
                 {formatAppointmentDateTime(appointment.appointmentDate, appointment.appointmentTime) || 'N/A'} • {appointment.type || 'Consultation'}
               </Text>
-              <Text style={styles.appointmentReason}>{appointment.symptoms || appointment.reason || 'No symptoms provided'}</Text>
+              <Text style={[styles.appointmentReason, { color: theme.TEXT_SECONDARY }]}>{appointment.symptoms || appointment.reason || 'No symptoms provided'}</Text>
             </View>
           </View>
           <View style={styles.appointmentActions}>
@@ -466,13 +468,13 @@ const DoctorDashboardScreen = ({ navigation }) => {
               style={styles.actionBtn}
               onPress={() => navigation.navigate('Appointments', { screen: 'AppointmentsMain' })}
             >
-              <Ionicons name="calendar" size={20} color={COLORS.PRIMARY} />
+              <Ionicons name="calendar" size={20} color={theme.PRIMARY} />
             </TouchableOpacity>
             <TouchableOpacity 
               style={styles.actionBtn}
               onPress={() => navigation.navigate('Consultations', { screen: 'ConsultationsMain' })}
             >
-              <Ionicons name="chatbubble" size={20} color={COLORS.SUCCESS} />
+              <Ionicons name="chatbubble" size={20} color={theme.SUCCESS} />
             </TouchableOpacity>
           </View>
         </View>
@@ -481,26 +483,26 @@ const DoctorDashboardScreen = ({ navigation }) => {
   };
 
   const PendingRequestCard = ({ request }) => (
-    <Card style={styles.requestCard}>
+    <Card style={[styles.requestCard, { backgroundColor: theme.CARD_BACKGROUND, borderColor: theme.BORDER, borderLeftColor: request.urgent ? theme.EMERGENCY : theme.WARNING }]}>
       <View style={styles.requestHeader}>
         <View style={[
           styles.urgencyIndicator, 
-          { backgroundColor: request.urgent ? COLORS.EMERGENCY : COLORS.WARNING }
+          { backgroundColor: request.urgent ? theme.EMERGENCY : theme.WARNING }
         ]}>
           <Ionicons 
             name={request.urgent ? "warning" : "time"} 
             size={16} 
-            color={COLORS.WHITE} 
+            color={theme.WHITE} 
           />
         </View>
         <View style={styles.requestInfo}>
-          <Text style={styles.requestPatient}>{request.patientName || 'Unknown Patient'}</Text>
-          <Text style={styles.requestType}>{request.type || 'Consultation'} Request</Text>
-          <Text style={styles.requestTime}>{request.timeAgo || 'Unknown time'}</Text>
+          <Text style={[styles.requestPatient, { color: theme.TEXT_PRIMARY }]}>{request.patientName || 'Unknown Patient'}</Text>
+          <Text style={[styles.requestType, { color: theme.TEXT_SECONDARY }]}>{request.type || 'Consultation'} Request</Text>
+          <Text style={[styles.requestTime, { color: theme.GRAY_MEDIUM }]}>{request.timeAgo || 'Unknown time'}</Text>
         </View>
         <View style={styles.requestActions}>
           <TouchableOpacity 
-            style={[styles.requestBtn, styles.acceptBtn]}
+            style={[styles.requestBtn, styles.acceptBtn, { backgroundColor: theme.SUCCESS }]}
             onPress={() => {
               Alert.alert(
                 'Confirm Appointment',
@@ -518,10 +520,10 @@ const DoctorDashboardScreen = ({ navigation }) => {
               );
             }}
           >
-            <Ionicons name="checkmark" size={16} color={COLORS.WHITE} />
+            <Ionicons name="checkmark" size={16} color={theme.WHITE} />
           </TouchableOpacity>
           <TouchableOpacity 
-            style={[styles.requestBtn, styles.declineBtn]}
+            style={[styles.requestBtn, styles.declineBtn, { backgroundColor: theme.ERROR }]}
             onPress={() => {
               Alert.alert(
                 'Decline Appointment',
@@ -540,11 +542,11 @@ const DoctorDashboardScreen = ({ navigation }) => {
               );
             }}
           >
-            <Ionicons name="close" size={16} color={COLORS.WHITE} />
+            <Ionicons name="close" size={16} color={theme.WHITE} />
           </TouchableOpacity>
         </View>
       </View>
-      <Text style={styles.requestReason}>{request.reason || 'No reason provided'}</Text>
+      <Text style={[styles.requestReason, { color: theme.TEXT_SECONDARY }]}>{request.reason || 'No reason provided'}</Text>
     </Card>
   );
 
@@ -578,28 +580,28 @@ const DoctorDashboardScreen = ({ navigation }) => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.BACKGROUND }]}>
       <ScrollView 
         style={styles.content} 
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[theme.PRIMARY]} />}
         showsVerticalScrollIndicator={false}
       >
         {/* Header */}
-        <View style={styles.header}>
+        <View style={[styles.header, { backgroundColor: theme.CARD_BACKGROUND, borderBottomColor: theme.BORDER }]}>
           <View style={styles.welcomeContainer}>
-            <Text style={styles.welcomeText}>Good morning,</Text>
-            <Text style={styles.doctorName}>
+            <Text style={[styles.welcomeText, { color: theme.TEXT_SECONDARY }]}>Good morning,</Text>
+            <Text style={[styles.doctorName, { color: theme.TEXT_PRIMARY }]}>
               Dr. {userProfile?.firstName || ''} {userProfile?.lastName || ''}
             </Text>
-            <Text style={styles.specialization}>{userProfile?.specialization || 'General Practitioner'}</Text>
+            <Text style={[styles.specialization, { color: theme.PRIMARY }]}>{userProfile?.specialization || 'General Practitioner'}</Text>
           </View>
           <TouchableOpacity
             style={styles.notificationButton}
             onPress={() => navigation.navigate('Dashboard', { screen: 'Notifications' })}
           >
-            <Ionicons name="notifications-outline" size={24} color={COLORS.TEXT_PRIMARY} />
-            <View style={styles.notificationBadge}>
-              <Text style={styles.notificationBadgeText}>
+            <Ionicons name="notifications-outline" size={24} color={theme.TEXT_PRIMARY} />
+            <View style={[styles.notificationBadge, { backgroundColor: theme.ERROR }]}>
+              <Text style={[styles.notificationBadgeText, { color: theme.WHITE }]}>
                 {dashboardData.notifications.length || 0}
               </Text>
             </View>
@@ -607,13 +609,13 @@ const DoctorDashboardScreen = ({ navigation }) => {
         </View>
 
         {/* Emergency Alert */}
-        <TouchableOpacity style={styles.emergencyAlert} onPress={handleEmergencyRequest}>
-          <Ionicons name="warning" size={24} color={COLORS.WHITE} />
+        <TouchableOpacity style={[styles.emergencyAlert, { backgroundColor: theme.EMERGENCY }]} onPress={handleEmergencyRequest}>
+          <Ionicons name="warning" size={24} color={theme.WHITE} />
           <View style={styles.emergencyText}>
-            <Text style={styles.emergencyTitle}>Emergency Standby</Text>
-            <Text style={styles.emergencySubtitle}>Available for emergency consultations</Text>
+            <Text style={[styles.emergencyTitle, { color: theme.WHITE }]}>Emergency Standby</Text>
+            <Text style={[styles.emergencySubtitle, { color: theme.WHITE }]}>Available for emergency consultations</Text>
           </View>
-          <Ionicons name="chevron-forward" size={24} color={COLORS.WHITE} />
+          <Ionicons name="chevron-forward" size={24} color={theme.WHITE} />
         </TouchableOpacity>
 
         {/* Statistics */}
@@ -622,40 +624,40 @@ const DoctorDashboardScreen = ({ navigation }) => {
             label="Today's Appointments"
             value={dashboardData.statistics.todayAppointments || 0}
             icon="calendar"
-            color={COLORS.PRIMARY}
+            color={theme.PRIMARY}
             trend={12}
           />
           <StatisticCard
             label="This Week"
             value={dashboardData.statistics.weeklyAppointments || 0}
             icon="bar-chart"
-            color={COLORS.SUCCESS}
+            color={theme.SUCCESS}
             trend={-5}
           />
           <StatisticCard
             label="Total Patients"
             value={dashboardData.statistics.totalPatients || 0}
             icon="people"
-            color={COLORS.INFO}
+            color={theme.INFO}
             trend={8}
           />
           <StatisticCard
             label="Rating"
             value={`${dashboardData.statistics.rating || 0}/5`}
             icon="star"
-            color={COLORS.WARNING}
+            color={theme.WARNING}
           />
         </View>
 
         {/* Quick Actions */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Quick Actions</Text>
+          <Text style={[styles.sectionTitle, { color: theme.TEXT_PRIMARY }]}>Quick Actions</Text>
           <View style={styles.quickActionsGrid}>
             <QuickActionCard
               title="My Schedule"
               subtitle="View appointments"
               icon="calendar-outline"
-              color={COLORS.PRIMARY}
+              color={theme.PRIMARY}
               onPress={() => navigation.navigate('Appointments', { screen: 'AppointmentsMain' })}
               badge={dashboardData.todayAppointments.length || 0}
             />
@@ -663,21 +665,21 @@ const DoctorDashboardScreen = ({ navigation }) => {
               title="Patients"
               subtitle="Manage patients"
               icon="people-outline"
-              color={COLORS.SUCCESS}
+              color={theme.SUCCESS}
               onPress={() => navigation.navigate('Patients', { screen: 'PatientsMain' })}
             />
             <QuickActionCard
               title="Consultations"
               subtitle="Video/Chat"
               icon="videocam-outline"
-              color={COLORS.INFO}
+              color={theme.INFO}
               onPress={() => navigation.navigate('Consultations', { screen: 'ConsultationsMain' })}
             />
             <QuickActionCard
               title="Prescriptions"
               subtitle="Write prescriptions"
               icon="medical-outline"
-              color={COLORS.WARNING}
+              color={theme.WARNING}
               onPress={() => navigation.navigate('Patients', { screen: 'Prescriptions' })}
             />
           </View>
@@ -686,17 +688,17 @@ const DoctorDashboardScreen = ({ navigation }) => {
         {/* Today's Appointments */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Today's Appointments</Text>
+            <Text style={[styles.sectionTitle, { color: theme.TEXT_PRIMARY }]}>Today's Appointments</Text>
             <TouchableOpacity onPress={() => navigation.navigate('Appointments', { screen: 'AppointmentsMain' })}>
-              <Text style={styles.viewAllText}>View All</Text>
+              <Text style={[styles.viewAllText, { color: theme.PRIMARY }]}>View All</Text>
             </TouchableOpacity>
           </View>
           
           {dashboardData.todayAppointments.length === 0 ? (
-            <Card style={styles.emptyState}>
-              <Ionicons name="calendar-outline" size={48} color={COLORS.GRAY_MEDIUM} />
-              <Text style={styles.emptyTitle}>No Appointments Today</Text>
-              <Text style={styles.emptySubtitle}>
+            <Card style={[styles.emptyState, { backgroundColor: theme.CARD_BACKGROUND }]}>
+              <Ionicons name="calendar-outline" size={48} color={theme.GRAY_MEDIUM} />
+              <Text style={[styles.emptyTitle, { color: theme.TEXT_PRIMARY }]}>No Appointments Today</Text>
+              <Text style={[styles.emptySubtitle, { color: theme.TEXT_SECONDARY }]}>
                 You have a free schedule today
               </Text>
             </Card>
@@ -710,19 +712,19 @@ const DoctorDashboardScreen = ({ navigation }) => {
         {/* Pending Requests */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Pending Requests</Text>
-            <View style={styles.requestsCount}>
-              <Text style={styles.requestsCountText}>
+            <Text style={[styles.sectionTitle, { color: theme.TEXT_PRIMARY }]}>Pending Requests</Text>
+            <View style={[styles.requestsCount, { backgroundColor: theme.ERROR }]}>
+              <Text style={[styles.requestsCountText, { color: theme.WHITE }]}>
                 {dashboardData.pendingRequests.length || 0}
               </Text>
             </View>
           </View>
           
           {dashboardData.pendingRequests.length === 0 ? (
-            <Card style={styles.emptyState}>
-              <Ionicons name="checkmark-circle-outline" size={48} color={COLORS.GRAY_MEDIUM} />
-              <Text style={styles.emptyTitle}>All Caught Up!</Text>
-              <Text style={styles.emptySubtitle}>
+            <Card style={[styles.emptyState, { backgroundColor: theme.CARD_BACKGROUND }]}>
+              <Ionicons name="checkmark-circle-outline" size={48} color={theme.GRAY_MEDIUM} />
+              <Text style={[styles.emptyTitle, { color: theme.TEXT_PRIMARY }]}>All Caught Up!</Text>
+              <Text style={[styles.emptySubtitle, { color: theme.TEXT_SECONDARY }]}>
                 No pending requests at the moment
               </Text>
             </Card>
@@ -736,8 +738,6 @@ const DoctorDashboardScreen = ({ navigation }) => {
     </SafeAreaView>
   );
 };
-
-
 
 const styles = StyleSheet.create({
   container: {
@@ -826,6 +826,9 @@ const styles = StyleSheet.create({
     width: '48%',
     marginRight: '2%',
     marginBottom: SPACING.SM,
+    backgroundColor: COLORS.WHITE,
+    borderWidth: 1,
+    borderColor: COLORS.BORDER,
   },
   statisticHeader: {
     flexDirection: 'row',
@@ -949,6 +952,9 @@ const styles = StyleSheet.create({
   },
   appointmentCard: {
     marginBottom: SPACING.SM,
+    backgroundColor: COLORS.WHITE,
+    borderWidth: 1,
+    borderColor: COLORS.BORDER,
   },
   appointmentHeader: {
     flexDirection: 'row',
@@ -1008,6 +1014,9 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.SM,
     borderLeftWidth: 4,
     borderLeftColor: COLORS.WARNING,
+    backgroundColor: COLORS.WHITE,
+    borderWidth: 1,
+    borderColor: COLORS.BORDER,
   },
   requestHeader: {
     flexDirection: 'row',
@@ -1065,6 +1074,7 @@ const styles = StyleSheet.create({
   emptyState: {
     alignItems: 'center',
     padding: SPACING.XL,
+    backgroundColor: COLORS.WHITE,
   },
   emptyTitle: {
     fontSize: FONT_SIZES.LG,

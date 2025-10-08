@@ -10,10 +10,12 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
-  Image
+  Image,
+  ScrollView
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import {
   collection,
   addDoc,
@@ -43,6 +45,8 @@ const ChatScreen = ({ navigation, route }) => {
   const { appointmentId, doctorId, doctorName, patientId, patientName, chatId: routeChatId } = routeParams;
   
   const { user, userProfile } = useAuth();
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
   const { fetchUserProfilePicture, getCachedProfilePicture, clearCache } = useProfilePicture();
   const [profilePictures, setProfilePictures] = useState({});
   const [messages, setMessages] = useState([]);
@@ -68,9 +72,9 @@ const ChatScreen = ({ navigation, route }) => {
   // If we don't have valid parameters, show a simple loading screen
   if (!hasValidParams) {
     return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.container}>
-          <Text>Loading...</Text>
+      <SafeAreaView style={[styles.container, { backgroundColor: theme.BACKGROUND }]}>
+        <View style={[styles.container, { backgroundColor: theme.BACKGROUND }]}>
+          <Text style={{ color: theme.TEXT_PRIMARY }}>Loading...</Text>
         </View>
       </SafeAreaView>
     );
@@ -411,26 +415,32 @@ const ChatScreen = ({ navigation, route }) => {
                 onError={() => console.log('Sender avatar image load error')}
               />
             ) : (
-              <View style={styles.senderAvatarPlaceholder}>
-                <Ionicons name="person" size={16} color={COLORS.WHITE} />
+              <View style={[styles.senderAvatarPlaceholder, { backgroundColor: theme.PRIMARY }]}>
+                <Ionicons name="person" size={16} color={theme.WHITE} />
               </View>
             )}
-            <Text style={styles.senderName}>{displayName}</Text>
+            <Text style={[styles.senderName, { color: theme.PRIMARY }]}>{displayName}</Text>
           </View>
         )}
         <View style={[
           styles.messageBubble,
-          isMyMessage ? styles.myMessageBubble : styles.otherMessageBubble
+          isMyMessage ? styles.myMessageBubble : styles.otherMessageBubble,
+          { 
+            backgroundColor: isMyMessage ? theme.PRIMARY : theme.CARD_BACKGROUND,
+            borderColor: isMyMessage ? theme.PRIMARY : theme.BORDER
+          }
         ]}>
           <Text style={[
             styles.messageText,
-            isMyMessage ? styles.myMessageText : styles.otherMessageText
+            isMyMessage ? styles.myMessageText : styles.otherMessageText,
+            { color: isMyMessage ? theme.WHITE : theme.TEXT_PRIMARY }
           ]}>
             {item.text}
           </Text>
           <Text style={[
             styles.messageTime,
-            isMyMessage ? styles.myMessageTime : styles.otherMessageTime
+            isMyMessage ? styles.myMessageTime : styles.otherMessageTime,
+            { color: isMyMessage ? theme.WHITE : theme.TEXT_SECONDARY }
           ]}>
             {messageTime}
           </Text>
@@ -440,8 +450,8 @@ const ChatScreen = ({ navigation, route }) => {
   };
 
   const QuickReply = ({ text, onPress }) => (
-    <TouchableOpacity style={styles.quickReply} onPress={() => onPress(text)}>
-      <Text style={styles.quickReplyText}>{text}</Text>
+    <TouchableOpacity style={[styles.quickReply, { backgroundColor: theme.GRAY_LIGHT }]} onPress={() => onPress(text)}>
+      <Text style={[styles.quickReplyText, { color: theme.TEXT_PRIMARY }]}>{text}</Text>
     </TouchableOpacity>
   );
 
@@ -454,18 +464,19 @@ const ChatScreen = ({ navigation, route }) => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.BACKGROUND }]}>
       <KeyboardAvoidingView 
-        style={styles.container} 
+        style={[styles.container, { backgroundColor: theme.BACKGROUND }]} 
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 100}
       >
         {/* Chat Header */}
-        <View style={styles.header}>
+        <View style={[styles.header, { backgroundColor: theme.PRIMARY }]}>
           <TouchableOpacity 
             style={styles.backButton}
             onPress={() => navigation.goBack()}
           >
-            <Ionicons name="arrow-back" size={24} color={COLORS.WHITE} />
+            <Ionicons name="arrow-back" size={24} color={theme.WHITE} />
           </TouchableOpacity>
           <View style={styles.doctorInfo}>
             {user && profilePictures[user.uid === doctorId ? patientId : doctorId] ? (
@@ -475,19 +486,19 @@ const ChatScreen = ({ navigation, route }) => {
                 onError={() => console.log('Chat partner avatar image load error')}
               />
             ) : (
-              <View style={styles.doctorAvatar}>
-                <Ionicons name="person" size={20} color={COLORS.WHITE} />
+              <View style={[styles.doctorAvatar, { backgroundColor: theme.WHITE }]}>
+                <Ionicons name="person" size={20} color={theme.PRIMARY} />
               </View>
             )}
             <View>
-              <Text style={styles.doctorName}>
+              <Text style={[styles.doctorName, { color: theme.WHITE }]}>
                 {chatPartnerName || (user && user.uid === doctorId ? patientName : doctorName) || 'Chat Partner'}
               </Text>
-              <Text style={styles.doctorStatus}>Online</Text>
+              <Text style={[styles.doctorStatus, { color: theme.WHITE }]}>Online</Text>
             </View>
           </View>
           <TouchableOpacity style={styles.videoCallButton}>
-            <Ionicons name="videocam" size={24} color={COLORS.WHITE} />
+            <Ionicons name="videocam" size={24} color={theme.WHITE} />
           </TouchableOpacity>
         </View>
 
@@ -498,18 +509,20 @@ const ChatScreen = ({ navigation, route }) => {
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => <MessageBubble item={item} />}
           style={styles.messagesList}
-          contentContainerStyle={styles.messagesContainer}
+          contentContainerStyle={[styles.messagesContainer, { backgroundColor: theme.BACKGROUND }]}
           showsVerticalScrollIndicator={false}
           ListEmptyComponent={
             <View style={styles.emptyMessageContainer}>
-              <Text style={styles.emptyMessageText}>No messages yet. Start a conversation!</Text>
+              <Text style={[styles.emptyMessageText, { color: theme.TEXT_SECONDARY }]}>No messages yet. Start a conversation!</Text>
             </View>
           }
+          onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
+          onLayout={() => flatListRef.current?.scrollToEnd({ animated: true })}
         />
 
         {/* Quick Replies */}
-        <View style={styles.quickRepliesContainer}>
-          <Text style={styles.quickRepliesTitle}>Quick replies:</Text>
+        <View style={[styles.quickRepliesContainer, { backgroundColor: theme.CARD_BACKGROUND, borderTopColor: theme.BORDER }]}>
+          <Text style={[styles.quickRepliesTitle, { color: theme.TEXT_SECONDARY }]}>Quick replies:</Text>
           <View style={styles.quickRepliesRow}>
             <QuickReply text="How are you feeling?" onPress={sendQuickMessage} />
             <QuickReply text="Thank you doctor" onPress={sendQuickMessage} />
@@ -518,21 +531,38 @@ const ChatScreen = ({ navigation, route }) => {
         </View>
 
         {/* Message Input */}
-        <View style={styles.inputContainer}>
+        <View style={[styles.inputContainer, { backgroundColor: theme.CARD_BACKGROUND, borderTopColor: theme.BORDER }]}>
           <View style={styles.inputRow}>
             <TextInput
-              style={styles.textInput}
+              style={[styles.textInput, { 
+                borderColor: theme.BORDER, 
+                backgroundColor: theme.WHITE, 
+                color: theme.TEXT_PRIMARY 
+              }]}
               value={inputText}
               onChangeText={setInputText}
               placeholder="Type your message..."
-              placeholderTextColor={COLORS.GRAY_MEDIUM}
+              placeholderTextColor={theme.GRAY_MEDIUM}
               multiline
               maxLength={500}
+              onFocus={() => {
+                // Scroll to bottom when input is focused
+                setTimeout(() => {
+                  flatListRef.current?.scrollToEnd({ animated: true });
+                }, 100);
+              }}
+              onContentSizeChange={(event) => {
+                // Adjust the height of the TextInput based on content
+                // This will help with multiline text input
+              }}
             />
             <TouchableOpacity 
               style={[
                 styles.sendButton,
-                inputText.trim() ? styles.sendButtonActive : styles.sendButtonInactive
+                inputText.trim() ? styles.sendButtonActive : styles.sendButtonInactive,
+                { 
+                  backgroundColor: inputText.trim() ? theme.PRIMARY : theme.GRAY_LIGHT 
+                }
               ]}
               onPress={sendMessage}
               disabled={!inputText.trim()}
@@ -540,7 +570,7 @@ const ChatScreen = ({ navigation, route }) => {
               <Ionicons 
                 name="send" 
                 size={20} 
-                color={inputText.trim() ? COLORS.WHITE : COLORS.GRAY_MEDIUM} 
+                color={inputText.trim() ? theme.WHITE : theme.GRAY_MEDIUM} 
               />
             </TouchableOpacity>
           </View>
@@ -553,45 +583,36 @@ const ChatScreen = ({ navigation, route }) => {
 // Mock messages for demonstration (no longer needed with real-time Firebase)
 // const mockMessages = [...];
 
-const styles = StyleSheet.create({
+const getStyles = (theme) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.BACKGROUND,
+    backgroundColor: theme.BACKGROUND,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.PRIMARY,
+    justifyContent: 'space-between',
     paddingHorizontal: SPACING.MD,
     paddingVertical: SPACING.MD,
-    paddingTop: SPACING.LG,
+    backgroundColor: theme.CARD_BACKGROUND,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.BORDER,
   },
   backButton: {
-    marginRight: SPACING.MD,
+    padding: SPACING.SM,
   },
   doctorInfo: {
     flex: 1,
-    flexDirection: 'row',
     alignItems: 'center',
-  },
-  doctorAvatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: COLORS.WHITE,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: SPACING.SM,
   },
   doctorName: {
     fontSize: FONT_SIZES.LG,
     fontWeight: 'bold',
-    color: COLORS.WHITE,
+    color: theme.TEXT_PRIMARY,
   },
   doctorStatus: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.WHITE,
-    opacity: 0.8,
+    color: theme.TEXT_SECONDARY,
   },
   videoCallButton: {
     padding: SPACING.SM,
@@ -602,6 +623,7 @@ const styles = StyleSheet.create({
   messagesContainer: {
     padding: SPACING.MD,
     paddingBottom: SPACING.LG,
+    backgroundColor: theme.BACKGROUND,
   },
   messageContainer: {
     marginBottom: SPACING.MD,
@@ -621,7 +643,7 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: COLORS.PRIMARY,
+    backgroundColor: theme.PRIMARY,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: SPACING.XS,
@@ -637,45 +659,50 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.MD,
     paddingVertical: SPACING.SM,
     borderRadius: BORDER_RADIUS.LG,
+    backgroundColor: theme.CARD_BACKGROUND,
+    borderWidth: 1,
+    borderColor: theme.BORDER,
   },
   myMessageBubble: {
-    backgroundColor: COLORS.PRIMARY,
+    backgroundColor: theme.PRIMARY,
     borderBottomRightRadius: BORDER_RADIUS.SM,
+    borderColor: theme.PRIMARY,
   },
   otherMessageBubble: {
-    backgroundColor: COLORS.WHITE,
+    backgroundColor: theme.CARD_BACKGROUND,
     borderBottomLeftRadius: BORDER_RADIUS.SM,
-    shadowColor: COLORS.BLACK,
+    shadowColor: theme.BLACK,
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
     elevation: 2,
+    borderColor: theme.BORDER,
   },
   senderName: {
     fontSize: FONT_SIZES.XS,
     fontWeight: '600',
-    color: COLORS.PRIMARY,
+    color: theme.PRIMARY,
   },
   messageText: {
     fontSize: FONT_SIZES.MD,
     lineHeight: 20,
   },
   myMessageText: {
-    color: COLORS.WHITE,
+    color: theme.WHITE,
   },
   otherMessageText: {
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
   },
   messageTime: {
     fontSize: FONT_SIZES.XS,
     marginTop: SPACING.XS / 2,
   },
   myMessageTime: {
-    color: COLORS.WHITE,
+    color: theme.WHITE,
     opacity: 0.7,
   },
   otherMessageTime: {
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
   },
   emptyMessageContainer: {
     flex: 1,
@@ -685,19 +712,19 @@ const styles = StyleSheet.create({
   },
   emptyMessageText: {
     fontSize: FONT_SIZES.MD,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     textAlign: 'center',
   },
   quickRepliesContainer: {
-    backgroundColor: COLORS.WHITE,
+    backgroundColor: theme.CARD_BACKGROUND,
     paddingHorizontal: SPACING.MD,
     paddingVertical: SPACING.SM,
     borderTopWidth: 1,
-    borderTopColor: COLORS.BORDER,
+    borderTopColor: theme.BORDER,
   },
   quickRepliesTitle: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     marginBottom: SPACING.XS,
   },
   quickRepliesRow: {
@@ -705,7 +732,7 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
   },
   quickReply: {
-    backgroundColor: COLORS.GRAY_LIGHT,
+    backgroundColor: theme.BUTTON_SECONDARY,
     paddingHorizontal: SPACING.MD,
     paddingVertical: SPACING.XS,
     borderRadius: BORDER_RADIUS.XL,
@@ -714,14 +741,14 @@ const styles = StyleSheet.create({
   },
   quickReplyText: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
   },
   inputContainer: {
-    backgroundColor: COLORS.WHITE,
+    backgroundColor: theme.CARD_BACKGROUND,
     paddingHorizontal: SPACING.MD,
     paddingVertical: SPACING.MD,
     borderTopWidth: 1,
-    borderTopColor: COLORS.BORDER,
+    borderTopColor: theme.BORDER,
   },
   inputRow: {
     flexDirection: 'row',
@@ -730,12 +757,13 @@ const styles = StyleSheet.create({
   textInput: {
     flex: 1,
     borderWidth: 1,
-    borderColor: COLORS.BORDER,
+    borderColor: theme.BORDER,
     borderRadius: BORDER_RADIUS.XL,
     paddingHorizontal: SPACING.MD,
     paddingVertical: SPACING.SM,
     fontSize: FONT_SIZES.MD,
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
+    backgroundColor: theme.INPUT_BACKGROUND,
     maxHeight: 100,
     marginRight: SPACING.SM,
   },
@@ -747,10 +775,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   sendButtonActive: {
-    backgroundColor: COLORS.PRIMARY,
+    backgroundColor: theme.PRIMARY,
   },
   sendButtonInactive: {
-    backgroundColor: COLORS.GRAY_LIGHT,
+    backgroundColor: theme.BUTTON_SECONDARY,
   },
 });
 

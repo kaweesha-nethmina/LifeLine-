@@ -15,6 +15,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as DocumentPicker from 'expo-document-picker';
 import * as ImagePicker from 'expo-image-picker';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import {
   db,
   doc,
@@ -40,6 +41,8 @@ import Button from '../components/Button';
 
 const UploadDocumentScreen = ({ navigation }) => {
   const { user, userProfile } = useAuth();
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
   const [documents, setDocuments] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -350,15 +353,15 @@ const UploadDocumentScreen = ({ navigation }) => {
   };
 
   const UploadOptionCard = ({ title, subtitle, icon, color, onPress }) => (
-    <TouchableOpacity style={styles.uploadOption} onPress={onPress}>
+    <TouchableOpacity style={[styles.uploadOption, { borderBottomColor: theme.BORDER }]} onPress={onPress}>
       <View style={[styles.uploadIcon, { backgroundColor: color }]}>
-        <Ionicons name={icon} size={32} color={COLORS.WHITE} />
+        <Ionicons name={icon} size={32} color={theme.WHITE} />
       </View>
       <View style={styles.uploadText}>
-        <Text style={styles.uploadTitle}>{title}</Text>
-        <Text style={styles.uploadSubtitle}>{subtitle}</Text>
+        <Text style={[styles.uploadTitle, { color: theme.TEXT_PRIMARY }]}>{title}</Text>
+        <Text style={[styles.uploadSubtitle, { color: theme.TEXT_SECONDARY }]}>{subtitle}</Text>
       </View>
-      <Ionicons name="chevron-forward" size={20} color={COLORS.GRAY_MEDIUM} />
+      <Ionicons name="chevron-forward" size={20} color={theme.GRAY_MEDIUM} />
     </TouchableOpacity>
   );
 
@@ -399,26 +402,26 @@ const UploadDocumentScreen = ({ navigation }) => {
     };
 
     return (
-      <Card style={styles.documentCard}>
+      <Card style={[styles.documentCard, { backgroundColor: theme.CARD_BACKGROUND, borderColor: theme.BORDER }]}>
         <TouchableOpacity onPress={handleOpenDocument}>
           <View style={styles.documentHeader}>
-            <View style={styles.documentIconContainer}>
+            <View style={[styles.documentIconContainer, { backgroundColor: theme.PRIMARY + '20' }]}>
               <Ionicons 
                 name={getDocumentIcon(document.type)} 
                 size={24} 
-                color={COLORS.PRIMARY} 
+                color={theme.PRIMARY} 
               />
             </View>
             <View style={styles.documentInfo}>
-              <Text style={styles.documentName} numberOfLines={1}>
+              <Text style={[styles.documentName, { color: theme.TEXT_PRIMARY }]} numberOfLines={1}>
                 {document.name}
               </Text>
-              <Text style={styles.documentMeta}>
+              <Text style={[styles.documentMeta, { color: theme.TEXT_SECONDARY }]}>
                 {formatFileSize(document.size)} • {new Date(document.uploadDate).toLocaleDateString()}
               </Text>
-              <Text style={styles.documentCategory}>{document.category}</Text>
+              <Text style={[styles.documentCategory, { color: theme.PRIMARY }]}>{document.category}</Text>
               {document.storageProvider && (
-                <Text style={styles.storageProvider}>
+                <Text style={[styles.storageProvider, { color: theme.SUCCESS }]}>
                   Stored on: {document.storageProvider === 'supabase' ? 'Supabase' : 'Firebase'}
                 </Text>
               )}
@@ -427,7 +430,7 @@ const UploadDocumentScreen = ({ navigation }) => {
               style={styles.deleteButton}
               onPress={() => deleteDocument(document.id)}
             >
-              <Ionicons name="trash-outline" size={20} color={COLORS.ERROR} />
+              <Ionicons name="trash-outline" size={20} color={theme.ERROR} />
             </TouchableOpacity>
           </View>
           {document.type.includes('image') && (document.downloadURL || document.uri) && (
@@ -438,9 +441,9 @@ const UploadDocumentScreen = ({ navigation }) => {
             />
           )}
           {/* Visual indicator that the document is clickable */}
-          <View style={styles.documentFooter}>
-            <Text style={styles.openDocumentText}>Tap to open document</Text>
-            <Ionicons name="open-outline" size={16} color={COLORS.PRIMARY} />
+          <View style={[styles.documentFooter, { borderTopColor: theme.BORDER }]}>
+            <Text style={[styles.openDocumentText, { color: theme.PRIMARY }]}>Tap to open document</Text>
+            <Ionicons name="open-outline" size={16} color={theme.PRIMARY} />
           </View>
         </TouchableOpacity>
       </Card>
@@ -448,25 +451,25 @@ const UploadDocumentScreen = ({ navigation }) => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.BACKGROUND }]}>
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.title}>Upload Documents</Text>
-          <Text style={styles.subtitle}>
+          <Text style={[styles.title, { color: theme.TEXT_PRIMARY }]}>Upload Documents</Text>
+          <Text style={[styles.subtitle, { color: theme.TEXT_SECONDARY }]}>
             Keep your medical documents safe and accessible
           </Text>
         </View>
 
         {/* Upload Options */}
-        <Card style={styles.section}>
-          <Text style={styles.sectionTitle}>Add New Document</Text>
+        <Card style={[styles.section, { backgroundColor: theme.CARD_BACKGROUND, borderColor: theme.BORDER }]}>
+          <Text style={[styles.sectionTitle, { color: theme.TEXT_PRIMARY }]}>Add New Document</Text>
           
           <UploadOptionCard
             title="Take Photo"
             subtitle="Capture document with camera"
             icon="camera"
-            color={COLORS.PRIMARY}
+            color={theme.PRIMARY}
             onPress={takePhoto}
           />
           
@@ -474,7 +477,7 @@ const UploadDocumentScreen = ({ navigation }) => {
             title="Choose from Gallery"
             subtitle="Select image from photos"
             icon="image"
-            color={COLORS.SUCCESS}
+            color={theme.SUCCESS}
             onPress={pickImage}
           />
           
@@ -482,32 +485,32 @@ const UploadDocumentScreen = ({ navigation }) => {
             title="Browse Files"
             subtitle="Select PDF or other documents"
             icon="document"
-            color={COLORS.INFO}
+            color={theme.INFO}
             onPress={pickDocument}
           />
         </Card>
 
         {/* Upload Progress */}
         {uploading && (
-          <Card style={styles.uploadProgress}>
+          <Card style={[styles.uploadProgress, { backgroundColor: theme.CARD_BACKGROUND, borderColor: theme.BORDER }]}>
             <View style={styles.progressContent}>
-              <Ionicons name="cloud-upload" size={24} color={COLORS.PRIMARY} />
-              <Text style={styles.progressText}>Uploading document...</Text>
+              <Ionicons name="cloud-upload" size={24} color={theme.PRIMARY} />
+              <Text style={[styles.progressText, { color: theme.PRIMARY }]}>Uploading document...</Text>
             </View>
           </Card>
         )}
 
         {/* Documents List */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>
+          <Text style={[styles.sectionTitle, { color: theme.TEXT_PRIMARY }]}>
             My Documents ({documents.length})
           </Text>
           
           {documents.length === 0 ? (
-            <Card style={styles.emptyState}>
-              <Ionicons name="folder-open-outline" size={64} color={COLORS.GRAY_MEDIUM} />
-              <Text style={styles.emptyTitle}>No Documents</Text>
-              <Text style={styles.emptySubtitle}>
+            <Card style={[styles.emptyState, { backgroundColor: theme.CARD_BACKGROUND }]}>
+              <Ionicons name="folder-open-outline" size={64} color={theme.GRAY_MEDIUM} />
+              <Text style={[styles.emptyTitle, { color: theme.TEXT_PRIMARY }]}>No Documents</Text>
+              <Text style={[styles.emptySubtitle, { color: theme.TEXT_SECONDARY }]}>
                 Upload your medical documents to keep them organized and secure
               </Text>
             </Card>
@@ -519,12 +522,12 @@ const UploadDocumentScreen = ({ navigation }) => {
         </View>
 
         {/* Tips */}
-        <Card style={styles.tipsCard}>
+        <Card style={[styles.tipsCard, { backgroundColor: theme.INFO + '10', borderColor: theme.INFO }]}>
           <View style={styles.tipsHeader}>
-            <Ionicons name="bulb-outline" size={20} color={COLORS.INFO} />
-            <Text style={styles.tipsTitle}>Tips for Better Documents</Text>
+            <Ionicons name="bulb-outline" size={20} color={theme.INFO} />
+            <Text style={[styles.tipsTitle, { color: theme.INFO }]}>Tips for Better Documents</Text>
           </View>
-          <Text style={styles.tipsText}>
+          <Text style={[styles.tipsText, { color: theme.TEXT_SECONDARY }]}>
             • Ensure documents are well-lit and clear{'\n'}
             • Use PDF format for multi-page documents{'\n'}
             • Keep file sizes under 10MB for faster uploads{'\n'}
@@ -536,67 +539,86 @@ const UploadDocumentScreen = ({ navigation }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (theme) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.BACKGROUND,
+    backgroundColor: theme.BACKGROUND,
+  },
+  header: {
+    paddingHorizontal: SPACING.MD,
+    paddingVertical: SPACING.LG,
+    backgroundColor: theme.CARD_BACKGROUND,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.BORDER,
+  },
+  title: {
+    fontSize: FONT_SIZES.XL,
+    fontWeight: 'bold',
+    color: theme.TEXT_PRIMARY,
+    marginBottom: SPACING.XS,
+  },
+  subtitle: {
+    fontSize: FONT_SIZES.MD,
+    color: theme.TEXT_SECONDARY,
   },
   content: {
     flex: 1,
     padding: SPACING.MD,
   },
-  header: {
-    marginBottom: SPACING.LG,
-  },
-  title: {
-    fontSize: FONT_SIZES.XXL,
-    fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
-    marginBottom: SPACING.XS,
-  },
-  subtitle: {
-    fontSize: FONT_SIZES.MD,
-    color: COLORS.TEXT_SECONDARY,
-  },
-  section: {
+  uploadCard: {
     marginBottom: SPACING.MD,
+    backgroundColor: theme.CARD_BACKGROUND,
+    borderWidth: 1,
+    borderColor: theme.BORDER,
   },
   sectionTitle: {
     fontSize: FONT_SIZES.LG,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
+    marginBottom: SPACING.MD,
+  },
+  uploadOptions: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     marginBottom: SPACING.MD,
   },
   uploadOption: {
-    flexDirection: 'row',
+    flex: 1,
     alignItems: 'center',
-    paddingVertical: SPACING.MD,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.BORDER,
+    padding: SPACING.MD,
+    backgroundColor: theme.BUTTON_SECONDARY,
+    borderRadius: BORDER_RADIUS.MD,
+    marginHorizontal: SPACING.XS,
   },
-  uploadIcon: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+  uploadOptionText: {
+    fontSize: FONT_SIZES.SM,
+    color: theme.TEXT_PRIMARY,
+    fontWeight: '600',
+    marginTop: SPACING.XS,
+  },
+  recentDocumentsTitle: {
+    fontSize: FONT_SIZES.LG,
+    fontWeight: 'bold',
+    color: theme.TEXT_PRIMARY,
+    marginBottom: SPACING.MD,
+    marginTop: SPACING.MD,
+  },
+  loadingContainer: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: SPACING.MD,
+    paddingVertical: SPACING.XXL,
   },
-  uploadText: {
-    flex: 1,
-  },
-  uploadTitle: {
+  loadingText: {
+    marginTop: SPACING.MD,
     fontSize: FONT_SIZES.MD,
-    fontWeight: '600',
-    color: COLORS.TEXT_PRIMARY,
-    marginBottom: SPACING.XS / 2,
-  },
-  uploadSubtitle: {
-    fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
   },
   uploadProgress: {
     marginBottom: SPACING.MD,
+    backgroundColor: theme.CARD_BACKGROUND,
+    borderWidth: 1,
+    borderColor: theme.BORDER,
   },
   progressContent: {
     flexDirection: 'row',
@@ -606,13 +628,15 @@ const styles = StyleSheet.create({
   },
   progressText: {
     fontSize: FONT_SIZES.MD,
-    color: COLORS.PRIMARY,
+    color: theme.PRIMARY,
     marginLeft: SPACING.SM,
     fontWeight: '600',
   },
   documentCard: {
     marginBottom: SPACING.SM,
-    backgroundColor: COLORS.WHITE,
+    backgroundColor: theme.CARD_BACKGROUND,
+    borderWidth: 1,
+    borderColor: theme.BORDER,
   },
   
   documentHeader: {
@@ -625,7 +649,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: COLORS.PRIMARY + '20',
+    backgroundColor: theme.PRIMARY + '20',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: SPACING.MD,
@@ -638,25 +662,25 @@ const styles = StyleSheet.create({
   documentName: {
     fontSize: FONT_SIZES.MD,
     fontWeight: '600',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginBottom: SPACING.XS / 2,
   },
   
   documentMeta: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     marginBottom: SPACING.XS / 2,
   },
   
   documentCategory: {
     fontSize: FONT_SIZES.XS,
-    color: COLORS.PRIMARY,
+    color: theme.PRIMARY,
     fontWeight: '600',
   },
   
   storageProvider: {
     fontSize: FONT_SIZES.XS,
-    color: COLORS.SUCCESS,
+    color: theme.SUCCESS,
     fontWeight: '500',
     fontStyle: 'italic',
   },
@@ -679,12 +703,12 @@ const styles = StyleSheet.create({
     marginTop: SPACING.SM,
     paddingTop: SPACING.SM,
     borderTopWidth: 1,
-    borderTopColor: COLORS.BORDER,
+    borderTopColor: theme.BORDER,
   },
   
   openDocumentText: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.PRIMARY,
+    color: theme.PRIMARY,
     fontWeight: '600',
     marginRight: SPACING.XS,
   },
@@ -692,26 +716,29 @@ const styles = StyleSheet.create({
   emptyState: {
     alignItems: 'center',
     paddingVertical: SPACING.XXL,
+    backgroundColor: theme.CARD_BACKGROUND,
   },
   
   emptyTitle: {
     fontSize: FONT_SIZES.LG,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginTop: SPACING.MD,
     marginBottom: SPACING.XS,
   },
   
   emptySubtitle: {
     fontSize: FONT_SIZES.MD,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     textAlign: 'center',
     paddingHorizontal: SPACING.MD,
   },
   
   tipsCard: {
-    backgroundColor: COLORS.INFO + '10',
+    backgroundColor: theme.INFO + '10',
     marginBottom: SPACING.XL,
+    borderWidth: 1,
+    borderColor: theme.INFO,
   },
   
   tipsHeader: {
@@ -723,13 +750,13 @@ const styles = StyleSheet.create({
   tipsTitle: {
     fontSize: FONT_SIZES.MD,
     fontWeight: '600',
-    color: COLORS.INFO,
+    color: theme.INFO,
     marginLeft: SPACING.SM,
   },
   
   tipsText: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     lineHeight: 20,
   },
 });

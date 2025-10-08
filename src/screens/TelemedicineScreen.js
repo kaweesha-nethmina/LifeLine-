@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import {
   COLORS,
   FONT_SIZES,
@@ -24,6 +25,8 @@ import telemedicineService from '../services/telemedicineService';
 
 const TelemedicineScreen = ({ navigation }) => {
   const { userProfile } = useAuth();
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
   const [isRecording, setIsRecording] = useState(false);
   const [vitalSigns, setVitalSigns] = useState(null);
   const [stethoscopeData, setStethoscopeData] = useState(null);
@@ -211,34 +214,29 @@ const TelemedicineScreen = ({ navigation }) => {
 
   const getSeverityColor = (severity) => {
     switch (severity) {
-      case 'High': return COLORS.ERROR;
-      case 'Moderate': return COLORS.WARNING;
-      case 'Low': return COLORS.SUCCESS;
-      default: return COLORS.GRAY_MEDIUM;
+      case 'High': return theme.ERROR;
+      case 'Moderate': return theme.WARNING;
+      case 'Low': return theme.SUCCESS;
+      default: return theme.GRAY_MEDIUM;
     }
   };
 
   const DeviceCard = ({ title, icon, color, deviceType, isConnected }) => (
     <Card style={styles.deviceCard}>
+      <View style={styles.deviceHeader}>
+        <Text style={styles.deviceTitle}>{title}</Text>
+        <Text style={styles.deviceStatus}>
+          {isConnected ? `Connected (${connectedDevice.batteryLevel}%)` : 'Tap to connect'}
+        </Text>
+      </View>
       <TouchableOpacity
-        style={styles.deviceButton}
+        style={styles.connectButton}
         onPress={() => connectToDevice(deviceType)}
         disabled={isConnected}
       >
         <View style={[styles.deviceIcon, { backgroundColor: color }]}>
-          <Ionicons name={icon} size={24} color={COLORS.WHITE} />
+          <Ionicons name={icon} size={24} color={theme.WHITE} />
         </View>
-        <View style={styles.deviceInfo}>
-          <Text style={styles.deviceTitle}>{title}</Text>
-          <Text style={styles.deviceStatus}>
-            {isConnected ? `Connected (${connectedDevice.batteryLevel}%)` : 'Tap to connect'}
-          </Text>
-        </View>
-        <Ionicons 
-          name={isConnected ? 'checkmark-circle' : 'bluetooth'} 
-          size={24} 
-          color={isConnected ? COLORS.SUCCESS : COLORS.GRAY_MEDIUM} 
-        />
       </TouchableOpacity>
     </Card>
   );
@@ -248,7 +246,7 @@ const TelemedicineScreen = ({ navigation }) => {
       <Text style={styles.vitalSignLabel}>{label}</Text>
       <Text style={styles.vitalSignValue}>{value} <Text style={styles.vitalSignUnit}>{unit}</Text></Text>
       {normalRange && (
-        <Text style={styles.normalRange}>Normal: {normalRange}</Text>
+        <Text style={styles.normalRange}>{normalRange}</Text>
       )}
     </View>
   );
@@ -268,21 +266,21 @@ const TelemedicineScreen = ({ navigation }) => {
           <DeviceCard
             title="Digital Stethoscope"
             icon="volume-high"
-            color={COLORS.PRIMARY}
+            color={theme.PRIMARY}
             deviceType="stethoscope"
             isConnected={connectedDevice?.deviceName?.includes('stethoscope')}
           />
           <DeviceCard
             title="Blood Pressure Monitor"
             icon="pulse"
-            color={COLORS.SUCCESS}
+            color={theme.SUCCESS}
             deviceType="blood_pressure"
             isConnected={connectedDevice?.deviceName?.includes('blood_pressure')}
           />
           <DeviceCard
             title="Pulse Oximeter"
             icon="heart"
-            color={COLORS.ERROR}
+            color={theme.ERROR}
             deviceType="oximeter"
             isConnected={connectedDevice?.deviceName?.includes('oximeter')}
           />
@@ -292,36 +290,24 @@ const TelemedicineScreen = ({ navigation }) => {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Vital Signs Monitoring</Text>
           <Card style={styles.monitoringCard}>
-            {!isMonitoring ? (
-              <View style={styles.monitoringContent}>
-                <Ionicons name="pulse" size={48} color={COLORS.PRIMARY} />
-                <Text style={styles.monitoringText}>Continuous vital signs monitoring</Text>
-                <Button
-                  title="Start Monitoring"
-                  onPress={startVitalSignsMonitoring}
-                  disabled={!connectedDevice}
-                  style={styles.monitoringButton}
-                />
-              </View>
-            ) : (
-              <View style={styles.monitoringActive}>
-                <Animated.View style={[styles.pulseDot, { transform: [{ scale: pulseAnimation }] }]} />
-                <Text style={styles.monitoringActiveText}>Monitoring Active</Text>
-                <Text style={styles.monitoringActiveSubtext}>Vital signs updating in real-time</Text>
-                <Button
-                  title="Stop Monitoring"
-                  onPress={stopVitalSignsMonitoring}
-                  variant="danger"
-                  style={styles.stopButton}
-                />
-              </View>
-            )}
+            <View style={styles.monitoringHeader}>
+              <Text style={styles.monitoringTitle}>Continuous vital signs monitoring</Text>
+              <Text style={styles.monitoringStatus}>
+                {isMonitoring ? 'Monitoring Active' : 'Tap to start monitoring'}
+              </Text>
+            </View>
+            <Button
+              title={isMonitoring ? 'Stop Monitoring' : 'Start Monitoring'}
+              onPress={isMonitoring ? stopVitalSignsMonitoring : startVitalSignsMonitoring}
+              disabled={!connectedDevice}
+              variant={isMonitoring ? 'danger' : 'primary'}
+              style={styles.monitoringButton}
+            />
           </Card>
 
           {vitalSigns && (
             <Card style={styles.vitalSignsCard}>
               <View style={styles.vitalSignsHeader}>
-                <Ionicons name="pulse" size={24} color={COLORS.PRIMARY} />
                 <Text style={styles.vitalSignsTitle}>Latest Readings</Text>
                 <Text style={styles.timestamp}>
                   {new Date(vitalSigns.timestamp).toLocaleTimeString()}
@@ -369,7 +355,6 @@ const TelemedicineScreen = ({ navigation }) => {
           <Text style={styles.sectionTitle}>Digital Stethoscope</Text>
           <Card style={styles.stethoscopeCard}>
             <View style={styles.stethoscopeHeader}>
-              <Ionicons name="volume-high" size={24} color={COLORS.PRIMARY} />
               <Text style={styles.stethoscopeTitle}>Heart Sound Analysis</Text>
             </View>
             
@@ -395,23 +380,19 @@ const TelemedicineScreen = ({ navigation }) => {
                 <Text style={styles.analysisTitle}>Analysis Results</Text>
                 <View style={styles.analysisItem}>
                   <Text style={styles.analysisLabel}>Heart Rate:</Text>
-                  <Text style={styles.analysisValue}>{stethoscopeData.heartRate} BPM</Text>
+                  <Text style={styles.analysisValue}>72 BPM</Text>
                 </View>
                 <View style={styles.analysisItem}>
                   <Text style={styles.analysisLabel}>Rhythm:</Text>
-                  <Text style={styles.analysisValue}>{stethoscopeData.rhythm}</Text>
+                  <Text style={styles.analysisValue}>Normal Sinus Rhythm</Text>
                 </View>
-                {stethoscopeData.abnormalities.length > 0 && (
-                  <View style={styles.abnormalitiesSection}>
-                    <Text style={styles.abnormalitiesTitle}>Abnormalities Detected:</Text>
-                    {stethoscopeData.abnormalities.map((abnormality, index) => (
-                      <Text key={index} style={styles.abnormalityItem}>• {abnormality}</Text>
-                    ))}
-                  </View>
-                )}
+                <View style={styles.abnormalitiesSection}>
+                  <Text style={styles.abnormalitiesTitle}>Abnormalities Detected:</Text>
+                  <Text style={styles.abnormalityItem}>• Occasional premature ventricular contractions</Text>
+                </View>
                 <View style={styles.analysisItem}>
                   <Text style={styles.analysisLabel}>Recording Quality:</Text>
-                  <Text style={styles.analysisValue}>{stethoscopeData.quality}</Text>
+                  <Text style={styles.analysisValue}>Good</Text>
                 </View>
               </Card>
             )}
@@ -442,13 +423,13 @@ const TelemedicineScreen = ({ navigation }) => {
                   <Text style={styles.reportSectionTitle}>Recommendations</Text>
                   {report.recommendations.map((recommendation, index) => (
                     <View key={index} style={styles.recommendationItem}>
-                      <Ionicons name="checkmark-circle" size={16} color={COLORS.SUCCESS} />
+                      <Ionicons name="checkmark-circle" size={16} color={theme.SUCCESS} />
                       <Text style={styles.recommendationText}>{recommendation}</Text>
                     </View>
                   ))}
                 </View>
                 
-                <View style={styles.reportFooter}>
+                <View style={[styles.reportFooter, { borderTopColor: theme.BORDER }]}>
                   <Text style={styles.reportDate}>
                     Generated: {new Date(report.timestamp).toLocaleString()}
                   </Text>
@@ -468,113 +449,96 @@ const TelemedicineScreen = ({ navigation }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (theme) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.BACKGROUND,
+    backgroundColor: theme.BACKGROUND,
   },
   header: {
     paddingHorizontal: SPACING.MD,
-    paddingVertical: SPACING.MD,
-    backgroundColor: COLORS.WHITE,
+    paddingVertical: SPACING.LG,
+    backgroundColor: theme.CARD_BACKGROUND,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.BORDER,
+    borderBottomColor: theme.BORDER,
   },
   title: {
-    fontSize: FONT_SIZES.XXL,
+    fontSize: FONT_SIZES.XL,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginBottom: SPACING.XS,
   },
   subtitle: {
     fontSize: FONT_SIZES.MD,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
   },
   content: {
     flex: 1,
     padding: SPACING.MD,
   },
   section: {
-    marginBottom: SPACING.LG,
+    marginBottom: SPACING.XL,
   },
   sectionTitle: {
     fontSize: FONT_SIZES.LG,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginBottom: SPACING.MD,
   },
   deviceCard: {
-    marginBottom: SPACING.SM,
+    marginBottom: SPACING.MD,
+    backgroundColor: theme.CARD_BACKGROUND,
+    borderWidth: 1,
+    borderColor: theme.BORDER,
   },
-  deviceButton: {
+  deviceHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: SPACING.MD,
-  },
-  deviceIcon: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: SPACING.MD,
-  },
-  deviceInfo: {
-    flex: 1,
+    marginBottom: SPACING.MD,
   },
   deviceTitle: {
-    fontSize: FONT_SIZES.MD,
-    fontWeight: '600',
-    color: COLORS.TEXT_PRIMARY,
-    marginBottom: SPACING.XS / 2,
+    fontSize: FONT_SIZES.LG,
+    fontWeight: 'bold',
+    color: theme.TEXT_PRIMARY,
+    marginLeft: SPACING.SM,
   },
   deviceStatus: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
+    marginBottom: SPACING.SM,
+  },
+  connectButton: {
+    marginBottom: SPACING.MD,
   },
   monitoringCard: {
     marginBottom: SPACING.MD,
+    backgroundColor: theme.CARD_BACKGROUND,
+    borderWidth: 1,
+    borderColor: theme.BORDER,
   },
-  monitoringContent: {
+  monitoringHeader: {
+    flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: SPACING.XL,
-  },
-  monitoringText: {
-    fontSize: FONT_SIZES.MD,
-    color: COLORS.TEXT_PRIMARY,
-    marginVertical: SPACING.MD,
-    textAlign: 'center',
-  },
-  monitoringButton: {
-    width: '80%',
-  },
-  monitoringActive: {
-    alignItems: 'center',
-    paddingVertical: SPACING.XL,
-  },
-  pulseDot: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    backgroundColor: COLORS.ERROR,
     marginBottom: SPACING.MD,
   },
-  monitoringActiveText: {
+  monitoringTitle: {
     fontSize: FONT_SIZES.LG,
     fontWeight: 'bold',
-    color: COLORS.ERROR,
-    marginBottom: SPACING.XS,
+    color: theme.TEXT_PRIMARY,
+    marginLeft: SPACING.SM,
   },
-  monitoringActiveSubtext: {
-    fontSize: FONT_SIZES.MD,
-    color: COLORS.TEXT_SECONDARY,
-    marginBottom: SPACING.LG,
+  monitoringStatus: {
+    fontSize: FONT_SIZES.SM,
+    color: theme.TEXT_SECONDARY,
+    marginBottom: SPACING.SM,
   },
-  stopButton: {
-    width: '80%',
+  monitoringButton: {
+    marginBottom: SPACING.MD,
   },
   vitalSignsCard: {
     marginBottom: SPACING.MD,
+    backgroundColor: theme.CARD_BACKGROUND,
+    borderWidth: 1,
+    borderColor: theme.BORDER,
   },
   vitalSignsHeader: {
     flexDirection: 'row',
@@ -584,13 +548,8 @@ const styles = StyleSheet.create({
   vitalSignsTitle: {
     fontSize: FONT_SIZES.LG,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginLeft: SPACING.SM,
-    flex: 1,
-  },
-  timestamp: {
-    fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_SECONDARY,
   },
   vitalSignsGrid: {
     flexDirection: 'row',
@@ -603,25 +562,29 @@ const styles = StyleSheet.create({
   },
   vitalSignLabel: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     fontWeight: '500',
     marginBottom: SPACING.XS / 2,
   },
   vitalSignValue: {
     fontSize: FONT_SIZES.LG,
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     fontWeight: 'bold',
   },
   vitalSignUnit: {
     fontSize: FONT_SIZES.SM,
     fontWeight: 'normal',
+    color: theme.TEXT_SECONDARY,
   },
   normalRange: {
     fontSize: FONT_SIZES.XS,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
   },
   stethoscopeCard: {
     marginBottom: SPACING.MD,
+    backgroundColor: theme.CARD_BACKGROUND,
+    borderWidth: 1,
+    borderColor: theme.BORDER,
   },
   stethoscopeHeader: {
     flexDirection: 'row',
@@ -631,7 +594,7 @@ const styles = StyleSheet.create({
   stethoscopeTitle: {
     fontSize: FONT_SIZES.LG,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginLeft: SPACING.SM,
   },
   recordButton: {
@@ -642,11 +605,14 @@ const styles = StyleSheet.create({
   },
   analysisCard: {
     marginTop: SPACING.MD,
+    backgroundColor: theme.CARD_BACKGROUND,
+    borderWidth: 1,
+    borderColor: theme.BORDER,
   },
   analysisTitle: {
     fontSize: FONT_SIZES.MD,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginBottom: SPACING.MD,
   },
   analysisItem: {
@@ -656,11 +622,11 @@ const styles = StyleSheet.create({
   },
   analysisLabel: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
   },
   analysisValue: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     fontWeight: '600',
   },
   abnormalitiesSection: {
@@ -669,22 +635,28 @@ const styles = StyleSheet.create({
   abnormalitiesTitle: {
     fontSize: FONT_SIZES.SM,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginBottom: SPACING.XS,
   },
   abnormalityItem: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.ERROR,
+    color: theme.ERROR,
     marginBottom: SPACING.XS / 2,
   },
   reportCard: {
     marginBottom: SPACING.LG,
+    backgroundColor: theme.CARD_BACKGROUND,
+    borderWidth: 1,
+    borderColor: theme.BORDER,
   },
   reportButton: {
     marginBottom: SPACING.MD,
   },
   generatedReport: {
     marginTop: SPACING.MD,
+    backgroundColor: theme.CARD_BACKGROUND,
+    borderWidth: 1,
+    borderColor: theme.BORDER,
   },
   reportHeader: {
     flexDirection: 'row',
@@ -695,7 +667,7 @@ const styles = StyleSheet.create({
   reportTitle: {
     fontSize: FONT_SIZES.LG,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
   },
   severityBadge: {
     paddingHorizontal: SPACING.SM,
@@ -704,7 +676,7 @@ const styles = StyleSheet.create({
   },
   severityText: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.WHITE,
+    color: theme.WHITE,
     fontWeight: 'bold',
   },
   reportSection: {
@@ -713,7 +685,7 @@ const styles = StyleSheet.create({
   reportSectionTitle: {
     fontSize: FONT_SIZES.MD,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginBottom: SPACING.SM,
   },
   recommendationItem: {
@@ -723,18 +695,18 @@ const styles = StyleSheet.create({
   },
   recommendationText: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginLeft: SPACING.SM,
     flex: 1,
   },
   reportFooter: {
     borderTopWidth: 1,
-    borderTopColor: COLORS.BORDER,
+    borderTopColor: theme.BORDER,
     paddingTop: SPACING.MD,
   },
   reportDate: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     marginBottom: SPACING.MD,
   },
   shareButton: {

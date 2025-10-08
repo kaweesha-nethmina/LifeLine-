@@ -12,6 +12,7 @@ import {
   FlatList,
   TextInput
 } from 'react-native';
+import { useTheme } from '../../context/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
 import MapView, { Marker } from 'react-native-maps';
 import * as Location from 'expo-location'; // Add this import for location permissions
@@ -41,6 +42,8 @@ import Button from '../../components/Button';
 const AmbulanceDispatchScreen = ({ navigation, route }) => {
   const { userProfile } = useAuth();
   const { emergencyId } = route.params || {};
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
   
   const [ambulances, setAmbulances] = useState([]);
   const [dispatches, setDispatches] = useState([]);
@@ -1089,10 +1092,10 @@ const MapSelectionModal = ({
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (theme) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.BACKGROUND,
+    backgroundColor: theme.BACKGROUND,
   },
   header: {
     flexDirection: 'row',
@@ -1100,14 +1103,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: SPACING.MD,
     paddingVertical: SPACING.SM,
-    backgroundColor: COLORS.WHITE,
+    backgroundColor: theme.CARD_BACKGROUND,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.BORDER,
+    borderBottomColor: theme.BORDER,
   },
   headerTitle: {
     fontSize: FONT_SIZES.XL,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
   },
   headerButton: {
     flexDirection: 'row',
@@ -1115,7 +1118,7 @@ const styles = StyleSheet.create({
   },
   headerButtonText: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.PRIMARY,
+    color: theme.PRIMARY,
     fontWeight: 'bold',
     marginLeft: SPACING.XS,
   },
@@ -1123,9 +1126,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     paddingHorizontal: SPACING.MD,
     paddingVertical: SPACING.SM,
-    backgroundColor: COLORS.WHITE,
+    backgroundColor: theme.CARD_BACKGROUND,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.BORDER,
+    borderBottomColor: theme.BORDER,
   },
   statCard: {
     flex: 1,
@@ -1135,45 +1138,45 @@ const styles = StyleSheet.create({
   statNumber: {
     fontSize: FONT_SIZES.XL,
     fontWeight: 'bold',
-    color: COLORS.PRIMARY,
+    color: theme.PRIMARY,
     marginBottom: SPACING.XS / 2,
   },
   statLabel: {
     fontSize: FONT_SIZES.XS,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     textAlign: 'center',
   },
   controlsContainer: {
-    backgroundColor: COLORS.WHITE,
+    backgroundColor: theme.CARD_BACKGROUND,
     paddingHorizontal: SPACING.MD,
     paddingVertical: SPACING.SM,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.BORDER,
+    borderBottomColor: theme.BORDER,
   },
   filterContainer: {
-    backgroundColor: COLORS.WHITE,
+    backgroundColor: theme.CARD_BACKGROUND,
     paddingHorizontal: SPACING.MD,
     paddingVertical: SPACING.SM,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.BORDER,
+    borderBottomColor: theme.BORDER,
   },
   filterButton: {
     paddingHorizontal: SPACING.MD,
     paddingVertical: SPACING.SM,
     borderRadius: BORDER_RADIUS.XL,
     marginRight: SPACING.SM,
-    backgroundColor: COLORS.GRAY_LIGHT,
+    backgroundColor: theme.BUTTON_SECONDARY,
   },
   activeFilterButton: {
-    backgroundColor: COLORS.PRIMARY,
+    backgroundColor: theme.PRIMARY,
   },
   filterButtonText: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     fontWeight: '500',
   },
   activeFilterButtonText: {
-    color: COLORS.WHITE,
+    color: theme.WHITE,
   },
   ambulanceList: {
     flex: 1,
@@ -1185,6 +1188,7 @@ const styles = StyleSheet.create({
   ambulanceCard: {
     marginBottom: SPACING.MD,
     borderLeftWidth: 4,
+    backgroundColor: theme.CARD_BACKGROUND,
   },
   ambulanceHeader: {
     flexDirection: 'row',
@@ -1198,22 +1202,22 @@ const styles = StyleSheet.create({
   callSign: {
     fontSize: FONT_SIZES.MD,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginBottom: SPACING.XS / 2,
   },
   vehicleType: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.PRIMARY,
+    color: theme.PRIMARY,
     marginBottom: SPACING.XS / 2,
   },
   location: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.INFO,
+    color: theme.INFO,
     marginBottom: SPACING.XS / 2,
   },
   crew: {
     fontSize: FONT_SIZES.XS,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
   },
   ambulanceStatus: {
     alignItems: 'flex-end',
@@ -1228,20 +1232,20 @@ const styles = StyleSheet.create({
   },
   statusText: {
     fontSize: FONT_SIZES.XS,
-    color: COLORS.WHITE,
+    color: theme.WHITE,
     marginLeft: SPACING.XS / 2,
     fontWeight: '600',
   },
   eta: {
     fontSize: FONT_SIZES.XS,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
   },
   ambulanceStats: {
     flexDirection: 'row',
     justifyContent: 'space-around',
     paddingVertical: SPACING.SM,
     borderTopWidth: 1,
-    borderTopColor: COLORS.BORDER,
+    borderTopColor: theme.BORDER,
     marginBottom: SPACING.SM,
   },
   statItem: {
@@ -1250,7 +1254,7 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: FONT_SIZES.MD,
     fontWeight: 'bold',
-    color: COLORS.PRIMARY,
+    color: theme.PRIMARY,
     marginBottom: SPACING.XS / 2,
   },
   ambulanceActions: {
@@ -1259,7 +1263,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     paddingTop: SPACING.SM,
     borderTopWidth: 1,
-    borderTopColor: COLORS.BORDER,
+    borderTopColor: theme.BORDER,
   },
   actionButton: {
     flexDirection: 'row',
@@ -1272,15 +1276,16 @@ const styles = StyleSheet.create({
   },
   actionText: {
     fontSize: FONT_SIZES.XS,
-    color: COLORS.WHITE,
+    color: theme.WHITE,
     fontWeight: 'bold',
     marginLeft: SPACING.XS,
   },
   dispatchCard: {
     marginBottom: SPACING.SM,
-    backgroundColor: COLORS.PRIMARY + '10',
+    backgroundColor: theme.PRIMARY + '10',
     borderLeftWidth: 4,
-    borderLeftColor: COLORS.PRIMARY,
+    borderLeftColor: theme.PRIMARY,
+    backgroundColor: theme.CARD_BACKGROUND,
   },
   dispatchHeader: {
     flexDirection: 'row',
@@ -1291,43 +1296,44 @@ const styles = StyleSheet.create({
   dispatchId: {
     fontSize: FONT_SIZES.SM,
     fontWeight: 'bold',
-    color: COLORS.PRIMARY,
+    color: theme.PRIMARY,
   },
   dispatchTime: {
     fontSize: FONT_SIZES.XS,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
   },
   dispatchDetails: {
     gap: SPACING.XS / 2,
   },
   dispatchAmbulance: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     fontWeight: '500',
   },
   dispatchStatus: {
     fontSize: FONT_SIZES.XS,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
   },
   dispatchEta: {
     fontSize: FONT_SIZES.XS,
-    color: COLORS.SUCCESS,
+    color: theme.SUCCESS,
     fontWeight: '500',
   },
   emptyState: {
     alignItems: 'center',
     paddingVertical: SPACING.XXL,
+    backgroundColor: theme.CARD_BACKGROUND,
   },
   emptyTitle: {
     fontSize: FONT_SIZES.XL,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginTop: SPACING.MD,
     marginBottom: SPACING.XS,
   },
   emptySubtitle: {
     fontSize: FONT_SIZES.MD,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     textAlign: 'center',
   },
   addAmbulanceButton: {
@@ -1344,7 +1350,7 @@ const styles = StyleSheet.create({
   },
   mapModalContainer: {
     flex: 1,
-    backgroundColor: COLORS.WHITE,
+    backgroundColor: theme.BACKGROUND,
   },
   mapHeader: {
     flexDirection: 'row',
@@ -1352,14 +1358,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: SPACING.MD,
     paddingVertical: SPACING.SM,
-    backgroundColor: COLORS.WHITE,
+    backgroundColor: theme.CARD_BACKGROUND,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.BORDER,
+    borderBottomColor: theme.BORDER,
   },
   mapTitle: {
     fontSize: FONT_SIZES.LG,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
   },
   mapCloseButton: {
     padding: SPACING.XS,
@@ -1369,13 +1375,13 @@ const styles = StyleSheet.create({
   },
   mapFooter: {
     padding: SPACING.MD,
-    backgroundColor: COLORS.WHITE,
+    backgroundColor: theme.CARD_BACKGROUND,
     borderTopWidth: 1,
-    borderTopColor: COLORS.BORDER,
+    borderTopColor: theme.BORDER,
   },
   mapInstruction: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     textAlign: 'center',
     marginBottom: SPACING.MD,
   },
@@ -1389,7 +1395,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   modalContent: {
-    backgroundColor: COLORS.WHITE,
+    backgroundColor: theme.CARD_BACKGROUND,
     borderRadius: BORDER_RADIUS.LG,
     padding: SPACING.LG,
     width: '90%',
@@ -1404,14 +1410,14 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: FONT_SIZES.XL,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
   },
   modalBody: {
     marginBottom: SPACING.MD,
   },
   modalSubtitle: {
     fontSize: FONT_SIZES.MD,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     marginBottom: SPACING.MD,
   },
   emergencyList: {
@@ -1422,7 +1428,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: SPACING.MD,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.GRAY_LIGHT,
+    borderBottomColor: theme.BORDER,
   },
   emergencyInfo: {
     flex: 1,
@@ -1430,26 +1436,26 @@ const styles = StyleSheet.create({
   emergencyId: {
     fontSize: FONT_SIZES.SM,
     fontWeight: 'bold',
-    color: COLORS.PRIMARY,
+    color: theme.PRIMARY,
     marginBottom: SPACING.XS / 2,
   },
   emergencyLocation: {
     fontSize: FONT_SIZES.MD,
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginBottom: SPACING.XS / 2,
   },
   emergencyType: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
   },
   patientName: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     marginTop: SPACING.XS,
   },
   patientPhone: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
   },
   priorityIndicator: {
     width: 12,
@@ -1458,7 +1464,7 @@ const styles = StyleSheet.create({
   },
   noEmergenciesText: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     textAlign: 'center',
     paddingVertical: SPACING.MD,
   },
@@ -1477,14 +1483,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: SPACING.MD,
     paddingVertical: SPACING.SM,
-    backgroundColor: COLORS.WHITE,
+    backgroundColor: theme.CARD_BACKGROUND,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.BORDER,
+    borderBottomColor: theme.BORDER,
   },
   headerTitle: {
     fontSize: FONT_SIZES.XL,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
   },
   headerButton: {
     flexDirection: 'row',
@@ -1492,7 +1498,7 @@ const styles = StyleSheet.create({
   },
   headerButtonText: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.PRIMARY,
+    color: theme.PRIMARY,
     fontWeight: 'bold',
     marginLeft: SPACING.XS,
   },
@@ -1502,17 +1508,18 @@ const styles = StyleSheet.create({
   label: {
     fontSize: FONT_SIZES.SM,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginBottom: SPACING.XS,
   },
   input: {
     borderWidth: 1,
-    borderColor: COLORS.BORDER,
+    borderColor: theme.BORDER,
     borderRadius: BORDER_RADIUS.MD,
     paddingHorizontal: SPACING.MD,
     paddingVertical: SPACING.SM,
     fontSize: FONT_SIZES.MD,
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
+    backgroundColor: theme.INPUT_BACKGROUND,
   },
   inputRow: {
     flexDirection: 'row',
@@ -1533,14 +1540,14 @@ const styles = StyleSheet.create({
   },
   addButtonText: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.PRIMARY,
+    color: theme.PRIMARY,
     fontWeight: 'bold',
     marginLeft: SPACING.XS,
   },
   pickerContainer: {
     flexDirection: 'row',
     borderWidth: 1,
-    borderColor: COLORS.BORDER,
+    borderColor: theme.BORDER,
     borderRadius: BORDER_RADIUS.MD,
   },
   pickerOption: {
@@ -1550,11 +1557,11 @@ const styles = StyleSheet.create({
   },
   pickerText: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
   },
   selectedPickerText: {
     fontWeight: 'bold',
-    color: COLORS.PRIMARY,
+    color: theme.PRIMARY,
   },
   locationButtons: {
     flexDirection: 'row',
@@ -1569,7 +1576,7 @@ const styles = StyleSheet.create({
   },
   mapModalContainer: {
     flex: 1,
-    backgroundColor: COLORS.WHITE,
+    backgroundColor: theme.BACKGROUND,
   },
   mapHeader: {
     flexDirection: 'row',
@@ -1577,14 +1584,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: SPACING.MD,
     paddingVertical: SPACING.SM,
-    backgroundColor: COLORS.WHITE,
+    backgroundColor: theme.CARD_BACKGROUND,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.BORDER,
+    borderBottomColor: theme.BORDER,
   },
   mapTitle: {
     fontSize: FONT_SIZES.LG,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
   },
   mapCloseButton: {
     padding: SPACING.XS,
@@ -1594,13 +1601,13 @@ const styles = StyleSheet.create({
   },
   mapFooter: {
     padding: SPACING.MD,
-    backgroundColor: COLORS.WHITE,
+    backgroundColor: theme.CARD_BACKGROUND,
     borderTopWidth: 1,
-    borderTopColor: COLORS.BORDER,
+    borderTopColor: theme.BORDER,
   },
   mapInstruction: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     textAlign: 'center',
     marginBottom: SPACING.MD,
   },

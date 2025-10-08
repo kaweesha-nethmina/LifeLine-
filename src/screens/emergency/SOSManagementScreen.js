@@ -12,6 +12,7 @@ import {
   Modal,
   FlatList
 } from 'react-native';
+import { useTheme } from '../../context/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../context/AuthContext';
 import {
@@ -36,6 +37,8 @@ import Button from '../../components/Button';
 
 const SOSManagementScreen = ({ navigation }) => {
   const { userProfile } = useAuth();
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
   const [emergencies, setEmergencies] = useState([]);
   const [filteredEmergencies, setFilteredEmergencies] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
@@ -520,18 +523,18 @@ const SOSManagementScreen = ({ navigation }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (theme) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.BACKGROUND,
+    backgroundColor: theme.BACKGROUND,
   },
   statsHeader: {
     flexDirection: 'row',
     paddingHorizontal: SPACING.MD,
     paddingVertical: SPACING.SM,
-    backgroundColor: COLORS.WHITE,
+    backgroundColor: theme.CARD_BACKGROUND,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.BORDER,
+    borderBottomColor: theme.BORDER,
   },
   statCard: {
     flex: 1,
@@ -541,25 +544,25 @@ const styles = StyleSheet.create({
   statNumber: {
     fontSize: FONT_SIZES.XL,
     fontWeight: 'bold',
-    color: COLORS.PRIMARY,
+    color: theme.PRIMARY,
     marginBottom: SPACING.XS / 2,
   },
   statLabel: {
     fontSize: FONT_SIZES.XS,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     textAlign: 'center',
   },
   controlsContainer: {
-    backgroundColor: COLORS.WHITE,
+    backgroundColor: theme.CARD_BACKGROUND,
     paddingHorizontal: SPACING.MD,
     paddingBottom: SPACING.SM,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.BORDER,
+    borderBottomColor: theme.BORDER,
   },
   searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.GRAY_LIGHT,
+    backgroundColor: theme.INPUT_BACKGROUND,
     borderRadius: BORDER_RADIUS.MD,
     paddingHorizontal: SPACING.MD,
     paddingVertical: SPACING.SM,
@@ -568,7 +571,7 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     fontSize: FONT_SIZES.MD,
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginLeft: SPACING.SM,
   },
   filterContainer: {
@@ -579,18 +582,18 @@ const styles = StyleSheet.create({
     paddingVertical: SPACING.SM,
     borderRadius: BORDER_RADIUS.XL,
     marginRight: SPACING.SM,
-    backgroundColor: COLORS.GRAY_LIGHT,
+    backgroundColor: theme.BUTTON_SECONDARY,
   },
   activeFilterButton: {
-    backgroundColor: COLORS.EMERGENCY,
+    backgroundColor: theme.EMERGENCY,
   },
   filterButtonText: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     fontWeight: '500',
   },
   activeFilterButtonText: {
-    color: COLORS.WHITE,
+    color: theme.WHITE,
   },
   emergencyList: {
     flex: 1,
@@ -601,6 +604,7 @@ const styles = StyleSheet.create({
   emergencyCard: {
     marginBottom: SPACING.MD,
     borderLeftWidth: 4,
+    backgroundColor: theme.CARD_BACKGROUND,
   },
   emergencyHeader: {
     flexDirection: 'row',
@@ -613,24 +617,24 @@ const styles = StyleSheet.create({
   },
   emergencyId: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.PRIMARY,
+    color: theme.PRIMARY,
     fontWeight: 'bold',
     marginBottom: SPACING.XS / 2,
   },
   patientName: {
     fontSize: FONT_SIZES.MD,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginBottom: SPACING.XS / 2,
   },
   emergencyType: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     marginBottom: SPACING.XS / 2,
   },
   emergencyTime: {
     fontSize: FONT_SIZES.XS,
-    color: COLORS.GRAY_MEDIUM,
+    color: theme.GRAY_MEDIUM,
   },
   emergencyMeta: {
     alignItems: 'flex-end',
@@ -643,7 +647,7 @@ const styles = StyleSheet.create({
   },
   priorityText: {
     fontSize: FONT_SIZES.XS,
-    color: COLORS.WHITE,
+    color: theme.WHITE,
     fontWeight: 'bold',
   },
   statusBadge: {
@@ -653,17 +657,17 @@ const styles = StyleSheet.create({
   },
   statusText: {
     fontSize: FONT_SIZES.XS,
-    color: COLORS.WHITE,
+    color: theme.WHITE,
     fontWeight: 'bold',
   },
   emergencyLocation: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.INFO,
+    color: theme.INFO,
     marginBottom: SPACING.SM,
   },
   emergencyDescription: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     lineHeight: 20,
     marginBottom: SPACING.MD,
   },
@@ -672,7 +676,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     paddingTop: SPACING.MD,
     borderTopWidth: 1,
-    borderTopColor: COLORS.BORDER,
+    borderTopColor: theme.BORDER,
   },
   actionButton: {
     flexDirection: 'row',
@@ -684,7 +688,7 @@ const styles = StyleSheet.create({
   },
   actionText: {
     fontSize: FONT_SIZES.XS,
-    color: COLORS.WHITE,
+    color: theme.WHITE,
     fontWeight: 'bold',
     marginLeft: SPACING.XS,
   },
@@ -692,17 +696,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: SPACING.XXL,
     marginTop: SPACING.XL,
+    backgroundColor: theme.CARD_BACKGROUND,
   },
   emptyTitle: {
     fontSize: FONT_SIZES.XL,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginTop: SPACING.MD,
     marginBottom: SPACING.XS,
   },
   emptySubtitle: {
     fontSize: FONT_SIZES.MD,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     textAlign: 'center',
     paddingHorizontal: SPACING.MD,
   },
@@ -713,7 +718,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   modalContent: {
-    backgroundColor: COLORS.WHITE,
+    backgroundColor: theme.CARD_BACKGROUND,
     borderRadius: BORDER_RADIUS.LG,
     padding: SPACING.LG,
     width: '90%',
@@ -728,7 +733,7 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: FONT_SIZES.XL,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
   },
   modalBody: {
     maxHeight: 400,
@@ -739,7 +744,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: FONT_SIZES.LG,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginBottom: SPACING.MD,
   },
   detailRow: {
@@ -748,16 +753,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: SPACING.XS,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.GRAY_LIGHT,
+    borderBottomColor: theme.BORDER,
   },
   detailLabel: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     fontWeight: '500',
   },
   detailValue: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     flex: 1,
     textAlign: 'right',
   },

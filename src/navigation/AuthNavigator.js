@@ -1,6 +1,6 @@
 import React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
-import { COLORS } from '../constants';
+import { useTheme } from '../context/ThemeContext';
 
 // Auth Screens
 import WelcomeScreen from '../screens/WelcomeScreen';
@@ -12,13 +12,15 @@ import RoleSelectionScreen from '../screens/RoleSelectionScreen';
 const Stack = createStackNavigator();
 
 const AuthNavigator = () => {
+  const { theme } = useTheme();
+  
   return (
     <Stack.Navigator
       screenOptions={{
         headerStyle: {
-          backgroundColor: COLORS.PRIMARY,
+          backgroundColor: theme.PRIMARY,
         },
-        headerTintColor: COLORS.WHITE,
+        headerTintColor: theme.WHITE,
         headerTitleStyle: {
           fontWeight: 'bold',
         },

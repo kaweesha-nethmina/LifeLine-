@@ -11,6 +11,7 @@ import {
   Modal,
   TextInput
 } from 'react-native';
+import { useTheme } from '../../context/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../context/AuthContext';
 import {
@@ -24,6 +25,8 @@ import Button from '../../components/Button';
 
 const EmergencyResourcesScreen = ({ navigation }) => {
   const { userProfile } = useAuth();
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
   const [resources, setResources] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -520,22 +523,22 @@ const EmergencyResourcesScreen = ({ navigation }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (theme) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.BACKGROUND,
+    backgroundColor: theme.BACKGROUND,
   },
   searchContainer: {
     paddingHorizontal: SPACING.MD,
     paddingVertical: SPACING.SM,
-    backgroundColor: COLORS.WHITE,
+    backgroundColor: theme.CARD_BACKGROUND,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.BORDER,
+    borderBottomColor: theme.BORDER,
   },
   searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.GRAY_LIGHT,
+    backgroundColor: theme.INPUT_BACKGROUND,
     borderRadius: BORDER_RADIUS.MD,
     paddingHorizontal: SPACING.MD,
     paddingVertical: SPACING.SM,
@@ -543,15 +546,15 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     fontSize: FONT_SIZES.MD,
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginLeft: SPACING.SM,
   },
   categoryContainer: {
-    backgroundColor: COLORS.WHITE,
+    backgroundColor: theme.CARD_BACKGROUND,
     paddingHorizontal: SPACING.MD,
     paddingVertical: SPACING.SM,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.BORDER,
+    borderBottomColor: theme.BORDER,
   },
   categoryButton: {
     flexDirection: 'row',
@@ -560,19 +563,19 @@ const styles = StyleSheet.create({
     paddingVertical: SPACING.SM,
     borderRadius: BORDER_RADIUS.XL,
     marginRight: SPACING.SM,
-    backgroundColor: COLORS.GRAY_LIGHT,
+    backgroundColor: theme.BUTTON_SECONDARY,
   },
   activeCategoryButton: {
-    backgroundColor: COLORS.PRIMARY,
+    backgroundColor: theme.PRIMARY,
   },
   categoryButtonText: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.PRIMARY,
+    color: theme.PRIMARY,
     fontWeight: '500',
     marginLeft: SPACING.XS,
   },
   activeCategoryButtonText: {
-    color: COLORS.WHITE,
+    color: theme.WHITE,
   },
   resourcesList: {
     flex: 1,
@@ -581,6 +584,7 @@ const styles = StyleSheet.create({
   resourceCard: {
     marginBottom: SPACING.MD,
     borderLeftWidth: 4,
+    backgroundColor: theme.CARD_BACKGROUND,
   },
   resourceHeader: {
     flexDirection: 'row',
@@ -599,24 +603,24 @@ const styles = StyleSheet.create({
   resourceName: {
     fontSize: FONT_SIZES.MD,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginLeft: SPACING.SM,
   },
   resourceCategory: {
     fontSize: FONT_SIZES.XS,
-    color: COLORS.PRIMARY,
+    color: theme.PRIMARY,
     fontWeight: 'bold',
     marginBottom: SPACING.XS / 2,
   },
   resourceDescription: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     lineHeight: 18,
     marginBottom: SPACING.XS / 2,
   },
   resourceLocation: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.INFO,
+    color: theme.INFO,
   },
   resourceStatus: {
     alignItems: 'flex-end',
@@ -631,19 +635,19 @@ const styles = StyleSheet.create({
   },
   statusText: {
     fontSize: FONT_SIZES.XS,
-    color: COLORS.WHITE,
+    color: theme.WHITE,
     marginLeft: SPACING.XS / 2,
     fontWeight: '600',
   },
   resourceQuantity: {
     fontSize: FONT_SIZES.XS,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     fontWeight: '500',
   },
   resourceDetails: {
     paddingVertical: SPACING.SM,
     borderTopWidth: 1,
-    borderTopColor: COLORS.BORDER,
+    borderTopColor: theme.BORDER,
     marginBottom: SPACING.SM,
   },
   detailItem: {
@@ -654,12 +658,12 @@ const styles = StyleSheet.create({
   },
   detailLabel: {
     fontSize: FONT_SIZES.XS,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     fontWeight: '500',
   },
   detailValue: {
     fontSize: FONT_SIZES.XS,
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     fontWeight: '600',
   },
   resourceActions: {
@@ -668,7 +672,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingTop: SPACING.SM,
     borderTopWidth: 1,
-    borderTopColor: COLORS.BORDER,
+    borderTopColor: theme.BORDER,
     gap: SPACING.XS,
   },
   actionButton: {
@@ -683,7 +687,7 @@ const styles = StyleSheet.create({
   },
   actionText: {
     fontSize: FONT_SIZES.XS,
-    color: COLORS.WHITE,
+    color: theme.WHITE,
     fontWeight: 'bold',
     marginLeft: SPACING.XS / 2,
   },
@@ -691,17 +695,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: SPACING.XXL,
     marginTop: SPACING.XL,
+    backgroundColor: theme.CARD_BACKGROUND,
   },
   emptyTitle: {
     fontSize: FONT_SIZES.XL,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginTop: SPACING.MD,
     marginBottom: SPACING.XS,
   },
   emptySubtitle: {
     fontSize: FONT_SIZES.MD,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     textAlign: 'center',
     paddingHorizontal: SPACING.MD,
   },
@@ -712,7 +717,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   modalContent: {
-    backgroundColor: COLORS.WHITE,
+    backgroundColor: theme.CARD_BACKGROUND,
     borderRadius: BORDER_RADIUS.LG,
     padding: SPACING.LG,
     width: '90%',
@@ -727,7 +732,7 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: FONT_SIZES.XL,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
   },
   modalBody: {
     marginBottom: SPACING.MD,
@@ -735,19 +740,19 @@ const styles = StyleSheet.create({
   resourceRequestName: {
     fontSize: FONT_SIZES.LG,
     fontWeight: 'bold',
-    color: COLORS.PRIMARY,
+    color: theme.PRIMARY,
     marginBottom: SPACING.XS,
   },
   resourceRequestDescription: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     marginBottom: SPACING.MD,
     lineHeight: 18,
   },
   inputLabel: {
     fontSize: FONT_SIZES.SM,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginBottom: SPACING.SM,
     marginTop: SPACING.SM,
   },
@@ -761,30 +766,31 @@ const styles = StyleSheet.create({
     paddingVertical: SPACING.SM,
     paddingHorizontal: SPACING.XS,
     borderRadius: BORDER_RADIUS.SM,
-    backgroundColor: COLORS.GRAY_LIGHT,
+    backgroundColor: theme.BUTTON_SECONDARY,
     marginHorizontal: SPACING.XS / 2,
     alignItems: 'center',
   },
   activeUrgencyButton: {
-    backgroundColor: COLORS.EMERGENCY,
+    backgroundColor: theme.EMERGENCY,
   },
   urgencyButtonText: {
     fontSize: FONT_SIZES.XS,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     fontWeight: 'bold',
   },
   activeUrgencyButtonText: {
-    color: COLORS.WHITE,
+    color: theme.WHITE,
   },
   textInput: {
     borderWidth: 1,
-    borderColor: COLORS.BORDER,
+    borderColor: theme.BORDER,
     borderRadius: BORDER_RADIUS.MD,
     paddingHorizontal: SPACING.MD,
     paddingVertical: SPACING.SM,
     fontSize: FONT_SIZES.MD,
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     minHeight: 100,
+    backgroundColor: theme.INPUT_BACKGROUND,
   },
   modalActions: {
     flexDirection: 'row',

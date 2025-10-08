@@ -6,22 +6,26 @@ import {
   ActivityIndicator 
 } from 'react-native';
 import { COLORS, FONT_SIZES, SPACING } from '../constants';
+import { useTheme } from '../context/ThemeContext';
 
 const LoadingScreen = ({ message = 'Loading...' }) => {
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
+  
   return (
     <View style={styles.container}>
       <View style={styles.content}>
-        <ActivityIndicator size="large" color={COLORS.PRIMARY} />
+        <ActivityIndicator size="large" color={theme.PRIMARY} />
         <Text style={styles.loadingText}>{message}</Text>
       </View>
     </View>
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (theme) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.WHITE,
+    backgroundColor: theme.BACKGROUND,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -30,7 +34,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: FONT_SIZES.MD,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     marginTop: SPACING.MD,
     fontWeight: '500',
   },

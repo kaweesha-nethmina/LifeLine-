@@ -12,12 +12,15 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import {
   collection,
   query,
   where,
   getDocs,
-  orderBy
+  orderBy,
+  doc,
+  deleteDoc
 } from 'firebase/firestore';
 import { db } from '../services/firebase';
 import {
@@ -29,19 +32,29 @@ import {
 import Card from '../components/Card';
 import Button from '../components/Button';
 import useProfilePicture from '../hooks/useProfilePicture';
+import LabResultModal from '../components/LabResultModal';
 
-const MedicalHistoryScreen = ({ navigation }) => {
+const MedicalHistoryScreen = ({ navigation, route }) => {
   const { user, userProfile } = useAuth();
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
   const { fetchUserProfilePicture, getCachedProfilePicture } = useProfilePicture();
   const [medicalHistory, setMedicalHistory] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
   const [filterType, setFilterType] = useState('all'); // all, appointments, lab-results, prescriptions, diagnoses
   const [profilePicture, setProfilePicture] = useState(null);
+  const [selectedLabResult, setSelectedLabResult] = useState(null);
+  const [showLabResultModal, setShowLabResultModal] = useState(false);
 
   useEffect(() => {
     loadMedicalHistory();
     loadProfilePicture();
-  }, []);
+    
+    // Set filter type from route params if provided
+    if (route?.params?.filterType) {
+      setFilterType(route.params.filterType);
+    }
+  }, [route?.params?.filterType]);
 
   const loadProfilePicture = async () => {
     try {
@@ -111,8 +124,38 @@ const MedicalHistoryScreen = ({ navigation }) => {
           });
         });
         
-        // Combine both data sets
-        const combinedData = [...medicalHistoryData, ...appointmentsData];
+        // Fetch lab results from labResults subcollection
+        const labResultsQuery = query(
+          collection(db, 'users', user.uid, 'labResults')
+          // Removed orderBy to avoid composite index requirement
+        );
+        
+        const labResultsSnapshot = await getDocs(labResultsQuery);
+        const labResultsData = [];
+        labResultsSnapshot.forEach((doc) => {
+          const labResult = doc.data();
+          labResultsData.push({
+            id: doc.id,
+            type: 'lab-result',
+            title: labResult.title || 'Lab Result',
+            date: labResult.uploadDate,
+            doctor: labResult.doctorName || 'Unknown Doctor',
+            doctorName: labResult.doctorName || 'Unknown Doctor',
+            doctorLicense: labResult.doctorLicense || 'N/A',
+            patientName: labResult.patientName || 'Unknown Patient',
+            fileName: labResult.fileName || 'Unknown File',
+            fileType: labResult.fileType || 'Unknown Type',
+            fileSize: labResult.fileSize || 0,
+            fileUrl: labResult.fileUrl || '',
+            uploadDate: labResult.uploadDate || new Date().toISOString(),
+            details: `Doctor: ${labResult.doctorName || 'Unknown Doctor'}\nLicense: ${labResult.doctorLicense || 'N/A'}`,
+            summary: `Lab result titled "${labResult.title || 'Untitled'}" uploaded by ${labResult.doctorName || 'Unknown Doctor'}`,
+            critical: false
+          });
+        });
+        
+        // Combine all data sets
+        const combinedData = [...medicalHistoryData, ...appointmentsData, ...labResultsData];
         
         // Sort in memory instead of using Firestore orderBy
         combinedData.sort((a, b) => new Date(b.date) - new Date(a.date));
@@ -152,19 +195,19 @@ const MedicalHistoryScreen = ({ navigation }) => {
   const getTypeColor = (type) => {
     switch (type) {
       case 'appointment':
-        return COLORS.PRIMARY;
+        return theme.PRIMARY;
       case 'lab-result':
-        return COLORS.INFO;
+        return theme.INFO;
       case 'prescription':
-        return COLORS.SUCCESS;
+        return theme.SUCCESS;
       case 'diagnosis':
-        return COLORS.WARNING;
+        return theme.WARNING;
       case 'vaccination':
-        return COLORS.SUCCESS;
+        return theme.SUCCESS;
       case 'surgery':
-        return COLORS.EMERGENCY;
+        return theme.EMERGENCY;
       default:
-        return COLORS.GRAY_MEDIUM;
+        return theme.GRAY_MEDIUM;
     }
   };
 
@@ -178,12 +221,23 @@ const MedicalHistoryScreen = ({ navigation }) => {
   };
 
   const handleRecordPress = (record) => {
-    // Navigate to detailed view or show more information
-    Alert.alert(
-      record.title,
-      `Date: ${formatDate(record.date)}\n\nDetails: ${record.details}\n\nDoctor: ${record.doctor}`,
-      [{ text: 'OK' }]
-    );
+    // Handle different record types
+    if (record.type === 'lab-result') {
+      // For lab results, show the detailed modal with all data
+      setSelectedLabResult(record);
+      setShowLabResultModal(true);
+    } else {
+      // Navigate to detailed view or show more information
+      Alert.alert(
+        record.title,
+        `Date: ${formatDate(record.date)}
+
+Details: ${record.details}
+
+Doctor: ${record.doctor}`,
+        [{ text: 'OK' }]
+      );
+    }
   };
 
   const filteredHistory = medicalHistory.filter(record => {
@@ -193,12 +247,22 @@ const MedicalHistoryScreen = ({ navigation }) => {
 
   const FilterButton = ({ type, title, count, active, onPress }) => (
     <TouchableOpacity
-      style={[styles.filterButton, active && styles.activeFilterButton]}
+      style={[
+        styles.filterButton,
+        active && styles.activeFilterButton,
+        { 
+          backgroundColor: active ? theme.PRIMARY : theme.GRAY_LIGHT,
+          borderColor: theme.BORDER
+        }
+      ]}
       onPress={onPress}
     >
       <Text style={[
         styles.filterButtonText,
-        active && styles.activeFilterButtonText
+        active && styles.activeFilterButtonText,
+        { 
+          color: active ? theme.WHITE : theme.TEXT_SECONDARY
+        }
       ]}>
         {title} {count > 0 && `(${count})`}
       </Text>
@@ -207,24 +271,24 @@ const MedicalHistoryScreen = ({ navigation }) => {
 
   const MedicalRecordCard = ({ record }) => (
     <TouchableOpacity
-      style={styles.recordCard}
+      style={[styles.recordCard, { backgroundColor: theme.CARD_BACKGROUND, borderColor: theme.BORDER }]}
       onPress={() => handleRecordPress(record)}
     >
       <View style={styles.recordHeader}>
         <View style={[styles.recordIcon, { backgroundColor: getTypeColor(record.type) }]}>
-          <Ionicons name={getTypeIcon(record.type)} size={20} color={COLORS.WHITE} />
+          <Ionicons name={getTypeIcon(record.type)} size={20} color={theme.WHITE} />
         </View>
         <View style={styles.recordInfo}>
-          <Text style={styles.recordTitle}>{record.title}</Text>
-          <Text style={styles.recordDate}>{formatDate(record.date)}</Text>
-          <Text style={styles.recordDoctor}>{record.doctor}</Text>
+          <Text style={[styles.recordTitle, { color: theme.TEXT_PRIMARY }]}>{record.title}</Text>
+          <Text style={[styles.recordDate, { color: theme.TEXT_SECONDARY }]}>{formatDate(record.date)}</Text>
+          <Text style={[styles.recordDoctor, { color: theme.PRIMARY }]}>{record.doctor}</Text>
         </View>
         <View style={styles.recordStatus}>
-          <View style={[styles.statusDot, { backgroundColor: record.critical ? COLORS.EMERGENCY : COLORS.SUCCESS }]} />
-          <Ionicons name="chevron-forward" size={20} color={COLORS.GRAY_MEDIUM} />
+          <View style={[styles.statusDot, { backgroundColor: record.critical ? theme.EMERGENCY : theme.SUCCESS }]} />
+          <Ionicons name="chevron-forward" size={20} color={theme.GRAY_MEDIUM} />
         </View>
       </View>
-      <Text style={styles.recordSummary} numberOfLines={2}>
+      <Text style={[styles.recordSummary, { color: theme.TEXT_SECONDARY }]} numberOfLines={2}>
         {record.summary}
       </Text>
     </TouchableOpacity>
@@ -244,17 +308,17 @@ const MedicalHistoryScreen = ({ navigation }) => {
   const stats = getSummaryStats();
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.BACKGROUND }]}>
       {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.title}>Medical History</Text>
-        <Text style={styles.subtitle}>Complete health record overview</Text>
+      <View style={[styles.header, { backgroundColor: theme.CARD_BACKGROUND, borderBottomColor: theme.BORDER }]}>
+        <Text style={[styles.title, { color: theme.TEXT_PRIMARY }]}>Medical History</Text>
+        <Text style={[styles.subtitle, { color: theme.TEXT_SECONDARY }]}>Complete health record overview</Text>
       </View>
 
       {/* Patient Info Summary */}
-      <Card style={styles.patientSummary}>
+      <Card style={[styles.patientSummary, { backgroundColor: theme.CARD_BACKGROUND, borderColor: theme.BORDER }]}>
         <View style={styles.summaryHeader}>
-          <View style={styles.patientAvatar}>
+          <View style={[styles.patientAvatar, { backgroundColor: theme.PRIMARY }]}>
             {profilePicture && profilePicture !== null ? (
               <Image 
                 source={{ uri: profilePicture }} 
@@ -266,37 +330,37 @@ const MedicalHistoryScreen = ({ navigation }) => {
                 }}
               />
             ) : (
-              <Ionicons name="person" size={24} color={COLORS.WHITE} />
+              <Ionicons name="person" size={24} color={theme.WHITE} />
             )}
           </View>
           <View style={styles.patientInfo}>
-            <Text style={styles.patientName}>
+            <Text style={[styles.patientName, { color: theme.TEXT_PRIMARY }]}>
               {userProfile?.firstName} {userProfile?.lastName}
             </Text>
-            <Text style={styles.patientDetails}>
+            <Text style={[styles.patientDetails, { color: theme.TEXT_SECONDARY }]}>
               Age: {userProfile?.age || 'N/A'} • Blood Type: {userProfile?.bloodType || 'N/A'}
             </Text>
           </View>
         </View>
         
-        <View style={styles.statsRow}>
+        <View style={[styles.statsRow, { borderTopColor: theme.BORDER }]}>
           <View style={styles.statItem}>
-            <Text style={styles.statNumber}>{stats.total}</Text>
-            <Text style={styles.statLabel}>Total Records</Text>
+            <Text style={[styles.statNumber, { color: theme.PRIMARY }]}>{stats.total}</Text>
+            <Text style={[styles.statLabel, { color: theme.TEXT_SECONDARY }]}>Total Records</Text>
           </View>
           <View style={styles.statItem}>
-            <Text style={styles.statNumber}>{stats.appointments}</Text>
-            <Text style={styles.statLabel}>Appointments</Text>
+            <Text style={[styles.statNumber, { color: theme.PRIMARY }]}>{stats.appointments}</Text>
+            <Text style={[styles.statLabel, { color: theme.TEXT_SECONDARY }]}>Appointments</Text>
           </View>
           <View style={styles.statItem}>
-            <Text style={styles.statNumber}>{stats.labResults}</Text>
-            <Text style={styles.statLabel}>Lab Results</Text>
+            <Text style={[styles.statNumber, { color: theme.PRIMARY }]}>{stats.labResults}</Text>
+            <Text style={[styles.statLabel, { color: theme.TEXT_SECONDARY }]}>Lab Results</Text>
           </View>
         </View>
       </Card>
 
       {/* Filter Tabs */}
-      <View style={styles.filterContainer}>
+      <View style={[styles.filterContainer, { backgroundColor: theme.CARD_BACKGROUND, borderBottomColor: theme.BORDER }]}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
           <FilterButton
             type="all"
@@ -340,15 +404,15 @@ const MedicalHistoryScreen = ({ navigation }) => {
       <ScrollView
         style={styles.recordsList}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[theme.PRIMARY]} />
         }
         showsVerticalScrollIndicator={false}
       >
         {filteredHistory.length === 0 ? (
-          <Card style={styles.emptyState}>
-            <Ionicons name="document-text-outline" size={64} color={COLORS.GRAY_MEDIUM} />
-            <Text style={styles.emptyTitle}>No Records Found</Text>
-            <Text style={styles.emptySubtitle}>
+          <Card style={[styles.emptyState, { backgroundColor: theme.CARD_BACKGROUND }]}>
+            <Ionicons name="document-text-outline" size={64} color={theme.GRAY_MEDIUM} />
+            <Text style={[styles.emptyTitle, { color: theme.TEXT_PRIMARY }]}>No Records Found</Text>
+            <Text style={[styles.emptySubtitle, { color: theme.TEXT_SECONDARY }]}>
               {filterType === 'all' 
                 ? 'Your medical history will appear here as you visit doctors and receive care.'
                 : `No ${filterType.replace('-', ' ')} records to display.`
@@ -369,40 +433,44 @@ const MedicalHistoryScreen = ({ navigation }) => {
 
       {/* Floating Action Button */}
       <TouchableOpacity
-        style={styles.fab}
+        style={[styles.fab, { backgroundColor: theme.PRIMARY }]}
         onPress={() => Alert.alert('Feature Coming Soon', 'Add new medical record functionality will be available soon.')}
       >
-        <Ionicons name="add" size={24} color={COLORS.WHITE} />
+        <Ionicons name="add" size={24} color={theme.WHITE} />
       </TouchableOpacity>
+      
+      {/* Lab Result Modal */}
+      <LabResultModal
+        visible={showLabResultModal}
+        onClose={() => setShowLabResultModal(false)}
+        labResult={selectedLabResult}
+        currentUser={user}
+        onDelete={loadMedicalHistory}
+      />
     </SafeAreaView>
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (theme) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.BACKGROUND,
-  },
-  header: {
-    paddingHorizontal: SPACING.MD,
-    paddingVertical: SPACING.MD,
-    backgroundColor: COLORS.WHITE,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.BORDER,
+    backgroundColor: theme.BACKGROUND,
   },
   title: {
-    fontSize: FONT_SIZES.XXL,
+    fontSize: FONT_SIZES.XL,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginBottom: SPACING.XS,
   },
   subtitle: {
     fontSize: FONT_SIZES.MD,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
   },
   patientSummary: {
-    margin: SPACING.MD,
-    marginBottom: SPACING.SM,
+    marginBottom: SPACING.MD,
+    backgroundColor: theme.CARD_BACKGROUND,
+    borderWidth: 1,
+    borderColor: theme.BORDER,
   },
   summaryHeader: {
     flexDirection: 'row',
@@ -413,37 +481,35 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 25,
-    backgroundColor: COLORS.PRIMARY,
+    backgroundColor: theme.PRIMARY,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: SPACING.MD,
   },
-  
   patientAvatarImage: {
     width: 50,
     height: 50,
     borderRadius: 25,
   },
-  
   patientInfo: {
     flex: 1,
   },
   patientName: {
-    fontSize: FONT_SIZES.LG,
+    fontSize: FONT_SIZES.MD,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginBottom: SPACING.XS / 2,
   },
   patientDetails: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
   },
   statsRow: {
     flexDirection: 'row',
     justifyContent: 'space-around',
     paddingTop: SPACING.MD,
     borderTopWidth: 1,
-    borderTopColor: COLORS.BORDER,
+    borderTopColor: theme.BORDER,
   },
   statItem: {
     alignItems: 'center',
@@ -451,38 +517,40 @@ const styles = StyleSheet.create({
   statNumber: {
     fontSize: FONT_SIZES.LG,
     fontWeight: 'bold',
-    color: COLORS.PRIMARY,
+    color: theme.PRIMARY,
     marginBottom: SPACING.XS / 2,
   },
   statLabel: {
     fontSize: FONT_SIZES.XS,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     textAlign: 'center',
   },
   filterContainer: {
-    backgroundColor: COLORS.WHITE,
+    backgroundColor: theme.CARD_BACKGROUND,
     paddingHorizontal: SPACING.MD,
     paddingVertical: SPACING.SM,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.BORDER,
+    borderBottomColor: theme.BORDER,
   },
   filterButton: {
     paddingHorizontal: SPACING.MD,
     paddingVertical: SPACING.SM,
     borderRadius: BORDER_RADIUS.XL,
     marginRight: SPACING.SM,
-    backgroundColor: COLORS.GRAY_LIGHT,
+    backgroundColor: theme.BUTTON_SECONDARY,
+    borderWidth: 1,
+    borderColor: theme.BORDER,
   },
   activeFilterButton: {
-    backgroundColor: COLORS.PRIMARY,
+    backgroundColor: theme.PRIMARY,
   },
   filterButtonText: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     fontWeight: '500',
   },
   activeFilterButtonText: {
-    color: COLORS.WHITE,
+    color: theme.WHITE,
   },
   recordsList: {
     flex: 1,
@@ -492,17 +560,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: SPACING.XXL,
     marginTop: SPACING.XL,
+    backgroundColor: theme.CARD_BACKGROUND,
   },
   emptyTitle: {
     fontSize: FONT_SIZES.XL,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginTop: SPACING.MD,
     marginBottom: SPACING.XS,
   },
   emptySubtitle: {
     fontSize: FONT_SIZES.MD,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     textAlign: 'center',
     marginBottom: SPACING.LG,
     paddingHorizontal: SPACING.LG,
@@ -511,15 +580,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.XL,
   },
   recordCard: {
-    backgroundColor: COLORS.WHITE,
+    backgroundColor: theme.CARD_BACKGROUND,
     borderRadius: BORDER_RADIUS.MD,
     padding: SPACING.MD,
     marginBottom: SPACING.SM,
-    shadowColor: COLORS.BLACK,
+    shadowColor: theme.BLACK,
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
     elevation: 2,
+    borderWidth: 1,
+    borderColor: theme.BORDER,
   },
   recordHeader: {
     flexDirection: 'row',
@@ -540,17 +611,17 @@ const styles = StyleSheet.create({
   recordTitle: {
     fontSize: FONT_SIZES.MD,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginBottom: SPACING.XS / 2,
   },
   recordDate: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     marginBottom: SPACING.XS / 2,
   },
   recordDoctor: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.PRIMARY,
+    color: theme.PRIMARY,
     fontWeight: '500',
   },
   recordStatus: {
@@ -564,7 +635,7 @@ const styles = StyleSheet.create({
   },
   recordSummary: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     lineHeight: 18,
   },
   fab: {
@@ -574,10 +645,10 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: COLORS.PRIMARY,
+    backgroundColor: theme.PRIMARY,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: COLORS.BLACK,
+    shadowColor: theme.BLACK,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 6,

@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../context/AuthContext';
+import { useTheme } from '../../context/ThemeContext'; // Add this import
 import {
   collection,
   query,
@@ -38,6 +39,7 @@ import Button from '../../components/Button';
 
 const DoctorPrescriptionsScreen = ({ navigation, route }) => {
   const { userProfile } = useAuth();
+  const { theme } = useTheme(); // Add this hook
   const { patientId, patientName, action } = route.params || {};
   
   const [prescriptions, setPrescriptions] = useState([]);
@@ -388,13 +390,10 @@ const DoctorPrescriptionsScreen = ({ navigation, route }) => {
 
   const FilterButton = ({ status, title, active, onPress }) => (
     <TouchableOpacity
-      style={[styles.filterButton, active && styles.activeFilterButton]}
+      style={[styles.filterButton, active && styles.activeFilterButton, { backgroundColor: active ? theme.PRIMARY : theme.GRAY_LIGHT }]}
       onPress={onPress}
     >
-      <Text style={[
-        styles.filterButtonText,
-        active && styles.activeFilterButtonText
-      ]}>
+      <Text style={[styles.filterButtonText, active && styles.activeFilterButtonText, { color: active ? theme.WHITE : theme.TEXT_SECONDARY }]}>  
         {title}
       </Text>
     </TouchableOpacity>
@@ -662,10 +661,10 @@ const DoctorPrescriptionsScreen = ({ navigation, route }) => {
           }]);
         }}
       >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
+        <View style={[styles.modalOverlay, { backgroundColor: 'rgba(0, 0, 0, 0.5)' }]}>  
+          <View style={[styles.modalContent, { backgroundColor: theme.CARD_BACKGROUND }]}>  
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>
+              <Text style={[styles.modalTitle, { color: theme.TEXT_PRIMARY }]}>  
                 {selectedPrescription ? 'Renew Prescription' : 'Create Prescription'}
               </Text>
               <TouchableOpacity onPress={() => {
@@ -679,7 +678,7 @@ const DoctorPrescriptionsScreen = ({ navigation, route }) => {
                   refills: '2'
                 }]);
               }}>
-                <Ionicons name="close" size={24} color={COLORS.TEXT_PRIMARY} />
+                <Ionicons name="close" size={24} color={theme.TEXT_PRIMARY} />
               </TouchableOpacity>
             </View>
 
@@ -776,8 +775,8 @@ const DoctorPrescriptionsScreen = ({ navigation, route }) => {
                       style={styles.addButton}
                       onPress={addPrescriptionItem}
                     >
-                      <Ionicons name="add-circle" size={24} color={COLORS.PRIMARY} />
-                      <Text style={styles.addButtonText}>Add Another Medication</Text>
+                      <Ionicons name="add-circle" size={24} color={theme.PRIMARY} />
+                      <Text style={[styles.addButtonText, { color: theme.PRIMARY }]}>Add Another Medication</Text>
                     </TouchableOpacity>
                   )}
                 </View>
@@ -898,12 +897,12 @@ const DoctorPrescriptionsScreen = ({ navigation, route }) => {
         transparent={true}
         onRequestClose={() => setShowEditModal(false)}
       >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
+        <View style={[styles.modalOverlay, { backgroundColor: 'rgba(0, 0, 0, 0.5)' }]}>  
+          <View style={[styles.modalContent, { backgroundColor: theme.CARD_BACKGROUND }]}>  
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Edit Prescription</Text>
+              <Text style={[styles.modalTitle, { color: theme.TEXT_PRIMARY }]}>Edit Prescription</Text>
               <TouchableOpacity onPress={() => setShowEditModal(false)}>
-                <Ionicons name="close" size={24} color={COLORS.TEXT_PRIMARY} />
+                <Ionicons name="close" size={24} color={theme.TEXT_PRIMARY} />
               </TouchableOpacity>
             </View>
 
@@ -975,8 +974,8 @@ const DoctorPrescriptionsScreen = ({ navigation, route }) => {
                       style={styles.addButton}
                       onPress={addEditPrescriptionItem}
                     >
-                      <Ionicons name="add-circle" size={24} color={COLORS.PRIMARY} />
-                      <Text style={styles.addButtonText}>Add Another Medication</Text>
+                      <Ionicons name="add-circle" size={24} color={theme.PRIMARY} />
+                      <Text style={[styles.addButtonText, { color: theme.PRIMARY }]}>Add Another Medication</Text>
                     </TouchableOpacity>
                   )}
                 </View>
@@ -1009,15 +1008,15 @@ const DoctorPrescriptionsScreen = ({ navigation, route }) => {
       transparent={true}
       onRequestClose={() => setShowDetailModal(false)}
     >
-      <View style={styles.modalOverlay}>
-        <View style={styles.modalContent}>
+      <View style={[styles.modalOverlay, { backgroundColor: 'rgba(0, 0, 0, 0.5)' }]}>  
+        <View style={[styles.modalContent, { backgroundColor: theme.CARD_BACKGROUND }]}>  
           <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>Prescription Details</Text>
+            <Text style={[styles.modalTitle, { color: theme.TEXT_PRIMARY }]}>Prescription Details</Text>
             <TouchableOpacity
               style={styles.closeButton}
               onPress={() => setShowDetailModal(false)}
             >
-              <Ionicons name="close" size={24} color={COLORS.TEXT_PRIMARY} />
+              <Ionicons name="close" size={24} color={theme.TEXT_PRIMARY} />
             </TouchableOpacity>
           </View>
           
@@ -1063,36 +1062,36 @@ const DoctorPrescriptionsScreen = ({ navigation, route }) => {
                 )}
                 
                 <View style={styles.detailSection}>
-                  <Text style={styles.detailSectionTitle}>Duration</Text>
-                  <Text style={styles.detailText}>
+                  <Text style={[styles.detailSectionTitle, { color: theme.TEXT_PRIMARY }]}>Duration</Text>
+                  <Text style={[styles.detailText, { color: theme.TEXT_SECONDARY }]}>  
                     {new Date(detailPrescription.startDate).toLocaleDateString()} to {new Date(detailPrescription.endDate).toLocaleDateString()}
                   </Text>
                 </View>
                 
                 <View style={styles.detailSection}>
-                  <Text style={styles.detailSectionTitle}>Prescribed For</Text>
-                  <Text style={styles.detailText}>
+                  <Text style={[styles.detailSectionTitle, { color: theme.TEXT_PRIMARY }]}>Prescribed For</Text>
+                  <Text style={[styles.detailText, { color: theme.TEXT_SECONDARY }]}>  
                     {detailPrescription.patientName}
                   </Text>
                 </View>
                 
                 <View style={styles.detailSection}>
-                  <Text style={styles.detailSectionTitle}>Prescribed By</Text>
-                  <Text style={styles.detailText}>
+                  <Text style={[styles.detailSectionTitle, { color: theme.TEXT_PRIMARY }]}>Prescribed By</Text>
+                  <Text style={[styles.detailText, { color: theme.TEXT_SECONDARY }]}>  
                     {detailPrescription.doctorName}
                   </Text>
                 </View>
                 
                 <View style={styles.detailSection}>
-                  <Text style={styles.detailSectionTitle}>Doctor License</Text>
-                  <Text style={styles.detailText}>
+                  <Text style={[styles.detailSectionTitle, { color: theme.TEXT_PRIMARY }]}>Doctor License</Text>
+                  <Text style={[styles.detailText, { color: theme.TEXT_SECONDARY }]}>  
                     {detailPrescription.doctorLicense || 'N/A'}
                   </Text>
                 </View>
                 
                 <View style={styles.detailSection}>
-                  <Text style={styles.detailSectionTitle}>Refills</Text>
-                  <Text style={styles.detailText}>
+                  <Text style={[styles.detailSectionTitle, { color: theme.TEXT_PRIMARY }]}>Refills</Text>
+                  <Text style={[styles.detailText, { color: theme.TEXT_SECONDARY }]}>  
                     {detailPrescription.refillsRemaining} of {detailPrescription.refills} refills remaining
                   </Text>
                 </View>
@@ -1144,32 +1143,32 @@ const DoctorPrescriptionsScreen = ({ navigation, route }) => {
   const counts = getStatusCounts();
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.BACKGROUND }]}>  
       {/* Header */}
       {patientName && (
-        <View style={styles.patientHeader}>
-          <Text style={styles.patientHeaderText}>Prescriptions for {patientName}</Text>
+        <View style={[styles.patientHeader, { backgroundColor: theme.PRIMARY }]}>  
+          <Text style={[styles.patientHeaderText, { color: theme.WHITE }]}>Prescriptions for {patientName}</Text>
         </View>
       )}
 
       {/* Stats Header */}
-      <View style={styles.statsContainer}>
+      <View style={[styles.statsContainer, { backgroundColor: theme.CARD_BACKGROUND, borderBottomColor: theme.BORDER }]}>  
         <View style={styles.statCard}>
-          <Text style={styles.statNumber}>{counts.all}</Text>
-          <Text style={styles.statLabel}>Total</Text>
+          <Text style={[styles.statNumber, { color: theme.PRIMARY }]}>{counts.all}</Text>
+          <Text style={[styles.statLabel, { color: theme.TEXT_SECONDARY }]}>Total</Text>
         </View>
         <View style={styles.statCard}>
-          <Text style={[styles.statNumber, { color: COLORS.SUCCESS }]}>{counts.active}</Text>
-          <Text style={styles.statLabel}>Active</Text>
+          <Text style={[styles.statNumber, { color: theme.SUCCESS }]}>{counts.active}</Text>
+          <Text style={[styles.statLabel, { color: theme.TEXT_SECONDARY }]}>Active</Text>
         </View>
         <View style={styles.statCard}>
-          <Text style={[styles.statNumber, { color: COLORS.ERROR }]}>{counts.expired}</Text>
-          <Text style={styles.statLabel}>Expired</Text>
+          <Text style={[styles.statNumber, { color: theme.ERROR }]}>{counts.expired}</Text>
+          <Text style={[styles.statLabel, { color: theme.TEXT_SECONDARY }]}>Expired</Text>
         </View>
       </View>
 
       {/* Filter Tabs */}
-      <View style={styles.filterContainer}>
+      <View style={[styles.filterContainer, { backgroundColor: theme.CARD_BACKGROUND, borderBottomColor: theme.BORDER }]}>  
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
           <FilterButton
             status="active"
@@ -1195,14 +1194,14 @@ const DoctorPrescriptionsScreen = ({ navigation, route }) => {
       {/* Prescriptions List */}
       <ScrollView
         style={styles.prescriptionsList}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[theme.PRIMARY]} />}
         showsVerticalScrollIndicator={false}
       >
         {filteredPrescriptions.length === 0 ? (
-          <Card style={styles.emptyState}>
-            <Ionicons name="medical-outline" size={64} color={COLORS.GRAY_MEDIUM} />
-            <Text style={styles.emptyTitle}>No Prescriptions</Text>
-            <Text style={styles.emptySubtitle}>
+          <Card style={[styles.emptyState, { backgroundColor: theme.CARD_BACKGROUND }]}>  
+            <Ionicons name="medical-outline" size={64} color={theme.GRAY_MEDIUM} />
+            <Text style={[styles.emptyTitle, { color: theme.TEXT_PRIMARY }]}>No Prescriptions</Text>
+            <Text style={[styles.emptySubtitle, { color: theme.TEXT_SECONDARY }]}>  
               {filterStatus === 'all' 
                 ? 'No prescriptions found.'
                 : `No ${filterStatus} prescriptions.`
@@ -1223,10 +1222,10 @@ const DoctorPrescriptionsScreen = ({ navigation, route }) => {
 
       {/* Floating Action Button */}
       <TouchableOpacity
-        style={styles.fab}
+        style={[styles.fab, { backgroundColor: theme.PRIMARY }]}
         onPress={() => setShowCreateModal(true)}
       >
-        <Ionicons name="add" size={24} color={COLORS.WHITE} />
+        <Ionicons name="add" size={24} color={theme.WHITE} />
       </TouchableOpacity>
 
       <CreatePrescriptionModal />
