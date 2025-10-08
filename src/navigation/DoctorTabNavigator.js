@@ -118,6 +118,11 @@ const PatientsStackNavigator = () => {
         component={DoctorPrescriptionsScreen}
         options={{ title: 'Manage Prescriptions' }}
       />
+      <PatientsStack.Screen 
+        name="Chat" 
+        component={ChatScreen}
+        options={{ title: 'Patient Chat' }}
+      />
     </PatientsStack.Navigator>
   );
 };

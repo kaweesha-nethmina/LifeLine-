@@ -18,7 +18,9 @@ import {
   query,
   where,
   getDocs,
-  orderBy
+  orderBy,
+  doc,
+  deleteDoc
 } from 'firebase/firestore';
 import { db } from '../services/firebase';
 import {
@@ -30,8 +32,9 @@ import {
 import Card from '../components/Card';
 import Button from '../components/Button';
 import useProfilePicture from '../hooks/useProfilePicture';
+import LabResultModal from '../components/LabResultModal';
 
-const MedicalHistoryScreen = ({ navigation }) => {
+const MedicalHistoryScreen = ({ navigation, route }) => {
   const { user, userProfile } = useAuth();
   const { theme } = useTheme();
   const styles = getStyles(theme);
@@ -40,11 +43,18 @@ const MedicalHistoryScreen = ({ navigation }) => {
   const [refreshing, setRefreshing] = useState(false);
   const [filterType, setFilterType] = useState('all'); // all, appointments, lab-results, prescriptions, diagnoses
   const [profilePicture, setProfilePicture] = useState(null);
+  const [selectedLabResult, setSelectedLabResult] = useState(null);
+  const [showLabResultModal, setShowLabResultModal] = useState(false);
 
   useEffect(() => {
     loadMedicalHistory();
     loadProfilePicture();
-  }, []);
+    
+    // Set filter type from route params if provided
+    if (route?.params?.filterType) {
+      setFilterType(route.params.filterType);
+    }
+  }, [route?.params?.filterType]);
 
   const loadProfilePicture = async () => {
     try {
@@ -114,8 +124,38 @@ const MedicalHistoryScreen = ({ navigation }) => {
           });
         });
         
-        // Combine both data sets
-        const combinedData = [...medicalHistoryData, ...appointmentsData];
+        // Fetch lab results from labResults subcollection
+        const labResultsQuery = query(
+          collection(db, 'users', user.uid, 'labResults')
+          // Removed orderBy to avoid composite index requirement
+        );
+        
+        const labResultsSnapshot = await getDocs(labResultsQuery);
+        const labResultsData = [];
+        labResultsSnapshot.forEach((doc) => {
+          const labResult = doc.data();
+          labResultsData.push({
+            id: doc.id,
+            type: 'lab-result',
+            title: labResult.title || 'Lab Result',
+            date: labResult.uploadDate,
+            doctor: labResult.doctorName || 'Unknown Doctor',
+            doctorName: labResult.doctorName || 'Unknown Doctor',
+            doctorLicense: labResult.doctorLicense || 'N/A',
+            patientName: labResult.patientName || 'Unknown Patient',
+            fileName: labResult.fileName || 'Unknown File',
+            fileType: labResult.fileType || 'Unknown Type',
+            fileSize: labResult.fileSize || 0,
+            fileUrl: labResult.fileUrl || '',
+            uploadDate: labResult.uploadDate || new Date().toISOString(),
+            details: `Doctor: ${labResult.doctorName || 'Unknown Doctor'}\nLicense: ${labResult.doctorLicense || 'N/A'}`,
+            summary: `Lab result titled "${labResult.title || 'Untitled'}" uploaded by ${labResult.doctorName || 'Unknown Doctor'}`,
+            critical: false
+          });
+        });
+        
+        // Combine all data sets
+        const combinedData = [...medicalHistoryData, ...appointmentsData, ...labResultsData];
         
         // Sort in memory instead of using Firestore orderBy
         combinedData.sort((a, b) => new Date(b.date) - new Date(a.date));
@@ -181,16 +221,23 @@ const MedicalHistoryScreen = ({ navigation }) => {
   };
 
   const handleRecordPress = (record) => {
-    // Navigate to detailed view or show more information
-    Alert.alert(
-      record.title,
-      `Date: ${formatDate(record.date)}
+    // Handle different record types
+    if (record.type === 'lab-result') {
+      // For lab results, show the detailed modal with all data
+      setSelectedLabResult(record);
+      setShowLabResultModal(true);
+    } else {
+      // Navigate to detailed view or show more information
+      Alert.alert(
+        record.title,
+        `Date: ${formatDate(record.date)}
 
 Details: ${record.details}
 
 Doctor: ${record.doctor}`,
-      [{ text: 'OK' }]
-    );
+        [{ text: 'OK' }]
+      );
+    }
   };
 
   const filteredHistory = medicalHistory.filter(record => {
@@ -391,6 +438,15 @@ Doctor: ${record.doctor}`,
       >
         <Ionicons name="add" size={24} color={theme.WHITE} />
       </TouchableOpacity>
+      
+      {/* Lab Result Modal */}
+      <LabResultModal
+        visible={showLabResultModal}
+        onClose={() => setShowLabResultModal(false)}
+        labResult={selectedLabResult}
+        currentUser={user}
+        onDelete={loadMedicalHistory}
+      />
     </SafeAreaView>
   );
 };
@@ -400,33 +456,46 @@ const getStyles = (theme) => StyleSheet.create({
     flex: 1,
     backgroundColor: theme.BACKGROUND,
   },
-  header: {
-    paddingHorizontal: SPACING.MD,
-    paddingVertical: SPACING.LG,
-    backgroundColor: theme.CARD_BACKGROUND,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.BORDER,
+  title: {
+    fontSize: FONT_SIZES.XL,
+    fontWeight: 'bold',
+    color: theme.TEXT_PRIMARY,
+    marginBottom: SPACING.XS,
   },
-  profileSection: {
+  subtitle: {
+    fontSize: FONT_SIZES.MD,
+    color: theme.TEXT_SECONDARY,
+  },
+  patientSummary: {
+    marginBottom: SPACING.MD,
+    backgroundColor: theme.CARD_BACKGROUND,
+    borderWidth: 1,
+    borderColor: theme.BORDER,
+  },
+  summaryHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: SPACING.MD,
   },
-  profileImage: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: theme.GRAY_LIGHT,
+  patientAvatar: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: theme.PRIMARY,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: SPACING.MD,
   },
-  profileText: {
-    fontSize: FONT_SIZES.MD,
-    color: theme.TEXT_PRIMARY,
+  patientAvatarImage: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
   },
-  profileName: {
-    fontSize: FONT_SIZES.LG,
+  patientInfo: {
+    flex: 1,
+  },
+  patientName: {
+    fontSize: FONT_SIZES.MD,
     fontWeight: 'bold',
     color: theme.TEXT_PRIMARY,
     marginBottom: SPACING.XS / 2,

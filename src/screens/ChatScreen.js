@@ -10,7 +10,8 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
-  Image
+  Image,
+  ScrollView
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../context/AuthContext';
@@ -467,6 +468,7 @@ const ChatScreen = ({ navigation, route }) => {
       <KeyboardAvoidingView 
         style={[styles.container, { backgroundColor: theme.BACKGROUND }]} 
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 100}
       >
         {/* Chat Header */}
         <View style={[styles.header, { backgroundColor: theme.PRIMARY }]}>
@@ -514,6 +516,8 @@ const ChatScreen = ({ navigation, route }) => {
               <Text style={[styles.emptyMessageText, { color: theme.TEXT_SECONDARY }]}>No messages yet. Start a conversation!</Text>
             </View>
           }
+          onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
+          onLayout={() => flatListRef.current?.scrollToEnd({ animated: true })}
         />
 
         {/* Quick Replies */}
@@ -541,6 +545,16 @@ const ChatScreen = ({ navigation, route }) => {
               placeholderTextColor={theme.GRAY_MEDIUM}
               multiline
               maxLength={500}
+              onFocus={() => {
+                // Scroll to bottom when input is focused
+                setTimeout(() => {
+                  flatListRef.current?.scrollToEnd({ animated: true });
+                }, 100);
+              }}
+              onContentSizeChange={(event) => {
+                // Adjust the height of the TextInput based on content
+                // This will help with multiline text input
+              }}
             />
             <TouchableOpacity 
               style={[

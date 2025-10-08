@@ -14,13 +14,16 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../context/AuthContext';
-import { useTheme } from '../../context/ThemeContext'; // Add this import
+import { useTheme } from '../../context/ThemeContext';
 import {
   collection,
   query,
   where,
   onSnapshot,
-  getDocs
+  getDocs,
+  addDoc,
+  doc,
+  deleteDoc
 } from 'firebase/firestore';
 import { db } from '../../services/firebase';
 import {
@@ -32,10 +35,15 @@ import {
 import Card from '../../components/Card';
 import Button from '../../components/Button';
 import useProfilePicture from '../../hooks/useProfilePicture';
+import LabResultUploadModal from '../../components/LabResultUploadModal';
+
+// Add this import for Supabase storage
+import { supabaseStorage } from '../../services/supabase';
 
 const DoctorPatientsScreen = ({ navigation }) => {
   const { userProfile } = useAuth();
-  const { theme } = useTheme(); // Add this hook
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
   const { fetchUserProfilePicture, getCachedProfilePicture } = useProfilePicture();
   const [patients, setPatients] = useState([]);
   const [filteredPatients, setFilteredPatients] = useState([]);
@@ -44,6 +52,8 @@ const DoctorPatientsScreen = ({ navigation }) => {
   const [filterType, setFilterType] = useState('all'); // all, active, inactive, emergency
   const [selectedPatient, setSelectedPatient] = useState(null);
   const [showPatientModal, setShowPatientModal] = useState(false);
+  const [showLabUploadModal, setShowLabUploadModal] = useState(false);
+  const [selectedPatientForUpload, setSelectedPatientForUpload] = useState(null);
   const patientsListenerRef = useRef(null);
 
   useEffect(() => {
@@ -207,6 +217,11 @@ const DoctorPatientsScreen = ({ navigation }) => {
           action: 'create'
         });
         break;
+      case 'labresults':
+        // Open lab result upload modal
+        setSelectedPatientForUpload(patient);
+        setShowLabUploadModal(true);
+        break;
       case 'schedule':
         Alert.alert(
           'Schedule Appointment',
@@ -232,6 +247,105 @@ const DoctorPatientsScreen = ({ navigation }) => {
     }
   };
 
+  // Function to handle lab result upload
+  const handleLabResultUpload = async (labResultData) => {
+    try {
+      // First, upload the file to Supabase storage
+      console.log('Uploading lab result file to Supabase...');
+      
+      // Create a file object for upload
+      const fileToUpload = {
+        uri: labResultData.uri,
+        type: labResultData.fileType,
+        name: labResultData.fileName,
+        size: labResultData.fileSize
+      };
+      
+      // Upload file to Supabase storage
+      const storageResult = await supabaseStorage.uploadFile(
+        userProfile.uid, 
+        fileToUpload, 
+        `lab_results/${Date.now()}_${labResultData.fileName}`
+      );
+      
+      if (storageResult.error) {
+        throw new Error(`File upload failed: ${storageResult.error.message}`);
+      }
+      
+      console.log('File uploaded successfully:', storageResult.data);
+      
+      // Use the actual file path from the upload response to avoid duplication issues
+      // Remove the bucket name prefix if it exists in the Key
+      let filePath = storageResult.data.Key || `documents/${userProfile.uid}/lab_results/${Date.now()}_${labResultData.fileName}`;
+      if (filePath.startsWith('healthcare-documents/')) {
+        filePath = filePath.substring('healthcare-documents/'.length);
+      }
+      
+      // Get the public URL for the uploaded file
+      const fileUrl = supabaseStorage.getPublicUrl(filePath);
+      
+      console.log('Generated file URL:', fileUrl);
+      console.log('File path used:', filePath);
+      
+      // Save lab result metadata to Firestore
+      const labResultRef = collection(db, 'users', labResultData.patientId, 'labResults');
+      const labResultDoc = await addDoc(labResultRef, {
+        title: labResultData.title,
+        fileName: labResultData.fileName,
+        fileType: labResultData.fileType,
+        fileSize: labResultData.fileSize,
+        fileUrl: fileUrl,
+        doctorName: labResultData.doctorName,
+        doctorLicense: labResultData.doctorLicense,
+        uploadDate: labResultData.uploadDate,
+        uploadedBy: userProfile.uid,
+        uploadedByName: `${userProfile.firstName || ''} ${userProfile.lastName || ''}`.trim(),
+        patientId: labResultData.patientId,
+        patientName: labResultData.patientName,
+        status: 'uploaded'
+      });
+      
+      console.log('Lab result metadata saved to Firestore:', labResultDoc.id);
+      
+      Alert.alert('Success', 'Lab result uploaded successfully!');
+    } catch (error) {
+      console.error('Error uploading lab result:', error);
+      Alert.alert('Error', `Failed to upload lab result: ${error.message}`);
+    }
+  };
+
+  // Function to delete a lab result
+  const handleDeleteLabResult = async (labResultId, filePath) => {
+    try {
+      // First, delete the file from Supabase Storage
+      console.log('Deleting lab result file from Supabase Storage:', filePath);
+      const { error: deleteFileError } = await supabaseStorage.deleteFile(filePath);
+      
+      if (deleteFileError) {
+        console.warn('Failed to delete file from Supabase Storage:', deleteFileError);
+        // Continue with deleting metadata even if file deletion fails
+      } else {
+        console.log('File deleted successfully from Supabase Storage');
+      }
+      
+      // Then, delete the metadata from Firestore
+      console.log('Deleting lab result metadata from Firestore:', labResultId);
+      const labResultRef = doc(db, 'users', selectedPatientForUpload.id, 'labResults', labResultId);
+      await deleteDoc(labResultRef);
+      
+      console.log('Lab result metadata deleted successfully from Firestore');
+      
+      // Refresh the patient data to reflect the deletion
+      await loadPatients();
+      
+      // Return success
+      return { success: true };
+    } catch (error) {
+      console.error('Error deleting lab result:', error);
+      throw error;
+    }
+  };
+
   const calculateAge = (birthDate) => {
     const today = new Date();
     const birth = new Date(birthDate);
@@ -245,21 +359,23 @@ const DoctorPatientsScreen = ({ navigation }) => {
 
   const getUpcomingAppointments = async (patientId) => {
     try {
-      // Query upcoming appointments for this patient
-      // Removed orderBy to avoid composite index requirement
+      // Query all appointments for this patient to avoid composite index requirement
       const appointmentsQuery = query(
         collection(db, 'appointments'),
-        where('patientId', '==', patientId),
-        where('appointmentDate', '>', new Date())
-        // Removed orderBy('appointmentDate', 'asc') to avoid composite index
+        where('patientId', '==', patientId)
       );
       
       const appointmentsSnapshot = await getDocs(appointmentsQuery);
-      // Sort in memory instead of using Firestore orderBy
+      // Filter and sort in memory instead of using Firestore where/orderBy
       const appointmentsData = [];
       appointmentsSnapshot.forEach((doc) => {
-        appointmentsData.push(doc.data());
+        const data = doc.data();
+        // Filter for future appointments only
+        if (new Date(data.appointmentDate) > new Date()) {
+          appointmentsData.push(data);
+        }
       });
+      // Sort by appointment date
       appointmentsData.sort((a, b) => new Date(a.appointmentDate) - new Date(b.appointmentDate));
       return appointmentsData.length;
     } catch (error) {
@@ -439,6 +555,14 @@ const DoctorPatientsScreen = ({ navigation }) => {
           >
             <Ionicons name="medical-outline" size={18} color={theme.PRIMARY} />
             <Text style={[styles.actionText, { color: theme.PRIMARY }]}>Prescribe</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity
+            style={styles.actionButton}
+            onPress={() => handlePatientAction(patient, 'labresults')}
+          >
+            <Ionicons name="flask-outline" size={18} color={theme.INFO} />
+            <Text style={[styles.actionText, { color: theme.INFO }]}>Lab Results</Text>
           </TouchableOpacity>
           
           <TouchableOpacity
@@ -668,26 +792,40 @@ const DoctorPatientsScreen = ({ navigation }) => {
       </ScrollView>
 
       <PatientDetailModal />
+      
+      {/* Add the Lab Result Upload Modal */}
+      <LabResultUploadModal
+        visible={showLabUploadModal}
+        onClose={() => {
+          setShowLabUploadModal(false);
+          setSelectedPatientForUpload(null);
+        }}
+        onUpload={handleLabResultUpload}
+        onDeleteLabResult={handleDeleteLabResult}
+        patientId={selectedPatientForUpload?.id}
+        patientName={selectedPatientForUpload?.name}
+        doctorProfile={userProfile}
+      />
     </SafeAreaView>
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (theme) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.BACKGROUND,
+    backgroundColor: theme.BACKGROUND,
   },
   searchContainer: {
     paddingHorizontal: SPACING.MD,
     paddingVertical: SPACING.SM,
-    backgroundColor: COLORS.WHITE,
+    backgroundColor: theme.CARD_BACKGROUND,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.BORDER,
+    borderBottomColor: theme.BORDER,
   },
   searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.GRAY_LIGHT,
+    backgroundColor: theme.GRAY_LIGHT,
     borderRadius: BORDER_RADIUS.MD,
     paddingHorizontal: SPACING.MD,
     paddingVertical: SPACING.SM,
@@ -695,16 +833,16 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     fontSize: FONT_SIZES.MD,
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginLeft: SPACING.SM,
   },
   statsHeader: {
     flexDirection: 'row',
     paddingHorizontal: SPACING.MD,
     paddingVertical: SPACING.SM,
-    backgroundColor: COLORS.WHITE,
+    backgroundColor: theme.CARD_BACKGROUND,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.BORDER,
+    borderBottomColor: theme.BORDER,
   },
   statCard: {
     flex: 1,
@@ -714,38 +852,38 @@ const styles = StyleSheet.create({
   statNumber: {
     fontSize: FONT_SIZES.XL,
     fontWeight: 'bold',
-    color: COLORS.PRIMARY,
+    color: theme.PRIMARY,
     marginBottom: SPACING.XS / 2,
   },
   statTitle: {
     fontSize: FONT_SIZES.XS,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     textAlign: 'center',
   },
   filterContainer: {
-    backgroundColor: COLORS.WHITE,
+    backgroundColor: theme.CARD_BACKGROUND,
     paddingHorizontal: SPACING.MD,
     paddingVertical: SPACING.SM,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.BORDER,
+    borderBottomColor: theme.BORDER,
   },
   filterButton: {
     paddingHorizontal: SPACING.MD,
     paddingVertical: SPACING.SM,
     borderRadius: BORDER_RADIUS.XL,
     marginRight: SPACING.SM,
-    backgroundColor: COLORS.GRAY_LIGHT,
+    backgroundColor: theme.GRAY_LIGHT,
   },
   activeFilterButton: {
-    backgroundColor: COLORS.PRIMARY,
+    backgroundColor: theme.PRIMARY,
   },
   filterButtonText: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     fontWeight: '500',
   },
   activeFilterButtonText: {
-    color: COLORS.WHITE,
+    color: theme.WHITE,
   },
   patientsList: {
     flex: 1,
@@ -753,9 +891,9 @@ const styles = StyleSheet.create({
   },
   patientCard: {
     marginBottom: SPACING.MD,
-    backgroundColor: COLORS.WHITE,
+    backgroundColor: theme.CARD_BACKGROUND,
     borderWidth: 1,
-    borderColor: COLORS.BORDER,
+    borderColor: theme.BORDER,
   },
   patientHeader: {
     flexDirection: 'row',
@@ -772,7 +910,7 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 25,
-    backgroundColor: COLORS.PRIMARY,
+    backgroundColor: theme.PRIMARY,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: SPACING.MD,
@@ -780,7 +918,7 @@ const styles = StyleSheet.create({
   patientInitial: {
     fontSize: FONT_SIZES.LG,
     fontWeight: 'bold',
-    color: COLORS.WHITE,
+    color: theme.WHITE,
   },
   patientAvatarImage: {
     width: 50,
@@ -793,17 +931,17 @@ const styles = StyleSheet.create({
   patientName: {
     fontSize: FONT_SIZES.MD,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginBottom: SPACING.XS / 2,
   },
   patientMeta: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     marginBottom: SPACING.XS / 2,
   },
   patientContact: {
     fontSize: FONT_SIZES.XS,
-    color: COLORS.GRAY_MEDIUM,
+    color: theme.GRAY_MEDIUM,
   },
   patientStatus: {
     alignItems: 'flex-end',
@@ -817,7 +955,7 @@ const styles = StyleSheet.create({
   },
   statusText: {
     fontSize: FONT_SIZES.XS,
-    color: COLORS.WHITE,
+    color: theme.WHITE,
     marginLeft: SPACING.XS / 2,
     fontWeight: '600',
   },
@@ -826,7 +964,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     paddingVertical: SPACING.SM,
     borderTopWidth: 1,
-    borderTopColor: COLORS.BORDER,
+    borderTopColor: theme.BORDER,
     marginBottom: SPACING.SM,
   },
   statItem: {
@@ -835,19 +973,19 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: FONT_SIZES.MD,
     fontWeight: 'bold',
-    color: COLORS.PRIMARY,
+    color: theme.PRIMARY,
     marginBottom: SPACING.XS / 2,
   },
   statLabel: {
     fontSize: FONT_SIZES.XS,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
   },
   patientActions: {
     flexDirection: 'row',
     justifyContent: 'space-around',
     paddingTop: SPACING.SM,
     borderTopWidth: 1,
-    borderTopColor: COLORS.BORDER,
+    borderTopColor: theme.BORDER,
   },
   actionButton: {
     alignItems: 'center',
@@ -863,18 +1001,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: SPACING.XXL,
     marginTop: SPACING.XL,
-    backgroundColor: COLORS.WHITE,
+    backgroundColor: theme.CARD_BACKGROUND,
   },
   emptyTitle: {
     fontSize: FONT_SIZES.XL,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginTop: SPACING.MD,
     marginBottom: SPACING.XS,
   },
   emptySubtitle: {
     fontSize: FONT_SIZES.MD,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     textAlign: 'center',
     paddingHorizontal: SPACING.MD,
   },
@@ -885,7 +1023,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   modalContent: {
-    backgroundColor: COLORS.WHITE,
+    backgroundColor: theme.CARD_BACKGROUND,
     borderRadius: BORDER_RADIUS.LG,
     padding: SPACING.LG,
     width: '90%',
@@ -900,7 +1038,7 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: FONT_SIZES.XL,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
   },
   modalBody: {
     maxHeight: 400,
@@ -911,7 +1049,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: FONT_SIZES.LG,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginBottom: SPACING.MD,
   },
   detailRow: {
@@ -920,16 +1058,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: SPACING.XS,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.GRAY_LIGHT,
+    borderBottomColor: theme.GRAY_LIGHT,
   },
   detailLabel: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     fontWeight: '500',
   },
   detailValue: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     flex: 1,
     textAlign: 'right',
   },

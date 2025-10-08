@@ -39,6 +39,7 @@ const HealthRecordsScreen = ({ navigation }) => {
     appointments: [],
     prescriptions: [],
     recentDocuments: [],
+    labResults: [],
     vitals: {}
   });
   const [loading, setLoading] = useState(true);
@@ -51,11 +52,13 @@ const HealthRecordsScreen = ({ navigation }) => {
     const unsubscribeAppointments = setupAppointmentsListener();
     const unsubscribePrescriptions = setupPrescriptionsListener();
     const unsubscribeDocuments = setupDocumentsListener();
+    const unsubscribeLabResults = setupLabResultsListener();
     
     return () => {
       if (unsubscribeAppointments) unsubscribeAppointments();
       if (unsubscribePrescriptions) unsubscribePrescriptions();
       if (unsubscribeDocuments) unsubscribeDocuments();
+      if (unsubscribeLabResults) unsubscribeLabResults();
     };
   }, []);
 
@@ -170,6 +173,70 @@ const HealthRecordsScreen = ({ navigation }) => {
     }
   };
 
+  const setupLabResultsListener = () => {
+    try {
+      // Listen for user's lab results in real-time
+      // Removed orderBy to avoid composite index requirement
+      const labResultsQuery = query(
+        collection(db, 'users', user.uid, 'labResults')
+        // Removed orderBy('uploadDate', 'desc') to avoid composite index
+      );
+      
+      return onSnapshot(labResultsQuery, (snapshot) => {
+        const labResultsData = [];
+        snapshot.forEach((doc) => {
+          const data = doc.data();
+          labResultsData.push({
+            id: doc.id,
+            ...data
+          });
+        });
+        
+        // Sort in memory instead of using Firestore orderBy
+        labResultsData.sort((a, b) => new Date(b.uploadDate) - new Date(a.uploadDate));
+        
+        setHealthData(prev => ({
+          ...prev,
+          labResults: labResultsData
+        }));
+      }, (error) => {
+        console.error('Error listening to lab results:', error);
+      });
+    } catch (error) {
+      console.error('Error setting up lab results listener:', error);
+      return null;
+    }
+  };
+
+  const loadLabResults = async () => {
+    try {
+      // Load lab results
+      // Removed orderBy to avoid composite index requirement
+      const labResultsQuery = query(
+        collection(db, 'users', user.uid, 'labResults')
+        // Removed orderBy('uploadDate', 'desc') to avoid composite index
+      );
+      
+      const labResultsSnapshot = await getDocs(labResultsQuery);
+      const labResultsData = [];
+      labResultsSnapshot.forEach((doc) => {
+        const data = doc.data();
+        labResultsData.push({
+          id: doc.id,
+          ...data
+        });
+      });
+      
+      // Sort in memory instead of using Firestore orderBy
+      labResultsData.sort((a, b) => new Date(b.uploadDate) - new Date(a.uploadDate));
+      
+      return labResultsData;
+    } catch (error) {
+      console.error('Error loading lab results:', error);
+      return [];
+    }
+  };
+
   const loadHealthData = async () => {
     try {
       setLoading(true);
@@ -240,10 +307,14 @@ const HealthRecordsScreen = ({ navigation }) => {
       // Sort in memory instead of using Firestore orderBy
       documentsData.sort((a, b) => new Date(b.uploadDate) - new Date(a.uploadDate));
       
+      // Load lab results
+      const labResultsData = await loadLabResults();
+      
       setHealthData({
         appointments: appointmentsData,
         prescriptions: prescriptionsData,
         recentDocuments: documentsData.slice(0, 5), // Show only first 5 documents
+        labResults: labResultsData,
         vitals: {} // Will be populated from other sources
       });
       
@@ -330,6 +401,46 @@ const HealthRecordsScreen = ({ navigation }) => {
     </TouchableOpacity>
   );
 
+  // Update LabResultItem component to handle file viewing
+  const LabResultItem = ({ labResult }) => (
+    <TouchableOpacity 
+      style={[styles.documentItem, { borderBottomColor: theme.BORDER }]}
+      onPress={() => {
+        // Show options for viewing the lab result
+        Alert.alert(
+          labResult.title,
+          `Doctor: ${labResult.doctorName}\nLicense: ${labResult.doctorLicense}\n\nUploaded: ${new Date(labResult.uploadDate).toLocaleDateString()}`,
+          [
+            { text: 'Cancel', style: 'cancel' },
+            { 
+              text: 'View File', 
+              onPress: () => {
+                // In a real implementation, you would open the file
+                // For now, just show the URL
+                Alert.alert('File URL', labResult.fileUrl || 'File URL not available', [{ text: 'OK' }]);
+              } 
+            }
+          ]
+        );
+      }}
+    >
+      <View style={[styles.documentIcon, { backgroundColor: theme.GRAY_LIGHT }]}>
+        <Ionicons 
+          name={labResult.fileType?.includes('pdf') ? 'document-text' : 'image'} 
+          size={20} 
+          color={theme.INFO} 
+        />
+      </View>
+      <View style={styles.documentInfo}>
+        <Text style={[styles.documentName, { color: theme.TEXT_PRIMARY }]}>{labResult.title}</Text>
+        <Text style={[styles.documentDate, { color: theme.TEXT_SECONDARY }]}>
+          {new Date(labResult.uploadDate).toLocaleDateString()} • {labResult.doctorName}
+        </Text>
+      </View>
+      <Ionicons name="chevron-forward" size={20} color={theme.GRAY_MEDIUM} />
+    </TouchableOpacity>
+  );
+
   if (loading) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: theme.BACKGROUND }]}>
@@ -379,8 +490,8 @@ const HealthRecordsScreen = ({ navigation }) => {
             title="Lab Results"
             icon="flask-outline"
             color={theme.INFO}
-            count={3}
-            onPress={() => Alert.alert('Lab Results', 'Lab results feature coming soon')}
+            count={healthData.labResults.length}
+            onPress={() => navigation.navigate('MedicalHistory', { filterType: 'lab-result' })}
           />
         </View>
 
@@ -408,6 +519,28 @@ const HealthRecordsScreen = ({ navigation }) => {
           ) : (
             healthData.recentDocuments.map((document) => (
               <RecentDocumentItem key={document.id} document={document} />
+            ))
+          )}
+        </Card>
+
+        {/* Lab Results Section */}
+        <Card style={[styles.section, { backgroundColor: theme.CARD_BACKGROUND }]}>
+          <View style={styles.sectionHeader}>
+            <Text style={[styles.sectionTitle, { color: theme.TEXT_PRIMARY }]}>Recent Lab Results</Text>
+            <TouchableOpacity onPress={() => navigation.navigate('MedicalHistory', { filterType: 'lab-result' })}>
+              <Text style={[styles.viewAllText, { color: theme.PRIMARY }]}>View All</Text>
+            </TouchableOpacity>
+          </View>
+          
+          {healthData.labResults.length === 0 ? (
+            <View style={styles.emptyState}>
+              <Ionicons name="flask-outline" size={48} color={theme.GRAY_MEDIUM} />
+              <Text style={[styles.emptyTitle, { color: theme.TEXT_PRIMARY }]}>No Lab Results</Text>
+              <Text style={[styles.emptySubtitle, { color: theme.TEXT_SECONDARY }]}>Your lab results will appear here</Text>
+            </View>
+          ) : (
+            healthData.labResults.slice(0, 3).map((labResult) => (
+              <LabResultItem key={labResult.id} labResult={labResult} />
             ))
           )}
         </Card>
@@ -549,6 +682,8 @@ const getStyles = (theme) => StyleSheet.create({
   section: {
     marginBottom: SPACING.MD,
     backgroundColor: theme.CARD_BACKGROUND,
+    borderWidth: 1,
+    borderColor: theme.BORDER,
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -597,7 +732,7 @@ const getStyles = (theme) => StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: theme.BUTTON_SECONDARY,
+    backgroundColor: theme.GRAY_LIGHT,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: SPACING.MD,
@@ -655,6 +790,8 @@ const getStyles = (theme) => StyleSheet.create({
   emergencyCard: {
     backgroundColor: theme.EMERGENCY_LIGHT,
     marginBottom: SPACING.XL,
+    borderWidth: 1,
+    borderColor: theme.BORDER,
   },
   emergencyHeader: {
     flexDirection: 'row',
@@ -675,6 +812,17 @@ const getStyles = (theme) => StyleSheet.create({
   },
   emergencyButton: {
     borderColor: theme.EMERGENCY,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: theme.BACKGROUND,
+  },
+  loadingText: {
+    marginTop: SPACING.MD,
+    fontSize: FONT_SIZES.MD,
+    color: theme.TEXT_SECONDARY,
   },
 });
 
