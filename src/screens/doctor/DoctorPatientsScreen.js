@@ -14,6 +14,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../context/AuthContext';
+import { useTheme } from '../../context/ThemeContext'; // Add this import
 import {
   collection,
   query,
@@ -34,6 +35,7 @@ import useProfilePicture from '../../hooks/useProfilePicture';
 
 const DoctorPatientsScreen = ({ navigation }) => {
   const { userProfile } = useAuth();
+  const { theme } = useTheme(); // Add this hook
   const { fetchUserProfilePicture, getCachedProfilePicture } = useProfilePicture();
   const [patients, setPatients] = useState([]);
   const [filteredPatients, setFilteredPatients] = useState([]);
@@ -301,10 +303,10 @@ const DoctorPatientsScreen = ({ navigation }) => {
 
   const FilterButton = ({ type, title, count, active, onPress }) => (
     <TouchableOpacity
-      style={[styles.filterButton, active && styles.activeFilterButton]}
+      style={[styles.filterButton, active && styles.activeFilterButton, { backgroundColor: active ? theme.PRIMARY : theme.GRAY_LIGHT }]}
       onPress={onPress}
     >
-      <Text style={[styles.filterButtonText, active && styles.activeFilterButtonText]}>
+      <Text style={[styles.filterButtonText, active && styles.activeFilterButtonText, { color: active ? theme.WHITE : theme.TEXT_SECONDARY }]}>
         {title} {count !== undefined && `(${count})`}
       </Text>
     </TouchableOpacity>
@@ -363,11 +365,11 @@ const DoctorPatientsScreen = ({ navigation }) => {
     }, [patient.id]);
 
     return (
-      <Card style={styles.patientCard}>
+      <Card style={[styles.patientCard, { backgroundColor: theme.CARD_BACKGROUND, borderColor: theme.BORDER }]}>
         <TouchableOpacity onPress={() => handlePatientAction(patient, 'view')}>
           <View style={styles.patientHeader}>
             <View style={styles.patientInfo}>
-              <View style={styles.patientAvatar}>
+              <View style={[styles.patientAvatar, { backgroundColor: theme.PRIMARY }]}>
                 {profilePicture && profilePicture !== null ? (
                   <Image 
                     source={{ uri: profilePicture }} 
@@ -379,15 +381,15 @@ const DoctorPatientsScreen = ({ navigation }) => {
                     }}
                   />
                 ) : (
-                  <Text style={styles.patientInitial}>{patient.name.charAt(0)}</Text>
+                  <Text style={[styles.patientInitial, { color: theme.WHITE }]}>{patient.name.charAt(0)}</Text>
                 )}
               </View>
               <View style={styles.patientDetails}>
-                <Text style={styles.patientName}>{patient.name}</Text>
-                <Text style={styles.patientMeta}>
+                <Text style={[styles.patientName, { color: theme.TEXT_PRIMARY }]}>{patient.name}</Text>
+                <Text style={[styles.patientMeta, { color: theme.TEXT_SECONDARY }]}>
                   Age: {age} • {patient.gender} • {patient.bloodType}
                 </Text>
-                <Text style={styles.patientContact}>
+                <Text style={[styles.patientContact, { color: theme.GRAY_MEDIUM }]}>
                   {patient.phoneNumber} • {patient.email}
                 </Text>
               </View>
@@ -397,54 +399,54 @@ const DoctorPatientsScreen = ({ navigation }) => {
                 <Ionicons 
                   name={getPatientStatusIcon(patient.status)} 
                   size={12} 
-                  color={COLORS.WHITE} 
+                  color={theme.WHITE} 
                 />
-                <Text style={styles.statusText}>
+                <Text style={[styles.statusText, { color: theme.WHITE }]}>
                   {patient.status.charAt(0).toUpperCase() + patient.status.slice(1)}
                 </Text>
               </View>
             </View>
           </View>
 
-          <View style={styles.patientStats}>
+          <View style={[styles.patientStats, { borderTopColor: theme.BORDER }]}>
             <View style={styles.statItem}>
-              <Text style={styles.statValue}>{patient.totalVisits}</Text>
-              <Text style={styles.statLabel}>Total Visits</Text>
+              <Text style={[styles.statValue, { color: theme.PRIMARY }]}>{patient.totalVisits}</Text>
+              <Text style={[styles.statLabel, { color: theme.TEXT_SECONDARY }]}>Total Visits</Text>
             </View>
             <View style={styles.statItem}>
-              <Text style={styles.statValue}>{upcomingAppointments}</Text>
-              <Text style={styles.statLabel}>Upcoming</Text>
+              <Text style={[styles.statValue, { color: theme.PRIMARY }]}>{upcomingAppointments}</Text>
+              <Text style={[styles.statLabel, { color: theme.TEXT_SECONDARY }]}>Upcoming</Text>
             </View>
             <View style={styles.statItem}>
-              <Text style={styles.statValue}>{patient.lastVisit ? 'Recent' : 'None'}</Text>
-              <Text style={styles.statLabel}>Last Visit</Text>
+              <Text style={[styles.statValue, { color: theme.PRIMARY }]}>{patient.lastVisit ? 'Recent' : 'None'}</Text>
+              <Text style={[styles.statLabel, { color: theme.TEXT_SECONDARY }]}>Last Visit</Text>
             </View>
           </View>
         </TouchableOpacity>
 
-        <View style={styles.patientActions}>
+        <View style={[styles.patientActions, { borderTopColor: theme.BORDER }]}>
           <TouchableOpacity
             style={styles.actionButton}
             onPress={() => handlePatientAction(patient, 'chat')}
           >
-            <Ionicons name="chatbubble-outline" size={18} color={COLORS.SUCCESS} />
-            <Text style={[styles.actionText, { color: COLORS.SUCCESS }]}>Chat</Text>
+            <Ionicons name="chatbubble-outline" size={18} color={theme.SUCCESS} />
+            <Text style={[styles.actionText, { color: theme.SUCCESS }]}>Chat</Text>
           </TouchableOpacity>
           
           <TouchableOpacity
             style={styles.actionButton}
             onPress={() => handlePatientAction(patient, 'prescription')}
           >
-            <Ionicons name="medical-outline" size={18} color={COLORS.PRIMARY} />
-            <Text style={[styles.actionText, { color: COLORS.PRIMARY }]}>Prescribe</Text>
+            <Ionicons name="medical-outline" size={18} color={theme.PRIMARY} />
+            <Text style={[styles.actionText, { color: theme.PRIMARY }]}>Prescribe</Text>
           </TouchableOpacity>
           
           <TouchableOpacity
             style={styles.actionButton}
             onPress={() => handlePatientAction(patient, 'schedule')}
           >
-            <Ionicons name="calendar-outline" size={18} color={COLORS.INFO} />
-            <Text style={[styles.actionText, { color: COLORS.INFO }]}>Schedule</Text>
+            <Ionicons name="calendar-outline" size={18} color={theme.INFO} />
+            <Text style={[styles.actionText, { color: theme.INFO }]}>Schedule</Text>
           </TouchableOpacity>
           
           {patient.status === 'emergency' && (
@@ -452,8 +454,8 @@ const DoctorPatientsScreen = ({ navigation }) => {
               style={styles.actionButton}
               onPress={() => handlePatientAction(patient, 'emergency')}
             >
-              <Ionicons name="call-outline" size={18} color={COLORS.EMERGENCY} />
-              <Text style={[styles.actionText, { color: COLORS.EMERGENCY }]}>Emergency</Text>
+              <Ionicons name="call-outline" size={18} color={theme.EMERGENCY} />
+              <Text style={[styles.actionText, { color: theme.EMERGENCY }]}>Emergency</Text>
             </TouchableOpacity>
           )}
         </View>
@@ -473,62 +475,62 @@ const DoctorPatientsScreen = ({ navigation }) => {
         transparent={true}
         onRequestClose={() => setShowPatientModal(false)}
       >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
+        <View style={[styles.modalOverlay, { backgroundColor: 'rgba(0, 0, 0, 0.5)' }]}>
+          <View style={[styles.modalContent, { backgroundColor: theme.CARD_BACKGROUND }]}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>{selectedPatient.name}</Text>
+              <Text style={[styles.modalTitle, { color: theme.TEXT_PRIMARY }]}>{selectedPatient.name}</Text>
               <TouchableOpacity onPress={() => setShowPatientModal(false)}>
-                <Ionicons name="close" size={24} color={COLORS.TEXT_PRIMARY} />
+                <Ionicons name="close" size={24} color={theme.TEXT_PRIMARY} />
               </TouchableOpacity>
             </View>
 
             <ScrollView style={styles.modalBody} showsVerticalScrollIndicator={false}>
               <View style={styles.detailSection}>
-                <Text style={styles.sectionTitle}>Personal Information</Text>
+                <Text style={[styles.sectionTitle, { color: theme.TEXT_PRIMARY }]}>Personal Information</Text>
                 <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>Age:</Text>
-                  <Text style={styles.detailValue}>{age} years old</Text>
+                  <Text style={[styles.detailLabel, { color: theme.TEXT_SECONDARY }]}>Age:</Text>
+                  <Text style={[styles.detailValue, { color: theme.TEXT_PRIMARY }]}> {age} years old</Text>
                 </View>
                 <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>Gender:</Text>
-                  <Text style={styles.detailValue}>{selectedPatient.gender}</Text>
+                  <Text style={[styles.detailLabel, { color: theme.TEXT_SECONDARY }]}>Gender:</Text>
+                  <Text style={[styles.detailValue, { color: theme.TEXT_PRIMARY }]}> {selectedPatient.gender}</Text>
                 </View>
                 <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>Blood Type:</Text>
-                  <Text style={styles.detailValue}>{selectedPatient.bloodType}</Text>
+                  <Text style={[styles.detailLabel, { color: theme.TEXT_SECONDARY }]}>Blood Type:</Text>
+                  <Text style={[styles.detailValue, { color: theme.TEXT_PRIMARY }]}> {selectedPatient.bloodType}</Text>
                 </View>
                 <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>Phone:</Text>
-                  <Text style={styles.detailValue}>{selectedPatient.phoneNumber}</Text>
+                  <Text style={[styles.detailLabel, { color: theme.TEXT_SECONDARY }]}>Phone:</Text>
+                  <Text style={[styles.detailValue, { color: theme.TEXT_PRIMARY }]}> {selectedPatient.phoneNumber}</Text>
                 </View>
                 <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>Email:</Text>
-                  <Text style={styles.detailValue}>{selectedPatient.email}</Text>
+                  <Text style={[styles.detailLabel, { color: theme.TEXT_SECONDARY }]}>Email:</Text>
+                  <Text style={[styles.detailValue, { color: theme.TEXT_PRIMARY }]}> {selectedPatient.email}</Text>
                 </View>
               </View>
 
               <View style={styles.detailSection}>
-                <Text style={styles.sectionTitle}>Medical Information</Text>
+                <Text style={[styles.sectionTitle, { color: theme.TEXT_PRIMARY }]}>Medical Information</Text>
                 <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>Total Visits:</Text>
-                  <Text style={styles.detailValue}>{selectedPatient.totalVisits}</Text>
+                  <Text style={[styles.detailLabel, { color: theme.TEXT_SECONDARY }]}>Total Visits:</Text>
+                  <Text style={[styles.detailValue, { color: theme.TEXT_PRIMARY }]}> {selectedPatient.totalVisits}</Text>
                 </View>
                 <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>Last Visit:</Text>
-                  <Text style={styles.detailValue}>
+                  <Text style={[styles.detailLabel, { color: theme.TEXT_SECONDARY }]}>Last Visit:</Text>
+                  <Text style={[styles.detailValue, { color: theme.TEXT_PRIMARY }]}>
                     {selectedPatient.lastVisit ? new Date(selectedPatient.lastVisit).toLocaleDateString() : 'No previous visits'}
                   </Text>
                 </View>
                 {selectedPatient.allergies && selectedPatient.allergies.length > 0 && (
                   <View style={styles.detailRow}>
-                    <Text style={styles.detailLabel}>Allergies:</Text>
-                    <Text style={styles.detailValue}>{selectedPatient.allergies.join(', ')}</Text>
+                    <Text style={[styles.detailLabel, { color: theme.TEXT_SECONDARY }]}>Allergies:</Text>
+                    <Text style={[styles.detailValue, { color: theme.TEXT_PRIMARY }]}> {selectedPatient.allergies.join(', ')}</Text>
                   </View>
                 )}
                 {selectedPatient.conditions && selectedPatient.conditions.length > 0 && (
                   <View style={styles.detailRow}>
-                    <Text style={styles.detailLabel}>Conditions:</Text>
-                    <Text style={styles.detailValue}>{selectedPatient.conditions.join(', ')}</Text>
+                    <Text style={[styles.detailLabel, { color: theme.TEXT_SECONDARY }]}>Conditions:</Text>
+                    <Text style={[styles.detailValue, { color: theme.TEXT_PRIMARY }]}> {selectedPatient.conditions.join(', ')}</Text>
                   </View>
                 )}
               </View>
@@ -571,44 +573,44 @@ const DoctorPatientsScreen = ({ navigation }) => {
   const counts = getFilterCounts();
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.BACKGROUND }]}>
       {/* Search Bar */}
-      <View style={styles.searchContainer}>
-        <View style={styles.searchBar}>
-          <Ionicons name="search-outline" size={20} color={COLORS.GRAY_MEDIUM} />
+      <View style={[styles.searchContainer, { backgroundColor: theme.CARD_BACKGROUND, borderBottomColor: theme.BORDER }]}>
+        <View style={[styles.searchBar, { backgroundColor: theme.GRAY_LIGHT }]}>
+          <Ionicons name="search-outline" size={20} color={theme.GRAY_MEDIUM} />
           <TextInput
-            style={styles.searchInput}
+            style={[styles.searchInput, { color: theme.TEXT_PRIMARY }]}
             placeholder="Search patients..."
             value={searchQuery}
             onChangeText={setSearchQuery}
-            placeholderTextColor={COLORS.GRAY_MEDIUM}
+            placeholderTextColor={theme.GRAY_MEDIUM}
           />
           {searchQuery.length > 0 && (
             <TouchableOpacity onPress={() => setSearchQuery('')}>
-              <Ionicons name="close-circle" size={20} color={COLORS.GRAY_MEDIUM} />
+              <Ionicons name="close-circle" size={20} color={theme.GRAY_MEDIUM} />
             </TouchableOpacity>
           )}
         </View>
       </View>
 
       {/* Stats Header */}
-      <View style={styles.statsHeader}>
+      <View style={[styles.statsHeader, { backgroundColor: theme.CARD_BACKGROUND, borderBottomColor: theme.BORDER }]}>
         <View style={styles.statCard}>
-          <Text style={styles.statNumber}>{counts.all}</Text>
-          <Text style={styles.statTitle}>Total Patients</Text>
+          <Text style={[styles.statNumber, { color: theme.PRIMARY }]}>{counts.all}</Text>
+          <Text style={[styles.statTitle, { color: theme.TEXT_SECONDARY }]}>Total Patients</Text>
         </View>
         <View style={styles.statCard}>
-          <Text style={[styles.statNumber, { color: COLORS.SUCCESS }]}>{counts.active}</Text>
-          <Text style={styles.statTitle}>Active</Text>
+          <Text style={[styles.statNumber, { color: theme.SUCCESS }]}>{counts.active}</Text>
+          <Text style={[styles.statTitle, { color: theme.TEXT_SECONDARY }]}>Active</Text>
         </View>
         <View style={styles.statCard}>
-          <Text style={[styles.statNumber, { color: COLORS.EMERGENCY }]}>{counts.emergency}</Text>
-          <Text style={styles.statTitle}>Emergency</Text>
+          <Text style={[styles.statNumber, { color: theme.EMERGENCY }]}>{counts.emergency}</Text>
+          <Text style={[styles.statTitle, { color: theme.TEXT_SECONDARY }]}>Emergency</Text>
         </View>
       </View>
 
       {/* Filter Tabs */}
-      <View style={styles.filterContainer}>
+      <View style={[styles.filterContainer, { backgroundColor: theme.CARD_BACKGROUND, borderBottomColor: theme.BORDER }]}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
           <FilterButton
             type="all"
@@ -644,14 +646,14 @@ const DoctorPatientsScreen = ({ navigation }) => {
       {/* Patients List */}
       <ScrollView
         style={styles.patientsList}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[theme.PRIMARY]} />}
         showsVerticalScrollIndicator={false}
       >
         {filteredPatients.length === 0 ? (
-          <Card style={styles.emptyState}>
-            <Ionicons name="people-outline" size={64} color={COLORS.GRAY_MEDIUM} />
-            <Text style={styles.emptyTitle}>No Patients Found</Text>
-            <Text style={styles.emptySubtitle}>
+          <Card style={[styles.emptyState, { backgroundColor: theme.CARD_BACKGROUND }]}>
+            <Ionicons name="people-outline" size={64} color={theme.GRAY_MEDIUM} />
+            <Text style={[styles.emptyTitle, { color: theme.TEXT_PRIMARY }]}>No Patients Found</Text>
+            <Text style={[styles.emptySubtitle, { color: theme.TEXT_SECONDARY }]}>
               {searchQuery 
                 ? `No patients match "${searchQuery}"`
                 : 'No patients in this category'
@@ -751,6 +753,9 @@ const styles = StyleSheet.create({
   },
   patientCard: {
     marginBottom: SPACING.MD,
+    backgroundColor: COLORS.WHITE,
+    borderWidth: 1,
+    borderColor: COLORS.BORDER,
   },
   patientHeader: {
     flexDirection: 'row',
@@ -858,6 +863,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: SPACING.XXL,
     marginTop: SPACING.XL,
+    backgroundColor: COLORS.WHITE,
   },
   emptyTitle: {
     fontSize: FONT_SIZES.XL,

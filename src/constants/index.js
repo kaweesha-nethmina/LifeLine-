@@ -36,7 +36,7 @@ export const NOTIFICATION_TYPES = {
   CONSULTATION: 'consultation'
 };
 
-// Colors (Modern Healthcare Theme)
+// Colors (Modern Healthcare Theme) - These are default colors, actual theme colors come from ThemeContext
 export const COLORS = {
   PRIMARY: '#2E86AB',
   PRIMARYB: '#026932ff',

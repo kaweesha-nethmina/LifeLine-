@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import {
   COLORS,
   FONT_SIZES,
@@ -23,6 +24,8 @@ import pharmacyService from '../services/pharmacyService';
 
 const PharmacyScreen = ({ navigation }) => {
   const { userProfile } = useAuth();
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
   const [pharmacies, setPharmacies] = useState([]);
   const [prescriptions, setPrescriptions] = useState([]);
   const [medicationHistory, setMedicationHistory] = useState([]);
@@ -74,59 +77,59 @@ const PharmacyScreen = ({ navigation }) => {
 
   const getPrescriptionStatusColor = (status) => {
     switch (status) {
-      case 'active': return COLORS.SUCCESS;
-      case 'filled': return COLORS.INFO;
-      case 'expired': return COLORS.WARNING;
-      case 'cancelled': return COLORS.ERROR;
-      default: return COLORS.GRAY_MEDIUM;
+      case 'active': return theme.SUCCESS;
+      case 'filled': return theme.INFO;
+      case 'expired': return theme.WARNING;
+      case 'cancelled': return theme.ERROR;
+      default: return theme.GRAY_MEDIUM;
     }
   };
 
   const getAdherenceColor = (adherence) => {
-    if (adherence >= 90) return COLORS.SUCCESS;
-    if (adherence >= 80) return COLORS.WARNING;
-    return COLORS.ERROR;
+    if (adherence >= 90) return theme.SUCCESS;
+    if (adherence >= 80) return theme.WARNING;
+    return theme.ERROR;
   };
 
   const PrescriptionItem = ({ prescription }) => (
-    <Card style={styles.prescriptionCard}>
+    <Card style={[styles.prescriptionCard, { backgroundColor: theme.CARD_BACKGROUND, borderColor: theme.BORDER }]}>
       <View style={styles.prescriptionHeader}>
         <View>
-          <Text style={styles.medicationName}>{prescription.medication}</Text>
-          <Text style={styles.dosage}>{prescription.dosage}</Text>
+          <Text style={[styles.medicationName, { color: theme.TEXT_PRIMARY }]}>{prescription.medication}</Text>
+          <Text style={[styles.dosage, { color: theme.TEXT_SECONDARY }]}>{prescription.dosage}</Text>
         </View>
         <View style={[styles.statusBadge, { backgroundColor: getPrescriptionStatusColor(prescription.status) }]}>
-          <Text style={styles.statusText}>{prescription.status}</Text>
+          <Text style={[styles.statusText, { color: theme.WHITE }]}>{prescription.status}</Text>
         </View>
       </View>
       
       <View style={styles.prescriptionDetails}>
         <View style={styles.detailRow}>
-          <Ionicons name="person" size={16} color={COLORS.TEXT_SECONDARY} />
-          <Text style={styles.detailText}>Prescribed by {prescription.doctorName}</Text>
+          <Ionicons name="person" size={16} color={theme.TEXT_SECONDARY} />
+          <Text style={[styles.detailText, { color: theme.TEXT_SECONDARY }]}>Prescribed by {prescription.doctorName}</Text>
         </View>
         
         <View style={styles.detailRow}>
-          <Ionicons name="calendar" size={16} color={COLORS.TEXT_SECONDARY} />
-          <Text style={styles.detailText}>Prescribed on {new Date(prescription.prescribedDate).toLocaleDateString()}</Text>
+          <Ionicons name="calendar" size={16} color={theme.TEXT_SECONDARY} />
+          <Text style={[styles.detailText, { color: theme.TEXT_SECONDARY }]}>Prescribed on {new Date(prescription.prescribedDate).toLocaleDateString()}</Text>
         </View>
         
         <View style={styles.detailRow}>
-          <Ionicons name="cube" size={16} color={COLORS.TEXT_SECONDARY} />
-          <Text style={styles.detailText}>Quantity: {prescription.quantity} | Refills: {prescription.refills}</Text>
+          <Ionicons name="cube" size={16} color={theme.TEXT_SECONDARY} />
+          <Text style={[styles.detailText, { color: theme.TEXT_SECONDARY }]}>Quantity: {prescription.quantity} | Refills: {prescription.refills}</Text>
         </View>
         
         {prescription.insuranceCoverage && (
           <View style={styles.detailRow}>
-            <Ionicons name="card" size={16} color={COLORS.TEXT_SECONDARY} />
-            <Text style={styles.detailText}>
+            <Ionicons name="card" size={16} color={theme.TEXT_SECONDARY} />
+            <Text style={[styles.detailText, { color: theme.TEXT_SECONDARY }]}>
               Insurance: {prescription.insuranceCoverage.provider} (Copay: ${prescription.insuranceCoverage.copay})
             </Text>
           </View>
         )}
       </View>
       
-      <Text style={styles.instructions}>{prescription.instructions}</Text>
+      <Text style={[styles.instructions, { color: theme.TEXT_PRIMARY }]}>{prescription.instructions}</Text>
       
       {prescription.status === 'active' && (
         <Button
@@ -139,30 +142,30 @@ const PharmacyScreen = ({ navigation }) => {
   );
 
   const PharmacyItem = ({ pharmacy }) => (
-    <Card style={styles.pharmacyCard}>
+    <Card style={[styles.pharmacyCard, { backgroundColor: theme.CARD_BACKGROUND, borderColor: theme.BORDER }]}>
       <View style={styles.pharmacyHeader}>
-        <Text style={styles.pharmacyName}>{pharmacy.name}</Text>
+        <Text style={[styles.pharmacyName, { color: theme.TEXT_PRIMARY }]}>{pharmacy.name}</Text>
         {pharmacy.deliveryAvailable && (
-          <View style={styles.deliveryBadge}>
-            <Text style={styles.deliveryText}>Delivery</Text>
+          <View style={[styles.deliveryBadge, { backgroundColor: theme.SUCCESS }]}>
+            <Text style={[styles.deliveryText, { color: theme.WHITE }]}>Delivery</Text>
           </View>
         )}
       </View>
       
       <View style={styles.pharmacyDetails}>
         <View style={styles.detailRow}>
-          <Ionicons name="location" size={16} color={COLORS.TEXT_SECONDARY} />
-          <Text style={styles.detailText}>{pharmacy.address}</Text>
+          <Ionicons name="location" size={16} color={theme.TEXT_SECONDARY} />
+          <Text style={[styles.detailText, { color: theme.TEXT_SECONDARY }]}>{pharmacy.address}</Text>
         </View>
         
         <View style={styles.detailRow}>
-          <Ionicons name="call" size={16} color={COLORS.TEXT_SECONDARY} />
-          <Text style={styles.detailText}>{pharmacy.phone}</Text>
+          <Ionicons name="call" size={16} color={theme.TEXT_SECONDARY} />
+          <Text style={[styles.detailText, { color: theme.TEXT_SECONDARY }]}>{pharmacy.phone}</Text>
         </View>
         
         <View style={styles.detailRow}>
-          <Ionicons name="time" size={16} color={COLORS.TEXT_SECONDARY} />
-          <Text style={styles.detailText}>{pharmacy.hours}</Text>
+          <Ionicons name="time" size={16} color={theme.TEXT_SECONDARY} />
+          <Text style={[styles.detailText, { color: theme.TEXT_SECONDARY }]}>{pharmacy.hours}</Text>
         </View>
       </View>
       
@@ -184,37 +187,37 @@ const PharmacyScreen = ({ navigation }) => {
   );
 
   const HistoryItem = ({ medication }) => (
-    <Card style={styles.historyCard}>
+    <Card style={[styles.historyCard, { backgroundColor: theme.CARD_BACKGROUND, borderColor: theme.BORDER }]}>
       <View style={styles.historyHeader}>
-        <Text style={styles.medicationName}>{medication.medication}</Text>
-        <Text style={styles.dosage}>{medication.dosage}</Text>
+        <Text style={[styles.medicationName, { color: theme.TEXT_PRIMARY }]}>{medication.medication}</Text>
+        <Text style={[styles.dosage, { color: theme.TEXT_SECONDARY }]}>{medication.dosage}</Text>
       </View>
       
       <View style={styles.historyDetails}>
         <View style={styles.detailRow}>
-          <Ionicons name="person" size={16} color={COLORS.TEXT_SECONDARY} />
-          <Text style={styles.detailText}>Prescribed by {medication.prescribedBy}</Text>
+          <Ionicons name="person" size={16} color={theme.TEXT_SECONDARY} />
+          <Text style={[styles.detailText, { color: theme.TEXT_SECONDARY }]}>Prescribed by {medication.prescribedBy}</Text>
         </View>
         
         <View style={styles.detailRow}>
-          <Ionicons name="calendar" size={16} color={COLORS.TEXT_SECONDARY} />
-          <Text style={styles.detailText}>
+          <Ionicons name="calendar" size={16} color={theme.TEXT_SECONDARY} />
+          <Text style={[styles.detailText, { color: theme.TEXT_SECONDARY }]}>
             {new Date(medication.startDate).toLocaleDateString()} - 
             {medication.endDate ? new Date(medication.endDate).toLocaleDateString() : ' Ongoing'}
           </Text>
         </View>
         
         <View style={[styles.statusBadge, { backgroundColor: getPrescriptionStatusColor(medication.status) }]}>
-          <Text style={styles.statusText}>{medication.status}</Text>
+          <Text style={[styles.statusText, { color: theme.WHITE }]}>{medication.status}</Text>
         </View>
       </View>
     </Card>
   );
 
   const AdherenceItem = ({ medication }) => (
-    <Card style={styles.adherenceCard}>
+    <Card style={[styles.adherenceCard, { backgroundColor: theme.CARD_BACKGROUND, borderColor: theme.BORDER }]}>
       <View style={styles.adherenceHeader}>
-        <Text style={styles.medicationName}>{medication.name}</Text>
+        <Text style={[styles.medicationName, { color: theme.TEXT_PRIMARY }]}>{medication.name}</Text>
         <Text style={[styles.adherencePercentage, { color: getAdherenceColor(medication.adherence) }]}>
           {medication.adherence}%
         </Text>
@@ -222,26 +225,26 @@ const PharmacyScreen = ({ navigation }) => {
       
       <View style={styles.adherenceDetails}>
         <View style={styles.detailRow}>
-          <Ionicons name="calendar" size={16} color={COLORS.TEXT_SECONDARY} />
-          <Text style={styles.detailText}>
+          <Ionicons name="calendar" size={16} color={theme.TEXT_SECONDARY} />
+          <Text style={[styles.detailText, { color: theme.TEXT_SECONDARY }]}>
             Last fill: {new Date(medication.lastFill).toLocaleDateString()}
           </Text>
         </View>
         
         <View style={styles.detailRow}>
-          <Ionicons name="time" size={16} color={COLORS.TEXT_SECONDARY} />
-          <Text style={styles.detailText}>
+          <Ionicons name="time" size={16} color={theme.TEXT_SECONDARY} />
+          <Text style={[styles.detailText, { color: theme.TEXT_SECONDARY }]}>
             Next fill: {new Date(medication.nextFill).toLocaleDateString()}
           </Text>
         </View>
         
         <View style={styles.detailRow}>
-          <Ionicons name="cube" size={16} color={COLORS.TEXT_SECONDARY} />
-          <Text style={styles.detailText}>Days supply: {medication.daysSupply}</Text>
+          <Ionicons name="cube" size={16} color={theme.TEXT_SECONDARY} />
+          <Text style={[styles.detailText, { color: theme.TEXT_SECONDARY }]}>Days supply: {medication.daysSupply}</Text>
         </View>
       </View>
       
-      <View style={styles.progressBarContainer}>
+      <View style={[styles.progressBarContainer, { backgroundColor: theme.GRAY_LIGHT }]}>
         <View 
           style={[
             styles.progressBar, 
@@ -258,10 +261,10 @@ const PharmacyScreen = ({ navigation }) => {
   const PrescriptionsTab = () => (
     <ScrollView style={styles.tabContent} showsVerticalScrollIndicator={false}>
       {prescriptions.length === 0 ? (
-        <Card style={styles.emptyState}>
-          <Ionicons name="document-text-outline" size={64} color={COLORS.GRAY_MEDIUM} />
-          <Text style={styles.emptyTitle}>No Prescriptions</Text>
-          <Text style={styles.emptySubtitle}>
+        <Card style={[styles.emptyState, { backgroundColor: theme.CARD_BACKGROUND }]}>
+          <Ionicons name="document-text-outline" size={64} color={theme.GRAY_MEDIUM} />
+          <Text style={[styles.emptyTitle, { color: theme.TEXT_PRIMARY }]}>No Prescriptions</Text>
+          <Text style={[styles.emptySubtitle, { color: theme.TEXT_SECONDARY }]}>
             You don't have any active prescriptions. Your doctor will prescribe medications during consultations.
           </Text>
         </Card>
@@ -279,12 +282,12 @@ const PharmacyScreen = ({ navigation }) => {
         <PharmacyItem key={index} pharmacy={pharmacy} />
       ))}
       
-      <Card style={styles.infoCard}>
+      <Card style={[styles.infoCard, { backgroundColor: theme.INFO + '10', borderColor: theme.INFO }]}>
         <View style={styles.infoHeader}>
-          <Ionicons name="information-circle" size={24} color={COLORS.INFO} />
-          <Text style={styles.infoTitle}>Pharmacy Services</Text>
+          <Ionicons name="information-circle" size={24} color={theme.INFO} />
+          <Text style={[styles.infoTitle, { color: theme.INFO }]}>Pharmacy Services</Text>
         </View>
-        <Text style={styles.infoText}>
+        <Text style={[styles.infoText, { color: theme.TEXT_SECONDARY }]}>
           Many pharmacies offer additional services like immunizations, health screenings, 
           and medication therapy management. Contact your pharmacy to learn more about 
           available services.
@@ -296,10 +299,10 @@ const PharmacyScreen = ({ navigation }) => {
   const HistoryTab = () => (
     <ScrollView style={styles.tabContent} showsVerticalScrollIndicator={false}>
       {medicationHistory.length === 0 ? (
-        <Card style={styles.emptyState}>
-          <Ionicons name="time-outline" size={64} color={COLORS.GRAY_MEDIUM} />
-          <Text style={styles.emptyTitle}>No Medication History</Text>
-          <Text style={styles.emptySubtitle}>
+        <Card style={[styles.emptyState, { backgroundColor: theme.CARD_BACKGROUND }]}>
+          <Ionicons name="time-outline" size={64} color={theme.GRAY_MEDIUM} />
+          <Text style={[styles.emptyTitle, { color: theme.TEXT_PRIMARY }]}>No Medication History</Text>
+          <Text style={[styles.emptySubtitle, { color: theme.TEXT_SECONDARY }]}>
             Your medication history will appear here once you start filling prescriptions.
           </Text>
         </Card>
@@ -315,12 +318,12 @@ const PharmacyScreen = ({ navigation }) => {
     <ScrollView style={styles.tabContent} showsVerticalScrollIndicator={false}>
       {adherenceData ? (
         <>
-          <Card style={styles.overallAdherenceCard}>
-            <Text style={styles.overallAdherenceTitle}>Overall Medication Adherence</Text>
+          <Card style={[styles.overallAdherenceCard, { backgroundColor: theme.CARD_BACKGROUND, borderColor: theme.BORDER }]}>
+            <Text style={[styles.overallAdherenceTitle, { color: theme.TEXT_PRIMARY }]}>Overall Medication Adherence</Text>
             <Text style={[styles.overallAdherencePercentage, { color: getAdherenceColor(adherenceData.overallAdherence) }]}>
               {adherenceData.overallAdherence}%
             </Text>
-            <View style={styles.progressBarContainer}>
+            <View style={[styles.progressBarContainer, { backgroundColor: theme.GRAY_LIGHT }]}>
               <View 
                 style={[
                   styles.progressBar, 
@@ -337,21 +340,21 @@ const PharmacyScreen = ({ navigation }) => {
             <AdherenceItem key={index} medication={medication} />
           ))}
           
-          <Card style={styles.recommendationsCard}>
-            <Text style={styles.recommendationsTitle}>Adherence Recommendations</Text>
+          <Card style={[styles.recommendationsCard, { backgroundColor: theme.CARD_BACKGROUND, borderColor: theme.BORDER }]}>
+            <Text style={[styles.recommendationsTitle, { color: theme.TEXT_PRIMARY }]}>Adherence Recommendations</Text>
             {adherenceData.recommendations.map((recommendation, index) => (
               <View key={index} style={styles.recommendationItem}>
-                <Ionicons name="checkmark-circle" size={16} color={COLORS.SUCCESS} />
-                <Text style={styles.recommendationText}>{recommendation}</Text>
+                <Ionicons name="checkmark-circle" size={16} color={theme.SUCCESS} />
+                <Text style={[styles.recommendationText, { color: theme.TEXT_PRIMARY }]}>{recommendation}</Text>
               </View>
             ))}
           </Card>
         </>
       ) : (
-        <Card style={styles.emptyState}>
-          <Ionicons name="bar-chart-outline" size={64} color={COLORS.GRAY_MEDIUM} />
-          <Text style={styles.emptyTitle}>No Adherence Data</Text>
-          <Text style={styles.emptySubtitle}>
+        <Card style={[styles.emptyState, { backgroundColor: theme.CARD_BACKGROUND }]}>
+          <Ionicons name="bar-chart-outline" size={64} color={theme.GRAY_MEDIUM} />
+          <Text style={[styles.emptyTitle, { color: theme.TEXT_PRIMARY }]}>No Adherence Data</Text>
+          <Text style={[styles.emptySubtitle, { color: theme.TEXT_SECONDARY }]}>
             Medication adherence data will be calculated once you have filled prescriptions.
           </Text>
         </Card>
@@ -360,47 +363,47 @@ const PharmacyScreen = ({ navigation }) => {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.BACKGROUND }]}>
       {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.title}>Pharmacy Services</Text>
-        <Text style={styles.subtitle}>Prescription management and medication tracking</Text>
+      <View style={[styles.header, { backgroundColor: theme.CARD_BACKGROUND, borderBottomColor: theme.BORDER }]}>
+        <Text style={[styles.title, { color: theme.TEXT_PRIMARY }]}>Pharmacy Services</Text>
+        <Text style={[styles.subtitle, { color: theme.TEXT_SECONDARY }]}>Prescription management and medication tracking</Text>
       </View>
 
       {/* Tab Selector */}
-      <View style={styles.tabContainer}>
+      <View style={[styles.tabContainer, { backgroundColor: theme.CARD_BACKGROUND, borderBottomColor: theme.BORDER }]}>
         <TouchableOpacity
-          style={[styles.tab, activeTab === 'prescriptions' && styles.activeTab]}
+          style={[styles.tab, activeTab === 'prescriptions' && styles.activeTab, { borderBottomColor: theme.PRIMARY }]}
           onPress={() => setActiveTab('prescriptions')}
         >
-          <Text style={[styles.tabText, activeTab === 'prescriptions' && styles.activeTabText]}>
+          <Text style={[styles.tabText, activeTab === 'prescriptions' && styles.activeTabText, { color: activeTab === 'prescriptions' ? theme.PRIMARY : theme.TEXT_SECONDARY }]}>
             Prescriptions
           </Text>
         </TouchableOpacity>
         
         <TouchableOpacity
-          style={[styles.tab, activeTab === 'pharmacies' && styles.activeTab]}
+          style={[styles.tab, activeTab === 'pharmacies' && styles.activeTab, { borderBottomColor: theme.PRIMARY }]}
           onPress={() => setActiveTab('pharmacies')}
         >
-          <Text style={[styles.tabText, activeTab === 'pharmacies' && styles.activeTabText]}>
+          <Text style={[styles.tabText, activeTab === 'pharmacies' && styles.activeTabText, { color: activeTab === 'pharmacies' ? theme.PRIMARY : theme.TEXT_SECONDARY }]}>
             Pharmacies
           </Text>
         </TouchableOpacity>
         
         <TouchableOpacity
-          style={[styles.tab, activeTab === 'history' && styles.activeTab]}
+          style={[styles.tab, activeTab === 'history' && styles.activeTab, { borderBottomColor: theme.PRIMARY }]}
           onPress={() => setActiveTab('history')}
         >
-          <Text style={[styles.tabText, activeTab === 'history' && styles.activeTabText]}>
+          <Text style={[styles.tabText, activeTab === 'history' && styles.activeTabText, { color: activeTab === 'history' ? theme.PRIMARY : theme.TEXT_SECONDARY }]}>
             History
           </Text>
         </TouchableOpacity>
         
         <TouchableOpacity
-          style={[styles.tab, activeTab === 'adherence' && styles.activeTab]}
+          style={[styles.tab, activeTab === 'adherence' && styles.activeTab, { borderBottomColor: theme.PRIMARY }]}
           onPress={() => setActiveTab('adherence')}
         >
-          <Text style={[styles.tabText, activeTab === 'adherence' && styles.activeTabText]}>
+          <Text style={[styles.tabText, activeTab === 'adherence' && styles.activeTabText, { color: activeTab === 'adherence' ? theme.PRIMARY : theme.TEXT_SECONDARY }]}>
             Adherence
           </Text>
         </TouchableOpacity>
@@ -415,73 +418,84 @@ const PharmacyScreen = ({ navigation }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (theme) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.BACKGROUND,
+    backgroundColor: theme.BACKGROUND,
   },
   header: {
     paddingHorizontal: SPACING.MD,
-    paddingVertical: SPACING.MD,
-    backgroundColor: COLORS.WHITE,
+    paddingVertical: SPACING.LG,
+    backgroundColor: theme.CARD_BACKGROUND,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.BORDER,
+    borderBottomColor: theme.BORDER,
   },
   title: {
-    fontSize: FONT_SIZES.XXL,
+    fontSize: FONT_SIZES.XL,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginBottom: SPACING.XS,
   },
   subtitle: {
     fontSize: FONT_SIZES.MD,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
   },
   tabContainer: {
     flexDirection: 'row',
-    backgroundColor: COLORS.WHITE,
+    backgroundColor: theme.CARD_BACKGROUND,
+    paddingHorizontal: SPACING.MD,
+    paddingVertical: SPACING.SM,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.BORDER,
+    borderBottomColor: theme.BORDER,
   },
-  tab: {
+  tabButton: {
     flex: 1,
-    paddingVertical: SPACING.MD,
+    paddingVertical: SPACING.SM,
     alignItems: 'center',
   },
   activeTab: {
-    borderBottomWidth: 3,
-    borderBottomColor: COLORS.PRIMARY,
+    borderBottomWidth: 2,
+    borderBottomColor: theme.PRIMARY,
   },
   tabText: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_SECONDARY,
     fontWeight: '600',
+    color: theme.TEXT_SECONDARY,
   },
   activeTabText: {
-    color: COLORS.PRIMARY,
+    color: theme.PRIMARY,
   },
-  tabContent: {
+  content: {
     flex: 1,
     padding: SPACING.MD,
   },
+  sectionTitle: {
+    fontSize: FONT_SIZES.LG,
+    fontWeight: 'bold',
+    color: theme.TEXT_PRIMARY,
+    marginBottom: SPACING.MD,
+  },
   prescriptionCard: {
     marginBottom: SPACING.MD,
+    backgroundColor: theme.CARD_BACKGROUND,
+    borderWidth: 1,
+    borderColor: theme.BORDER,
   },
   prescriptionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     marginBottom: SPACING.MD,
   },
   medicationName: {
     fontSize: FONT_SIZES.LG,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
-    marginBottom: SPACING.XS / 2,
+    color: theme.TEXT_PRIMARY,
   },
   dosage: {
-    fontSize: FONT_SIZES.MD,
-    color: COLORS.TEXT_SECONDARY,
+    fontSize: FONT_SIZES.SM,
+    color: theme.TEXT_SECONDARY,
+    marginTop: SPACING.XS,
   },
   statusBadge: {
     paddingHorizontal: SPACING.SM,
@@ -489,8 +503,8 @@ const styles = StyleSheet.create({
     borderRadius: BORDER_RADIUS.SM,
   },
   statusText: {
-    fontSize: FONT_SIZES.SM,
-    color: COLORS.WHITE,
+    fontSize: FONT_SIZES.XS,
+    color: theme.WHITE,
     fontWeight: 'bold',
   },
   prescriptionDetails: {
@@ -503,12 +517,12 @@ const styles = StyleSheet.create({
   },
   detailText: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     marginLeft: SPACING.SM,
   },
   instructions: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     fontStyle: 'italic',
     marginBottom: SPACING.MD,
   },
@@ -517,6 +531,9 @@ const styles = StyleSheet.create({
   },
   pharmacyCard: {
     marginBottom: SPACING.MD,
+    backgroundColor: theme.CARD_BACKGROUND,
+    borderWidth: 1,
+    borderColor: theme.BORDER,
   },
   pharmacyHeader: {
     flexDirection: 'row',
@@ -527,17 +544,17 @@ const styles = StyleSheet.create({
   pharmacyName: {
     fontSize: FONT_SIZES.LG,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
   },
   deliveryBadge: {
-    backgroundColor: COLORS.SUCCESS,
+    backgroundColor: theme.SUCCESS,
     paddingHorizontal: SPACING.SM,
     paddingVertical: SPACING.XS,
     borderRadius: BORDER_RADIUS.SM,
   },
   deliveryText: {
     fontSize: FONT_SIZES.XS,
-    color: COLORS.WHITE,
+    color: theme.WHITE,
     fontWeight: 'bold',
   },
   pharmacyDetails: {
@@ -553,6 +570,9 @@ const styles = StyleSheet.create({
   },
   historyCard: {
     marginBottom: SPACING.MD,
+    backgroundColor: theme.CARD_BACKGROUND,
+    borderWidth: 1,
+    borderColor: theme.BORDER,
   },
   historyHeader: {
     flexDirection: 'row',
@@ -562,6 +582,9 @@ const styles = StyleSheet.create({
   },
   adherenceCard: {
     marginBottom: SPACING.MD,
+    backgroundColor: theme.CARD_BACKGROUND,
+    borderWidth: 1,
+    borderColor: theme.BORDER,
   },
   adherenceHeader: {
     flexDirection: 'row',
@@ -578,7 +601,7 @@ const styles = StyleSheet.create({
   },
   progressBarContainer: {
     height: 8,
-    backgroundColor: COLORS.GRAY_LIGHT,
+    backgroundColor: theme.BUTTON_SECONDARY,
     borderRadius: BORDER_RADIUS.SM,
     overflow: 'hidden',
   },
@@ -588,11 +611,14 @@ const styles = StyleSheet.create({
   overallAdherenceCard: {
     alignItems: 'center',
     marginBottom: SPACING.MD,
+    backgroundColor: theme.CARD_BACKGROUND,
+    borderWidth: 1,
+    borderColor: theme.BORDER,
   },
   overallAdherenceTitle: {
     fontSize: FONT_SIZES.LG,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginBottom: SPACING.SM,
   },
   overallAdherencePercentage: {
@@ -602,11 +628,14 @@ const styles = StyleSheet.create({
   },
   recommendationsCard: {
     marginBottom: SPACING.LG,
+    backgroundColor: theme.CARD_BACKGROUND,
+    borderWidth: 1,
+    borderColor: theme.BORDER,
   },
   recommendationsTitle: {
     fontSize: FONT_SIZES.LG,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginBottom: SPACING.MD,
   },
   recommendationItem: {
@@ -616,30 +645,31 @@ const styles = StyleSheet.create({
   },
   recommendationText: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginLeft: SPACING.SM,
     flex: 1,
   },
   emptyState: {
     alignItems: 'center',
     paddingVertical: SPACING.XXL,
+    backgroundColor: theme.CARD_BACKGROUND,
   },
   emptyTitle: {
     fontSize: FONT_SIZES.LG,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginTop: SPACING.MD,
     marginBottom: SPACING.XS,
   },
   emptySubtitle: {
     fontSize: FONT_SIZES.MD,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     textAlign: 'center',
     paddingHorizontal: SPACING.MD,
   },
   infoCard: {
-    backgroundColor: COLORS.INFO + '10',
-    borderColor: COLORS.INFO,
+    backgroundColor: theme.INFO + '10',
+    borderColor: theme.INFO,
     borderWidth: 1,
   },
   infoHeader: {
@@ -650,12 +680,12 @@ const styles = StyleSheet.create({
   infoTitle: {
     fontSize: FONT_SIZES.LG,
     fontWeight: 'bold',
-    color: COLORS.INFO,
+    color: theme.INFO,
     marginLeft: SPACING.SM,
   },
   infoText: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     lineHeight: 20,
   },
 });

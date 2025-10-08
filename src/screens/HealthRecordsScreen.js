@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import {
   collection,
   query,
@@ -32,6 +33,8 @@ import Button from '../components/Button';
 
 const HealthRecordsScreen = ({ navigation }) => {
   const { user, userProfile } = useAuth();
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
   const [healthData, setHealthData] = useState({
     appointments: [],
     prescriptions: [],
@@ -252,99 +255,99 @@ const HealthRecordsScreen = ({ navigation }) => {
   };
 
   const QuickActionCard = ({ title, icon, color, onPress, count }) => (
-    <TouchableOpacity style={styles.quickActionCard} onPress={onPress}>
+    <TouchableOpacity style={[styles.quickActionCard, { backgroundColor: theme.CARD_BACKGROUND }]} onPress={onPress}>
       <View style={[styles.actionIcon, { backgroundColor: color }]}>
-        <Ionicons name={icon} size={24} color={COLORS.WHITE} />
+        <Ionicons name={icon} size={24} color={theme.WHITE} />
       </View>
-      <Text style={styles.actionTitle}>{title}</Text>
+      <Text style={[styles.actionTitle, { color: theme.TEXT_PRIMARY }]}>{title}</Text>
       {count !== undefined && (
-        <Text style={styles.actionCount}>{count} items</Text>
+        <Text style={[styles.actionCount, { color: theme.TEXT_SECONDARY }]}>{count} items</Text>
       )}
     </TouchableOpacity>
   );
 
   const HealthSummaryCard = () => (
-    <Card style={styles.summaryCard}>
-      <Text style={styles.sectionTitle}>Health Summary</Text>
+    <Card style={[styles.summaryCard, { backgroundColor: theme.CARD_BACKGROUND }]}>
+      <Text style={[styles.sectionTitle, { color: theme.TEXT_PRIMARY }]}>Health Summary</Text>
       
       <View style={styles.summaryGrid}>
         <View style={styles.summaryItem}>
-          <Text style={styles.summaryLabel}>Blood Type</Text>
-          <Text style={styles.summaryValue}>{userProfile?.bloodType || 'Not set'}</Text>
+          <Text style={[styles.summaryLabel, { color: theme.TEXT_SECONDARY }]}>Blood Type</Text>
+          <Text style={[styles.summaryValue, { color: theme.TEXT_PRIMARY }]}>{userProfile?.bloodType || 'Not set'}</Text>
         </View>
         
         <View style={styles.summaryItem}>
-          <Text style={styles.summaryLabel}>Allergies</Text>
-          <Text style={styles.summaryValue}>
+          <Text style={[styles.summaryLabel, { color: theme.TEXT_SECONDARY }]}>Allergies</Text>
+          <Text style={[styles.summaryValue, { color: theme.TEXT_PRIMARY }]}>
             {userProfile?.allergies?.length > 0 ? userProfile.allergies.join(', ') : 'None'}
           </Text>
         </View>
         
         <View style={styles.summaryItem}>
-          <Text style={styles.summaryLabel}>Emergency Contact</Text>
-          <Text style={styles.summaryValue}>{userProfile?.emergencyContact || 'Not set'}</Text>
+          <Text style={[styles.summaryLabel, { color: theme.TEXT_SECONDARY }]}>Emergency Contact</Text>
+          <Text style={[styles.summaryValue, { color: theme.TEXT_PRIMARY }]}>{userProfile?.emergencyContact || 'Not set'}</Text>
         </View>
         
         <View style={styles.summaryItem}>
-          <Text style={styles.summaryLabel}>Last Checkup</Text>
-          <Text style={styles.summaryValue}>March 15, 2024</Text>
+          <Text style={[styles.summaryLabel, { color: theme.TEXT_SECONDARY }]}>Last Checkup</Text>
+          <Text style={[styles.summaryValue, { color: theme.TEXT_PRIMARY }]}>March 15, 2024</Text>
         </View>
       </View>
     </Card>
   );
 
   const RecentDocumentItem = ({ document }) => (
-    <TouchableOpacity style={styles.documentItem}>
-      <View style={styles.documentIcon}>
+    <TouchableOpacity style={[styles.documentItem, { borderBottomColor: theme.BORDER }]}>
+      <View style={[styles.documentIcon, { backgroundColor: theme.GRAY_LIGHT }]}>
         <Ionicons 
           name={document.type === 'pdf' ? 'document-text' : 'image'} 
           size={20} 
-          color={COLORS.PRIMARY} 
+          color={theme.PRIMARY} 
         />
       </View>
       <View style={styles.documentInfo}>
-        <Text style={styles.documentName}>{document.name}</Text>
-        <Text style={styles.documentDate}>{document.date}</Text>
+        <Text style={[styles.documentName, { color: theme.TEXT_PRIMARY }]}>{document.name}</Text>
+        <Text style={[styles.documentDate, { color: theme.TEXT_SECONDARY }]}>{document.date}</Text>
       </View>
-      <Ionicons name="chevron-forward" size={20} color={COLORS.GRAY_MEDIUM} />
+      <Ionicons name="chevron-forward" size={20} color={theme.GRAY_MEDIUM} />
     </TouchableOpacity>
   );
 
   const PrescriptionItem = ({ prescription }) => (
-    <TouchableOpacity style={styles.prescriptionItem}>
+    <TouchableOpacity style={[styles.prescriptionItem, { borderBottomColor: theme.BORDER }]}>
       <View style={styles.prescriptionInfo}>
-        <Text style={styles.medicationName}>{prescription.medication}</Text>
-        <Text style={styles.prescriptionDetails}>
+        <Text style={[styles.medicationName, { color: theme.TEXT_PRIMARY }]}>{prescription.medication}</Text>
+        <Text style={[styles.prescriptionDetails, { color: theme.TEXT_SECONDARY }]}>
           {prescription.dosage} • {prescription.frequency}
         </Text>
-        <Text style={styles.prescriptionDoctor}>Prescribed by {prescription.doctor}</Text>
+        <Text style={[styles.prescriptionDoctor, { color: theme.TEXT_SECONDARY }]}>Prescribed by {prescription.doctor}</Text>
       </View>
       <View style={[styles.statusBadge, 
-        { backgroundColor: prescription.status === 'active' ? COLORS.SUCCESS : COLORS.WARNING }
+        { backgroundColor: prescription.status === 'active' ? theme.SUCCESS : theme.WARNING }
       ]}>
-        <Text style={styles.statusText}>{prescription.status}</Text>
+        <Text style={[styles.statusText, { color: theme.WHITE }]}>{prescription.status}</Text>
       </View>
     </TouchableOpacity>
   );
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, { backgroundColor: theme.BACKGROUND }]}>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={COLORS.PRIMARY} />
-          <Text style={styles.loadingText}>Loading health records...</Text>
+          <ActivityIndicator size="large" color={theme.PRIMARY} />
+          <Text style={[styles.loadingText, { color: theme.TEXT_SECONDARY }]}>Loading health records...</Text>
         </View>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.BACKGROUND }]}>
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.title}>Health Records</Text>
-          <Text style={styles.subtitle}>Manage your medical information</Text>
+          <Text style={[styles.title, { color: theme.TEXT_PRIMARY }]}>Health Records</Text>
+          <Text style={[styles.subtitle, { color: theme.TEXT_SECONDARY }]}>Manage your medical information</Text>
         </View>
 
         {/* Health Summary */}
@@ -355,46 +358,46 @@ const HealthRecordsScreen = ({ navigation }) => {
           <QuickActionCard
             title="Medical History"
             icon="time-outline"
-            color={COLORS.PRIMARY}
+            color={theme.PRIMARY}
             count={healthData.appointments.length}
             onPress={() => navigation.navigate('MedicalHistory')}
           />
           <QuickActionCard
             title="Upload Document"
             icon="cloud-upload-outline"
-            color={COLORS.SUCCESS}
+            color={theme.SUCCESS}
             onPress={() => navigation.navigate('UploadDocument')}
           />
           <QuickActionCard
             title="Prescriptions"
             icon="medical-outline"
-            color={COLORS.ACCENT || COLORS.WARNING}
+            color={theme.ACCENT || theme.WARNING}
             count={healthData.prescriptions.length}
             onPress={() => navigation.navigate('Prescription')}
           />
           <QuickActionCard
             title="Lab Results"
             icon="flask-outline"
-            color={COLORS.INFO}
+            color={theme.INFO}
             count={3}
             onPress={() => Alert.alert('Lab Results', 'Lab results feature coming soon')}
           />
         </View>
 
         {/* Recent Documents */}
-        <Card style={styles.section}>
+        <Card style={[styles.section, { backgroundColor: theme.CARD_BACKGROUND }]}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Recent Documents</Text>
+            <Text style={[styles.sectionTitle, { color: theme.TEXT_PRIMARY }]}>Recent Documents</Text>
             <TouchableOpacity onPress={() => navigation.navigate('UploadDocument')}>
-              <Text style={styles.viewAllText}>View All</Text>
+              <Text style={[styles.viewAllText, { color: theme.PRIMARY }]}>View All</Text>
             </TouchableOpacity>
           </View>
           
           {healthData.recentDocuments.length === 0 ? (
             <View style={styles.emptyState}>
-              <Ionicons name="folder-open-outline" size={48} color={COLORS.GRAY_MEDIUM} />
-              <Text style={styles.emptyTitle}>No Documents</Text>
-              <Text style={styles.emptySubtitle}>Upload your medical documents to keep them safe</Text>
+              <Ionicons name="folder-open-outline" size={48} color={theme.GRAY_MEDIUM} />
+              <Text style={[styles.emptyTitle, { color: theme.TEXT_PRIMARY }]}>No Documents</Text>
+              <Text style={[styles.emptySubtitle, { color: theme.TEXT_SECONDARY }]}>Upload your medical documents to keep them safe</Text>
               <Button
                 title="Upload Document"
                 onPress={() => navigation.navigate('UploadDocument')}
@@ -410,19 +413,19 @@ const HealthRecordsScreen = ({ navigation }) => {
         </Card>
 
         {/* Current Prescriptions */}
-        <Card style={styles.section}>
+        <Card style={[styles.section, { backgroundColor: theme.CARD_BACKGROUND }]}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Current Prescriptions</Text>
+            <Text style={[styles.sectionTitle, { color: theme.TEXT_PRIMARY }]}>Current Prescriptions</Text>
             <TouchableOpacity onPress={() => navigation.navigate('Prescription')}>
-              <Text style={styles.viewAllText}>View All</Text>
+              <Text style={[styles.viewAllText, { color: theme.PRIMARY }]}>View All</Text>
             </TouchableOpacity>
           </View>
           
           {healthData.prescriptions.length === 0 ? (
             <View style={styles.emptyState}>
-              <Ionicons name="medical-outline" size={48} color={COLORS.GRAY_MEDIUM} />
-              <Text style={styles.emptyTitle}>No Prescriptions</Text>
-              <Text style={styles.emptySubtitle}>Your prescriptions will appear here</Text>
+              <Ionicons name="medical-outline" size={48} color={theme.GRAY_MEDIUM} />
+              <Text style={[styles.emptyTitle, { color: theme.TEXT_PRIMARY }]}>No Prescriptions</Text>
+              <Text style={[styles.emptySubtitle, { color: theme.TEXT_SECONDARY }]}>Your prescriptions will appear here</Text>
             </View>
           ) : (
             healthData.prescriptions.slice(0, 3).map((prescription) => (
@@ -432,19 +435,19 @@ const HealthRecordsScreen = ({ navigation }) => {
         </Card>
 
         {/* Emergency Information */}
-        <Card style={styles.emergencyCard}>
+        <Card style={[styles.emergencyCard, { backgroundColor: theme.EMERGENCY_LIGHT }]}>
           <View style={styles.emergencyHeader}>
-            <Ionicons name="warning" size={24} color={COLORS.EMERGENCY} />
-            <Text style={styles.emergencyTitle}>Emergency Information</Text>
+            <Ionicons name="warning" size={24} color={theme.EMERGENCY} />
+            <Text style={[styles.emergencyTitle, { color: theme.EMERGENCY }]}>Emergency Information</Text>
           </View>
-          <Text style={styles.emergencyText}>
+          <Text style={[styles.emergencyText, { color: theme.TEXT_PRIMARY }]}>
             In case of emergency, medical professionals can access your blood type, allergies, and emergency contact information.
           </Text>
           <Button
             title="Update Emergency Info"
             onPress={() => navigation.navigate('ProfileMain')}
             variant="outline"
-            style={styles.emergencyButton}
+            style={[styles.emergencyButton, { borderColor: theme.EMERGENCY }]}
           />
         </Card>
       </ScrollView>
@@ -454,40 +457,37 @@ const HealthRecordsScreen = ({ navigation }) => {
 
 
 
-const styles = StyleSheet.create({
+const getStyles = (theme) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.BACKGROUND,
+    backgroundColor: theme.BACKGROUND,
+  },
+  header: {
+    paddingHorizontal: SPACING.MD,
+    paddingVertical: SPACING.LG,
+    backgroundColor: theme.CARD_BACKGROUND,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.BORDER,
+  },
+  title: {
+    fontSize: FONT_SIZES.XL,
+    fontWeight: 'bold',
+    color: theme.TEXT_PRIMARY,
+    marginBottom: SPACING.XS,
+  },
+  subtitle: {
+    fontSize: FONT_SIZES.MD,
+    color: theme.TEXT_SECONDARY,
   },
   content: {
     flex: 1,
     padding: SPACING.MD,
   },
-  header: {
-    marginBottom: SPACING.LG,
-  },
-  title: {
-    fontSize: FONT_SIZES.XXL,
-    fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
-    marginBottom: SPACING.XS,
-  },
-  subtitle: {
-    fontSize: FONT_SIZES.MD,
-    color: COLORS.TEXT_SECONDARY,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingText: {
-    marginTop: SPACING.MD,
-    fontSize: FONT_SIZES.MD,
-    color: COLORS.TEXT_SECONDARY,
-  },
   summaryCard: {
     marginBottom: SPACING.MD,
+    backgroundColor: theme.CARD_BACKGROUND,
+    borderWidth: 1,
+    borderColor: theme.BORDER,
   },
   summaryGrid: {
     flexDirection: 'row',
@@ -500,13 +500,13 @@ const styles = StyleSheet.create({
   },
   summaryLabel: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     marginBottom: SPACING.XS / 2,
   },
   summaryValue: {
     fontSize: FONT_SIZES.MD,
     fontWeight: '600',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
   },
   quickActionsGrid: {
     flexDirection: 'row',
@@ -516,12 +516,12 @@ const styles = StyleSheet.create({
   },
   quickActionCard: {
     width: '48%',
-    backgroundColor: COLORS.WHITE,
+    backgroundColor: theme.CARD_BACKGROUND,
     borderRadius: BORDER_RADIUS.MD,
     padding: SPACING.MD,
     alignItems: 'center',
     marginBottom: SPACING.MD,
-    shadowColor: COLORS.BLACK,
+    shadowColor: theme.BLACK,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -538,16 +538,17 @@ const styles = StyleSheet.create({
   actionTitle: {
     fontSize: FONT_SIZES.SM,
     fontWeight: '600',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     textAlign: 'center',
     marginBottom: SPACING.XS,
   },
   actionCount: {
     fontSize: FONT_SIZES.XS,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
   },
   section: {
     marginBottom: SPACING.MD,
+    backgroundColor: theme.CARD_BACKGROUND,
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -558,11 +559,11 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: FONT_SIZES.LG,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
   },
   viewAllText: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.PRIMARY,
+    color: theme.PRIMARY,
     fontWeight: '600',
   },
   emptyState: {
@@ -572,13 +573,13 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: FONT_SIZES.LG,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginTop: SPACING.MD,
     marginBottom: SPACING.XS,
   },
   emptySubtitle: {
     fontSize: FONT_SIZES.MD,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     textAlign: 'center',
     marginBottom: SPACING.LG,
   },
@@ -590,13 +591,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: SPACING.MD,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.BORDER,
+    borderBottomColor: theme.BORDER,
   },
   documentIcon: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: COLORS.GRAY_LIGHT,
+    backgroundColor: theme.BUTTON_SECONDARY,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: SPACING.MD,
@@ -607,12 +608,12 @@ const styles = StyleSheet.create({
   documentName: {
     fontSize: FONT_SIZES.MD,
     fontWeight: '500',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginBottom: SPACING.XS / 2,
   },
   documentDate: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
   },
   prescriptionItem: {
     flexDirection: 'row',
@@ -620,7 +621,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: SPACING.MD,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.BORDER,
+    borderBottomColor: theme.BORDER,
   },
   prescriptionInfo: {
     flex: 1,
@@ -628,17 +629,17 @@ const styles = StyleSheet.create({
   medicationName: {
     fontSize: FONT_SIZES.MD,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginBottom: SPACING.XS / 2,
   },
   prescriptionDetails: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     marginBottom: SPACING.XS / 2,
   },
   prescriptionDoctor: {
     fontSize: FONT_SIZES.XS,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
   },
   statusBadge: {
     paddingHorizontal: SPACING.SM,
@@ -647,12 +648,12 @@ const styles = StyleSheet.create({
   },
   statusText: {
     fontSize: FONT_SIZES.XS,
-    color: COLORS.WHITE,
+    color: theme.WHITE,
     fontWeight: '600',
     textTransform: 'uppercase',
   },
   emergencyCard: {
-    backgroundColor: COLORS.EMERGENCY_LIGHT,
+    backgroundColor: theme.EMERGENCY_LIGHT,
     marginBottom: SPACING.XL,
   },
   emergencyHeader: {
@@ -663,17 +664,17 @@ const styles = StyleSheet.create({
   emergencyTitle: {
     fontSize: FONT_SIZES.LG,
     fontWeight: 'bold',
-    color: COLORS.EMERGENCY,
+    color: theme.EMERGENCY,
     marginLeft: SPACING.SM,
   },
   emergencyText: {
     fontSize: FONT_SIZES.MD,
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     lineHeight: 22,
     marginBottom: SPACING.MD,
   },
   emergencyButton: {
-    borderColor: COLORS.EMERGENCY,
+    borderColor: theme.EMERGENCY,
   },
 });
 

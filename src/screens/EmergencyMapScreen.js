@@ -11,6 +11,7 @@ import {
 import MapView, { Marker, Circle } from 'react-native-maps';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import {
   COLORS,
   FONT_SIZES,
@@ -28,6 +29,8 @@ const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO;
 const EmergencyMapScreen = ({ route, navigation }) => {
   const { location, emergencyId, isEmergencyActive } = route.params || {};
   const { user, userProfile } = useAuth();
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
   const [currentLocation, setCurrentLocation] = useState(location);
   const [mapRegion, setMapRegion] = useState(null);
   const [nearbyServices, setNearbyServices] = useState([]);
@@ -122,13 +125,13 @@ const EmergencyMapScreen = ({ route, navigation }) => {
   const getMarkerColor = (type) => {
     switch (type) {
       case 'hospital':
-        return COLORS.SUCCESS;
+        return theme.SUCCESS;
       case 'fire':
-        return COLORS.WARNING;
+        return theme.WARNING;
       case 'police':
-        return COLORS.INFO;
+        return theme.INFO;
       default:
-        return COLORS.PRIMARY;
+        return theme.PRIMARY;
     }
   };
 
@@ -144,21 +147,21 @@ const EmergencyMapScreen = ({ route, navigation }) => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.BACKGROUND }]}>
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { backgroundColor: theme.CARD_BACKGROUND, borderBottomColor: theme.BORDER }]}>
         <TouchableOpacity 
           style={styles.backButton}
           onPress={() => navigation.goBack()}
         >
-          <Ionicons name="arrow-back" size={24} color={COLORS.TEXT_PRIMARY} />
+          <Ionicons name="arrow-back" size={24} color={theme.TEXT_PRIMARY} />
         </TouchableOpacity>
-        <Text style={styles.title}>Emergency Map</Text>
+        <Text style={[styles.title, { color: theme.TEXT_PRIMARY }]}>Emergency Map</Text>
         <TouchableOpacity 
           style={styles.centerButton}
           onPress={centerMapOnUser}
         >
-          <Ionicons name="locate" size={24} color={COLORS.TEXT_PRIMARY} />
+          <Ionicons name="locate" size={24} color={theme.TEXT_PRIMARY} />
         </TouchableOpacity>
       </View>
 
@@ -181,10 +184,10 @@ const EmergencyMapScreen = ({ route, navigation }) => {
                   longitude: currentLocation.longitude
                 }}
                 title="Your Location"
-                pinColor={COLORS.EMERGENCY}
+                pinColor={theme.EMERGENCY}
               >
-                <View style={styles.userMarker}>
-                  <Ionicons name="person" size={24} color={COLORS.WHITE} />
+                <View style={[styles.userMarker, { backgroundColor: theme.EMERGENCY }]}>
+                  <Ionicons name="person" size={24} color={theme.WHITE} />
                 </View>
               </Marker>
             )}
@@ -221,44 +224,44 @@ const EmergencyMapScreen = ({ route, navigation }) => {
                   <Ionicons 
                     name={getMarkerIcon(service.type)} 
                     size={20} 
-                    color={COLORS.WHITE} 
+                    color={theme.WHITE} 
                   />
                 </View>
               </Marker>
             ))}
           </MapView>
         ) : (
-          <View style={styles.mapPlaceholder}>
-            <Text>Loading map...</Text>
+          <View style={[styles.mapPlaceholder, { backgroundColor: theme.GRAY_LIGHT }]}>
+            <Text style={{ color: theme.TEXT_PRIMARY }}>Loading map...</Text>
           </View>
         )}
       </View>
 
       {/* Emergency Status */}
-      <Card style={styles.statusCard}>
+      <Card style={[styles.statusCard, { backgroundColor: theme.CARD_BACKGROUND, borderColor: theme.BORDER }]}>
         <View style={styles.statusHeader}>
           <Ionicons 
             name={isEmergencyActive ? "warning" : "checkmark-circle"} 
             size={24} 
-            color={isEmergencyActive ? COLORS.EMERGENCY : COLORS.SUCCESS} 
+            color={isEmergencyActive ? theme.EMERGENCY : theme.SUCCESS} 
           />
-          <Text style={styles.statusTitle}>
+          <Text style={[styles.statusTitle, { color: theme.TEXT_PRIMARY }]}>
             {isEmergencyActive ? 'Emergency Active' : 'Emergency Ready'}
           </Text>
         </View>
-        <Text style={styles.statusText}>
+        <Text style={[styles.statusText, { color: theme.TEXT_SECONDARY }]}>
           {isEmergencyActive 
             ? 'Emergency services have been notified. Help is on the way.' 
             : 'SOS system is ready. Press the SOS button in case of emergency.'}
         </Text>
         
         {currentLocation && (
-          <View style={styles.locationInfo}>
-            <Text style={styles.locationLabel}>Current Location:</Text>
-            <Text style={styles.locationText}>
+          <View style={[styles.locationInfo, { backgroundColor: theme.GRAY_LIGHT }]}>
+            <Text style={[styles.locationLabel, { color: theme.TEXT_PRIMARY }]}>Current Location:</Text>
+            <Text style={[styles.locationText, { color: theme.TEXT_SECONDARY }]}>
               {currentLocation.latitude.toFixed(6)}, {currentLocation.longitude.toFixed(6)}
             </Text>
-            <Text style={styles.accuracyText}>
+            <Text style={[styles.accuracyText, { color: theme.GRAY_MEDIUM }]}>
               Accuracy: ±{Math.round(currentLocation.accuracy)} meters
             </Text>
           </View>
@@ -266,8 +269,8 @@ const EmergencyMapScreen = ({ route, navigation }) => {
       </Card>
 
       {/* Nearby Services List */}
-      <Card style={styles.servicesCard}>
-        <Text style={styles.servicesTitle}>Nearby Emergency Services</Text>
+      <Card style={[styles.servicesCard, { backgroundColor: theme.CARD_BACKGROUND, borderColor: theme.BORDER }]}>
+        <Text style={[styles.servicesTitle, { color: theme.TEXT_PRIMARY }]}>Nearby Emergency Services</Text>
         {nearbyServices.map((service) => (
           <View key={service.id} style={styles.serviceItem}>
             <View style={[
@@ -277,12 +280,12 @@ const EmergencyMapScreen = ({ route, navigation }) => {
               <Ionicons 
                 name={getMarkerIcon(service.type)} 
                 size={16} 
-                color={COLORS.WHITE} 
+                color={theme.WHITE} 
               />
             </View>
             <View style={styles.serviceInfo}>
-              <Text style={styles.serviceName}>{service.name}</Text>
-              <Text style={styles.serviceDistance}>{service.distance}</Text>
+              <Text style={[styles.serviceName, { color: theme.TEXT_PRIMARY }]}>{service.name}</Text>
+              <Text style={[styles.serviceDistance, { color: theme.TEXT_SECONDARY }]}>{service.distance}</Text>
             </View>
           </View>
         ))}
@@ -291,10 +294,10 @@ const EmergencyMapScreen = ({ route, navigation }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (theme) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.BACKGROUND,
+    backgroundColor: theme.BACKGROUND,
   },
   header: {
     flexDirection: 'row',
@@ -302,9 +305,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: SPACING.MD,
     paddingVertical: SPACING.MD,
-    backgroundColor: COLORS.WHITE,
+    backgroundColor: theme.CARD_BACKGROUND,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.BORDER,
+    borderBottomColor: theme.BORDER,
   },
   backButton: {
     padding: SPACING.XS,
@@ -312,7 +315,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: FONT_SIZES.LG,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     flex: 1,
     textAlign: 'center',
   },
@@ -329,13 +332,13 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: COLORS.GRAY_LIGHT,
+    backgroundColor: theme.BUTTON_SECONDARY,
   },
   userMarker: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: COLORS.EMERGENCY,
+    backgroundColor: theme.EMERGENCY,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -350,9 +353,11 @@ const styles = StyleSheet.create({
     marginHorizontal: SPACING.MD,
     marginTop: SPACING.MD,
     padding: SPACING.MD,
-    backgroundColor: COLORS.WHITE,
+    backgroundColor: theme.CARD_BACKGROUND,
     borderRadius: BORDER_RADIUS.MD,
-    shadowColor: COLORS.BLACK,
+    borderWidth: 1,
+    borderColor: theme.BORDER,
+    shadowColor: theme.BLACK,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -366,40 +371,42 @@ const styles = StyleSheet.create({
   statusTitle: {
     fontSize: FONT_SIZES.MD,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginLeft: SPACING.SM,
   },
   statusText: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     marginBottom: SPACING.MD,
   },
   locationInfo: {
-    backgroundColor: COLORS.GRAY_LIGHT,
+    backgroundColor: theme.BUTTON_SECONDARY,
     padding: SPACING.MD,
     borderRadius: BORDER_RADIUS.MD,
   },
   locationLabel: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     fontWeight: 'bold',
     marginBottom: SPACING.XS,
   },
   locationText: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
   },
   accuracyText: {
     fontSize: FONT_SIZES.XS,
-    color: COLORS.GRAY_MEDIUM,
+    color: theme.TEXT_SECONDARY,
   },
   servicesCard: {
     marginHorizontal: SPACING.MD,
     marginTop: SPACING.MD,
     padding: SPACING.MD,
-    backgroundColor: COLORS.WHITE,
+    backgroundColor: theme.CARD_BACKGROUND,
     borderRadius: BORDER_RADIUS.MD,
-    shadowColor: COLORS.BLACK,
+    borderWidth: 1,
+    borderColor: theme.BORDER,
+    shadowColor: theme.BLACK,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -408,7 +415,7 @@ const styles = StyleSheet.create({
   servicesTitle: {
     fontSize: FONT_SIZES.MD,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginBottom: SPACING.MD,
   },
   serviceItem: {
@@ -430,11 +437,11 @@ const styles = StyleSheet.create({
   serviceName: {
     fontSize: FONT_SIZES.SM,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
   },
   serviceDistance: {
     fontSize: FONT_SIZES.XS,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
   },
 });
 

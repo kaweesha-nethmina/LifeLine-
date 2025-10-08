@@ -13,6 +13,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import Card from '../components/Card';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import { COLORS, FONT_SIZES, SPACING, BORDER_RADIUS } from '../constants';
 import useNotifications from '../hooks/useNotifications';
 import useProfilePicture from '../hooks/useProfilePicture';
@@ -25,6 +26,8 @@ const CARD_HEIGHT = 160; // Fixed height for all cards
 
 const HomeScreen = ({ navigation }) => {
   const { userProfile, isPatient, isDoctor, isEmergencyOperator } = useAuth();
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
   const { fetchUserProfilePicture, getCachedProfilePicture } = useProfilePicture();
   const { unreadCount } = useNotifications({ autoRefresh: true });
   const [recentChats, setRecentChats] = useState([]);
@@ -190,7 +193,7 @@ const HomeScreen = ({ navigation }) => {
       title: 'Emergency SOS',
       subtitle: 'Immediate help',
       icon: 'alert-circle',
-      color: COLORS.EMERGENCY,
+      color: theme.EMERGENCY,
       onPress: () => navigation.navigate('Emergency'),
       show: isPatient
     },
@@ -198,16 +201,16 @@ const HomeScreen = ({ navigation }) => {
       title: 'Heart SOS',
       subtitle: 'Quick heart emergency',
       icon: 'heart',
-      color: COLORS.ERROR,
+      color: theme.ERROR,
       onPress: activateHeartSOS,
       show: isPatient && userProfile?.isHeartPatient,
-      isHeartSOS: true // Special flag for heart SOS
+      isHeartSOS: true
     },
     {
       title: 'Book Consultation',
       subtitle: 'Find a doctor',
       icon: 'medical',
-      color: COLORS.PRIMARY,
+      color: theme.PRIMARY,
       onPress: () => navigation.navigate('Consultation', { screen: 'DoctorList' }),
       show: isPatient
     },
@@ -215,7 +218,7 @@ const HomeScreen = ({ navigation }) => {
       title: 'Chat with Doctors',
       subtitle: 'Message your doctor',
       icon: 'chatbubble',
-      color: COLORS.ACCENT,
+      color: theme.ACCENT,
       onPress: () => navigation.navigate('Consultation', { screen: 'DoctorList', params: { chatMode: true } }),
       show: isPatient
     },
@@ -223,7 +226,7 @@ const HomeScreen = ({ navigation }) => {
       title: 'Telemedicine',
       subtitle: 'Virtual consultation',
       icon: 'videocam',
-      color: COLORS.INFO,
+      color: theme.INFO,
       onPress: () => navigation.navigate('Consultation', { screen: 'Telemedicine' }),
       show: isPatient
     },
@@ -231,7 +234,7 @@ const HomeScreen = ({ navigation }) => {
       title: 'Health Records',
       subtitle: 'View your history',
       icon: 'folder',
-      color: COLORS.SUCCESS,
+      color: theme.SUCCESS,
       onPress: () => navigation.navigate('Health Records', { screen: 'HealthRecordsMain' }),
       show: true
     },
@@ -239,7 +242,7 @@ const HomeScreen = ({ navigation }) => {
       title: 'First Aid Guide',
       subtitle: 'Emergency tips',
       icon: 'book',
-      color: COLORS.INFO,
+      color: theme.INFO,
       onPress: () => navigation.navigate('FirstAid'),
       show: true
     },
@@ -247,7 +250,7 @@ const HomeScreen = ({ navigation }) => {
       title: 'Health Assistant',
       subtitle: 'Symptom checker',
       icon: 'bar-chart',
-      color: COLORS.INFO,
+      color: theme.INFO,
       onPress: () => navigation.navigate('AIHealthAssistant'),
       show: isPatient
     }
@@ -259,51 +262,59 @@ const HomeScreen = ({ navigation }) => {
     // Special styling for heart SOS button
     if (action.isHeartSOS) {
       return (
-        <TouchableOpacity
+        <View
           key={action.title}
-          style={[styles.quickActionContainer, { width: CARD_WIDTH }]}
-          onPress={action.onPress}
+          style={styles.quickActionWrapper}
         >
-          <View style={styles.heartSOSContainer}>
-            <Animated.View style={[styles.heartSOSButton, { transform: [{ scale: heartSOSAnimation }] }]}>
-              <Ionicons name={action.icon} size={40} color={COLORS.WHITE} />
-            </Animated.View>
-            <Text style={styles.heartSOSTitle}>{action.title}</Text>
-            <Text style={styles.heartSOSSubtitle}>{action.subtitle}</Text>
-          </View>
-        </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.quickActionContainer, { width: CARD_WIDTH }]}
+            onPress={action.onPress}
+          >
+            <View style={styles.heartSOSCard}>
+              <Animated.View style={[styles.heartSOSButton, { transform: [{ scale: heartSOSAnimation }], backgroundColor: theme.ERROR }]}>
+                <Ionicons name={action.icon} size={40} color={theme.WHITE} />
+              </Animated.View>
+              <Text style={[styles.heartSOSTitle, { color: theme.ERROR }]}>{action.title}</Text>
+              <Text style={[styles.heartSOSSubtitle, { color: theme.ERROR }]}>{action.subtitle}</Text>
+            </View>
+          </TouchableOpacity>
+        </View>
       );
     }
     
     return (
-      <TouchableOpacity
+      <View
         key={action.title}
-        style={[styles.quickActionContainer, { width: CARD_WIDTH }]}
-        onPress={action.onPress}
+        style={styles.quickActionWrapper}
       >
-        <Card style={[styles.quickActionCard, { width: CARD_WIDTH, height: CARD_HEIGHT }]}>
-          <View style={[styles.quickActionIcon, { backgroundColor: action.color + '20' }]}>
-            <Ionicons name={action.icon} size={32} color={action.color} />
-          </View>
-          <Text style={styles.quickActionTitle}>{action.title}</Text>
-          <Text style={styles.quickActionSubtitle}>{action.subtitle}</Text>
-        </Card>
-      </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.quickActionContainer, { width: CARD_WIDTH }]}
+          onPress={action.onPress}
+        >
+          <Card style={[styles.quickActionCard, { width: CARD_WIDTH, height: CARD_HEIGHT, backgroundColor: theme.CARD_BACKGROUND }]}>
+            <View style={[styles.quickActionIcon, { backgroundColor: action.color + '20' }]}>
+              <Ionicons name={action.icon} size={32} color={action.color} />
+            </View>
+            <Text style={[styles.quickActionTitle, { color: theme.TEXT_PRIMARY }]}>{action.title}</Text>
+            <Text style={[styles.quickActionSubtitle, { color: theme.TEXT_SECONDARY }]}>{action.subtitle}</Text>
+          </Card>
+        </TouchableOpacity>
+      </View>
     );
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.BACKGROUND }]}>
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         <View style={styles.content}>
           {/* Header */}
           <View style={styles.header}>
             <View style={styles.welcomeContainer}>
-              <Text style={styles.welcomeText}>Welcome back,</Text>
-              <Text style={styles.userName}>
+              <Text style={[styles.welcomeText, { color: theme.TEXT_SECONDARY }]}>Welcome back,</Text>
+              <Text style={[styles.userName, { color: theme.TEXT_PRIMARY }]}>
                 {userProfile?.firstName} {userProfile?.lastName}
               </Text>
-              <Text style={styles.userRole}>
+              <Text style={[styles.userRole, { color: theme.PRIMARY }]}>
                 {userProfile?.role?.replace('_', ' ')}
               </Text>
             </View>
@@ -311,10 +322,10 @@ const HomeScreen = ({ navigation }) => {
               style={styles.notificationButton}
               onPress={() => navigation.navigate('Notifications')}
             >
-              <Ionicons name="notifications-outline" size={24} color={COLORS.TEXT_PRIMARY} />
+              <Ionicons name="notifications-outline" size={24} color={theme.TEXT_PRIMARY} />
               {unreadCount > 0 && (
-                <View style={styles.notificationBadge}>
-                  <Text style={styles.notificationBadgeText}>
+                <View style={[styles.notificationBadge, { backgroundColor: theme.ERROR }]}>
+                  <Text style={[styles.notificationBadgeText, { color: theme.WHITE }]}>
                     {unreadCount > 99 ? '99+' : unreadCount}
                   </Text>
                 </View>
@@ -324,7 +335,7 @@ const HomeScreen = ({ navigation }) => {
 
           {/* Quick Actions */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Quick Actions</Text>
+            <Text style={[styles.sectionTitle, { color: theme.TEXT_PRIMARY }]}>Quick Actions</Text>
             <View style={styles.quickActionsGrid}>
               {quickActions.map(renderQuickAction)}
             </View>
@@ -334,15 +345,15 @@ const HomeScreen = ({ navigation }) => {
           {isPatient && (
             <View style={styles.section}>
               <View style={styles.sectionHeader}>
-                <Text style={styles.sectionTitle}>Recent Chats</Text>
+                <Text style={[styles.sectionTitle, { color: theme.TEXT_PRIMARY }]}>Recent Chats</Text>
                 <TouchableOpacity onPress={() => navigation.navigate('Consultation', { screen: 'DoctorList', params: { chatMode: true } })}>
-                  <Text style={styles.seeAllText}>See All</Text>
+                  <Text style={[styles.seeAllText, { color: theme.PRIMARY }]}>See All</Text>
                 </TouchableOpacity>
               </View>
               
               {loadingChats ? (
-                <Card style={styles.loadingCard}>
-                  <Text style={styles.loadingText}>Loading recent chats...</Text>
+                <Card style={[styles.loadingCard, { backgroundColor: theme.CARD_BACKGROUND }]}>
+                  <Text style={[styles.loadingText, { color: theme.TEXT_SECONDARY }]}>Loading recent chats...</Text>
                 </Card>
               ) : recentChats.length > 0 ? (
                 recentChats.map((chat) => (
@@ -360,9 +371,9 @@ const HomeScreen = ({ navigation }) => {
                       }
                     })}
                   >
-                    <Card style={styles.chatCard}>
+                    <Card style={[styles.chatCard, { backgroundColor: theme.CARD_BACKGROUND, borderColor: theme.BORDER }]}>
                       <View style={styles.chatCardContent}>
-                        <View style={styles.chatIcon}>
+                        <View style={[styles.chatIcon, { backgroundColor: theme.PRIMARY }]}>
                           {chatProfilePictures[chat.doctorId] && chatProfilePictures[chat.doctorId] !== null ? (
                             <Image 
                               source={{ uri: chatProfilePictures[chat.doctorId] }} 
@@ -377,28 +388,28 @@ const HomeScreen = ({ navigation }) => {
                               }}
                             />
                           ) : (
-                            <Ionicons name="person" size={24} color={COLORS.WHITE} />
+                            <Ionicons name="person" size={24} color={theme.WHITE} />
                           )}
                         </View>
                         <View style={styles.chatInfo}>
-                          <Text style={styles.doctorName}>{chat.doctorName}</Text>
-                          <Text style={styles.lastMessage} numberOfLines={1}>{chat.lastMessage}</Text>
+                          <Text style={[styles.doctorName, { color: theme.TEXT_PRIMARY }]}>{chat.doctorName}</Text>
+                          <Text style={[styles.lastMessage, { color: theme.TEXT_SECONDARY }]} numberOfLines={1}>{chat.lastMessage}</Text>
                         </View>
-                        <Ionicons name="chevron-forward" size={20} color={COLORS.GRAY_MEDIUM} />
+                        <Ionicons name="chevron-forward" size={20} color={theme.GRAY_MEDIUM} />
                       </View>
                     </Card>
                   </TouchableOpacity>
                 ))
               ) : (
-                <Card style={styles.emptyChatCard}>
+                <Card style={[styles.emptyChatCard, { backgroundColor: theme.CARD_BACKGROUND }]}>
                   <View style={styles.emptyChatContent}>
-                    <Ionicons name="chatbubble-outline" size={36} color={COLORS.GRAY_MEDIUM} />
-                    <Text style={styles.emptyChatText}>No recent chats</Text>
+                    <Ionicons name="chatbubble-outline" size={36} color={theme.GRAY_MEDIUM} />
+                    <Text style={[styles.emptyChatText, { color: theme.TEXT_SECONDARY }]}>No recent chats</Text>
                     <TouchableOpacity 
-                      style={styles.startChatButton}
+                      style={[styles.startChatButton, { backgroundColor: theme.PRIMARY }]}
                       onPress={() => navigation.navigate('Consultation', { screen: 'DoctorList', params: { chatMode: true } })}
                     >
-                      <Text style={styles.startChatButtonText}>Start a Chat</Text>
+                      <Text style={[styles.startChatButtonText, { color: theme.WHITE }]}>Start a Chat</Text>
                     </TouchableOpacity>
                   </View>
                 </Card>
@@ -408,11 +419,11 @@ const HomeScreen = ({ navigation }) => {
 
           {/* Recent Activity */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Recent Activity</Text>
-            <Card style={styles.activityCard}>
+            <Text style={[styles.sectionTitle, { color: theme.TEXT_PRIMARY }]}>Recent Activity</Text>
+            <Card style={[styles.activityCard, { backgroundColor: theme.CARD_BACKGROUND }]}>
               <View style={styles.activityItem}>
-                <Ionicons name="time-outline" size={20} color={COLORS.TEXT_SECONDARY} />
-                <Text style={styles.activityText}>
+                <Ionicons name="time-outline" size={20} color={theme.TEXT_SECONDARY} />
+                <Text style={[styles.activityText, { color: theme.TEXT_SECONDARY }]}>
                   No recent activity to show
                 </Text>
               </View>
@@ -425,16 +436,16 @@ const HomeScreen = ({ navigation }) => {
               <TouchableOpacity 
                 onPress={() => navigation.navigate('Health Records', { screen: 'HealthRecordsMain' })}
               >
-                <Card style={styles.healthRecordsCard}>
+                <Card style={[styles.healthRecordsCard, { backgroundColor: theme.CARD_BACKGROUND }]}>
                   <View style={styles.healthRecordsContent}>
-                    <View style={styles.healthRecordsIcon}>
-                      <Ionicons name="folder" size={24} color={COLORS.WHITE} />
+                    <View style={[styles.healthRecordsIcon, { backgroundColor: theme.SUCCESS }]}>
+                      <Ionicons name="folder" size={24} color={theme.WHITE} />
                     </View>
                     <View style={styles.healthRecordsText}>
-                      <Text style={styles.healthRecordsTitle}>Health Records</Text>
-                      <Text style={styles.healthRecordsDescription}>View your medical history and documents</Text>
+                      <Text style={[styles.healthRecordsTitle, { color: theme.TEXT_PRIMARY }]}>Health Records</Text>
+                      <Text style={[styles.healthRecordsDescription, { color: theme.TEXT_SECONDARY }]}>View your medical history and documents</Text>
                     </View>
-                    <Ionicons name="chevron-forward" size={20} color={COLORS.GRAY_MEDIUM} />
+                    <Ionicons name="chevron-forward" size={20} color={theme.GRAY_MEDIUM} />
                   </View>
                 </Card>
               </TouchableOpacity>
@@ -443,13 +454,13 @@ const HomeScreen = ({ navigation }) => {
 
           {/* Health Tips */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Health Tip of the Day</Text>
-            <Card variant="primary" style={styles.healthTipCard}>
+            <Text style={[styles.sectionTitle, { color: theme.TEXT_PRIMARY }]}>Health Tip of the Day</Text>
+            <Card variant="primary" style={[styles.healthTipCard, { backgroundColor: theme.CARD_BACKGROUND }]}>
               <View style={styles.healthTipContent}>
-                <Ionicons name="bulb" size={24} color={COLORS.PRIMARY} />
+                <Ionicons name="bulb" size={24} color={theme.PRIMARY} />
                 <View style={styles.healthTipText}>
-                  <Text style={styles.healthTipTitle}>Stay Hydrated</Text>
-                  <Text style={styles.healthTipDescription}>
+                  <Text style={[styles.healthTipTitle, { color: theme.TEXT_PRIMARY }]}>Stay Hydrated</Text>
+                  <Text style={[styles.healthTipDescription, { color: theme.TEXT_SECONDARY }]}>
                     Drink at least 8 glasses of water daily to maintain good health.
                   </Text>
                 </View>
@@ -462,43 +473,46 @@ const HomeScreen = ({ navigation }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (theme) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.BACKGROUND,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  content: {
-    paddingHorizontal: SPACING.LG,
-    paddingVertical: SPACING.MD,
+    backgroundColor: theme.BACKGROUND,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: SPACING.XL,
+    alignItems: 'center',
+    paddingHorizontal: SPACING.MD,
+    paddingVertical: SPACING.LG,
+    backgroundColor: theme.CARD_BACKGROUND,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.BORDER,
   },
-  welcomeContainer: {
-    flex: 1,
+  profileSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
-  welcomeText: {
+  profileImage: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: theme.GRAY_LIGHT,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  profilePlaceholder: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: theme.GRAY_LIGHT,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  profileText: {
     fontSize: FONT_SIZES.MD,
-    color: COLORS.TEXT_SECONDARY,
-  },
-  userName: {
-    fontSize: FONT_SIZES.XL,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
-    marginTop: SPACING.XS,
-  },
-  userRole: {
-    fontSize: FONT_SIZES.SM,
-    color: COLORS.PRIMARY,
-    fontWeight: '600',
-    marginTop: SPACING.XS,
-    textTransform: 'capitalize',
+    color: theme.TEXT_PRIMARY,
+    marginLeft: SPACING.SM,
   },
   notificationButton: {
     position: 'relative',
@@ -506,57 +520,76 @@ const styles = StyleSheet.create({
   },
   notificationBadge: {
     position: 'absolute',
-    top: 4,
-    right: 4,
-    backgroundColor: COLORS.ERROR,
+    top: 0,
+    right: 0,
+    backgroundColor: theme.ERROR,
     borderRadius: 10,
     minWidth: 20,
     height: 20,
     justifyContent: 'center',
     alignItems: 'center',
+    zIndex: 1,
   },
   notificationBadgeText: {
-    fontSize: 12,
-    color: COLORS.WHITE,
+    color: theme.WHITE,
+    fontSize: FONT_SIZES.XS,
     fontWeight: 'bold',
   },
+  greeting: {
+    fontSize: FONT_SIZES.XXL,
+    fontWeight: 'bold',
+    color: theme.TEXT_PRIMARY,
+    marginBottom: SPACING.XS,
+  },
+  roleText: {
+    fontSize: FONT_SIZES.MD,
+    color: theme.TEXT_SECONDARY,
+    marginBottom: SPACING.LG,
+  },
   section: {
-    marginBottom: SPACING.XL,
+    paddingHorizontal: SPACING.MD,
   },
   sectionTitle: {
     fontSize: FONT_SIZES.LG,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginBottom: SPACING.MD,
+    marginTop: SPACING.MD,
   },
-  sectionHeader: {
+  quickActionsContainer: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: SPACING.MD,
-  },
-  seeAllText: {
-    fontSize: FONT_SIZES.SM,
-    color: COLORS.PRIMARY,
-    fontWeight: '600',
   },
   quickActionsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
   },
-  quickActionContainer: {
+  quickActionWrapper: {
+    width: CARD_WIDTH,
     marginBottom: SPACING.MD,
   },
   quickActionCard: {
-    alignItems: 'center',
+    height: CARD_HEIGHT,
+    backgroundColor: theme.CARD_BACKGROUND,
+    borderWidth: 1,
+    borderColor: theme.BORDER,
     justifyContent: 'center',
-    paddingVertical: SPACING.LG,
+    alignItems: 'center',
+    padding: SPACING.MD,
+  },
+  quickActionContent: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: SPACING.MD,
   },
   quickActionIcon: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: theme.PRIMARY,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: SPACING.MD,
@@ -564,52 +597,57 @@ const styles = StyleSheet.create({
   quickActionTitle: {
     fontSize: FONT_SIZES.MD,
     fontWeight: '600',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     textAlign: 'center',
-    marginBottom: SPACING.XS,
+    marginBottom: SPACING.XS / 2,
   },
   quickActionSubtitle: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     textAlign: 'center',
   },
-  // Special styles for Heart SOS button
-  heartSOSContainer: {
-    alignItems: 'center',
-  },
-  heartSOSButton: {
-    width: 90,
-    height: 90,
-    borderRadius: 45,
-    backgroundColor: COLORS.ERROR,
+  heartSOSCard: {
+    height: CARD_HEIGHT,
+    // backgroundColor: theme.CARD_BACKGROUND,
+    // borderWidth: 1,
+    // borderColor: theme.BORDER,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: COLORS.ERROR,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.4,
-    shadowRadius: 12,
-    elevation: 12,
-    borderWidth: 3,
-    borderColor: COLORS.WHITE,
-    marginBottom: SPACING.SM,
-    // Add pulsing animation effect
-    transform: [{ scale: 1 }],
+    // padding: SPACING.MD,
+  },
+  heartSOSButton: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: theme.ERROR,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: theme.BLACK,
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+    marginBottom: SPACING.XS,
   },
   heartSOSTitle: {
     fontSize: FONT_SIZES.MD,
     fontWeight: 'bold',
-    color: COLORS.ERROR,
+    color: theme.ERROR,
     textAlign: 'center',
     marginTop: SPACING.XS,
   },
   heartSOSSubtitle: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.ERROR,
+    color: theme.ERROR,
     textAlign: 'center',
     fontWeight: '600',
   },
   activityCard: {
     paddingVertical: SPACING.LG,
+    backgroundColor: theme.CARD_BACKGROUND,
   },
   activityItem: {
     flexDirection: 'row',
@@ -618,11 +656,12 @@ const styles = StyleSheet.create({
   },
   activityText: {
     fontSize: FONT_SIZES.MD,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     marginLeft: SPACING.SM,
   },
   healthRecordsCard: {
     padding: 0,
+    backgroundColor: theme.CARD_BACKGROUND,
   },
   healthRecordsContent: {
     flexDirection: 'row',
@@ -634,7 +673,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: COLORS.SUCCESS,
+    backgroundColor: theme.SUCCESS,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: SPACING.MD,
@@ -645,15 +684,16 @@ const styles = StyleSheet.create({
   healthRecordsTitle: {
     fontSize: FONT_SIZES.MD,
     fontWeight: '600',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginBottom: SPACING.XS / 2,
   },
   healthRecordsDescription: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
   },
   healthTipCard: {
     padding: SPACING.LG,
+    backgroundColor: theme.CARD_BACKGROUND,
   },
   healthTipContent: {
     flexDirection: 'row',
@@ -666,25 +706,29 @@ const styles = StyleSheet.create({
   healthTipTitle: {
     fontSize: FONT_SIZES.MD,
     fontWeight: '600',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginBottom: SPACING.XS,
   },
   healthTipDescription: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     lineHeight: 20,
   },
   // Chat card styles
   loadingCard: {
     paddingVertical: SPACING.MD,
     alignItems: 'center',
+    backgroundColor: theme.CARD_BACKGROUND,
   },
   loadingText: {
     fontSize: FONT_SIZES.MD,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
   },
   chatCard: {
     marginBottom: SPACING.MD,
+    backgroundColor: theme.CARD_BACKGROUND,
+    borderWidth: 1,
+    borderColor: theme.BORDER,
   },
   chatCardContent: {
     flexDirection: 'row',
@@ -695,7 +739,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: COLORS.PRIMARY,
+    backgroundColor: theme.PRIMARY,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: SPACING.MD,
@@ -713,34 +757,35 @@ const styles = StyleSheet.create({
   doctorName: {
     fontSize: FONT_SIZES.MD,
     fontWeight: '600',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginBottom: SPACING.XS / 2,
   },
   lastMessage: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
   },
   emptyChatCard: {
     paddingVertical: SPACING.XL,
+    backgroundColor: theme.CARD_BACKGROUND,
   },
   emptyChatContent: {
     alignItems: 'center',
   },
   emptyChatText: {
     fontSize: FONT_SIZES.MD,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     marginTop: SPACING.MD,
     marginBottom: SPACING.MD,
   },
   startChatButton: {
-    backgroundColor: COLORS.PRIMARY,
+    backgroundColor: theme.PRIMARY,
     paddingHorizontal: SPACING.LG,
     paddingVertical: SPACING.SM,
     borderRadius: BORDER_RADIUS.SM,
   },
   startChatButtonText: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.WHITE,
+    color: theme.WHITE,
     fontWeight: '600',
   }
 });

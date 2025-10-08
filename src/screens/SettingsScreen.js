@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import {
   COLORS,
   FONT_SIZES,
@@ -22,6 +23,8 @@ import Button from '../components/Button';
 
 const SettingsScreen = ({ navigation }) => {
   const { user, userProfile, logout } = useAuth();
+  const { isDarkMode, theme, toggleTheme } = useTheme();
+  const styles = getStyles(theme);
   
   // Settings state
   const [notificationSettings, setNotificationSettings] = useState({
@@ -39,10 +42,15 @@ const SettingsScreen = ({ navigation }) => {
   });
   
   const [appSettings, setAppSettings] = useState({
-    darkMode: false,
+    darkMode: isDarkMode,
     biometricAuth: false,
     autoSync: true
   });
+
+  // Update dark mode setting when theme changes
+  React.useEffect(() => {
+    setAppSettings(prev => ({...prev, darkMode: isDarkMode}));
+  }, [isDarkMode]);
 
   const handleLogout = () => {
     Alert.alert(
@@ -101,39 +109,39 @@ const SettingsScreen = ({ navigation }) => {
     <TouchableOpacity style={styles.settingItem} onPress={onPress}>
       <View style={styles.settingLeft}>
         <View style={styles.settingIcon}>
-          <Ionicons name={icon} size={20} color={COLORS.PRIMARY} />
+          <Ionicons name={icon} size={20} color={theme.PRIMARY} />
         </View>
         <View style={styles.settingText}>
-          <Text style={styles.settingTitle}>{title}</Text>
-          {description && <Text style={styles.settingDescription}>{description}</Text>}
+          <Text style={[styles.settingTitle, { color: theme.TEXT_PRIMARY }]}>{title}</Text>
+          {description && <Text style={[styles.settingDescription, { color: theme.TEXT_SECONDARY }]}>{description}</Text>}
         </View>
       </View>
       <View style={styles.settingRight}>
         {rightContent}
-        {showArrow && <Ionicons name="chevron-forward" size={20} color={COLORS.GRAY_MEDIUM} />}
+        {showArrow && <Ionicons name="chevron-forward" size={20} color={theme.GRAY_MEDIUM} />}
       </View>
     </TouchableOpacity>
   );
 
   const SectionHeader = ({ title }) => (
-    <Text style={styles.sectionHeader}>{title}</Text>
+    <Text style={[styles.sectionHeader, { color: theme.TEXT_SECONDARY }]}>{title}</Text>
   );
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.BACKGROUND }]}>
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* User Profile Section */}
-        <Card style={styles.profileSection}>
+        <Card style={[styles.profileSection, { backgroundColor: theme.CARD_BACKGROUND }]}>
           <View style={styles.profileHeader}>
-            <View style={styles.profileAvatar}>
-              <Ionicons name="person" size={32} color={COLORS.WHITE} />
+            <View style={[styles.profileAvatar, { backgroundColor: theme.PRIMARY }]}>
+              <Ionicons name="person" size={32} color={theme.WHITE} />
             </View>
             <View style={styles.profileInfo}>
-              <Text style={styles.profileName}>
+              <Text style={[styles.profileName, { color: theme.TEXT_PRIMARY }]}>
                 {userProfile?.firstName} {userProfile?.lastName}
               </Text>
-              <Text style={styles.profileEmail}>{user?.email}</Text>
-              <Text style={styles.profileRole}>
+              <Text style={[styles.profileEmail, { color: theme.TEXT_SECONDARY }]}>{user?.email}</Text>
+              <Text style={[styles.profileRole, { color: theme.PRIMARY }]}>
                 {userProfile?.role?.charAt(0).toUpperCase() + userProfile?.role?.slice(1)}
               </Text>
             </View>
@@ -141,14 +149,14 @@ const SettingsScreen = ({ navigation }) => {
               style={styles.editButton}
               onPress={() => navigation.navigate('ProfileMain')}
             >
-              <Ionicons name="create" size={20} color={COLORS.PRIMARY} />
+              <Ionicons name="create" size={20} color={theme.PRIMARY} />
             </TouchableOpacity>
           </View>
         </Card>
 
         {/* Notifications */}
         <SectionHeader title="Notifications" />
-        <Card style={styles.section}>
+        <Card style={[styles.section, { backgroundColor: theme.CARD_BACKGROUND }]}>
           <SettingItem
             title="Appointment Reminders"
             description="Get notified about upcoming appointments"
@@ -160,8 +168,8 @@ const SettingsScreen = ({ navigation }) => {
                 onValueChange={(value) => 
                   setNotificationSettings(prev => ({...prev, appointments: value}))
                 }
-                trackColor={{ false: COLORS.GRAY_LIGHT, true: COLORS.PRIMARY }}
-                thumbColor={COLORS.WHITE}
+                trackColor={{ false: theme.GRAY_LIGHT, true: theme.PRIMARY }}
+                thumbColor={theme.WHITE}
               />
             }
           />
@@ -177,8 +185,8 @@ const SettingsScreen = ({ navigation }) => {
                 onValueChange={(value) => 
                   setNotificationSettings(prev => ({...prev, medicationReminders: value}))
                 }
-                trackColor={{ false: COLORS.GRAY_LIGHT, true: COLORS.PRIMARY }}
-                thumbColor={COLORS.WHITE}
+                trackColor={{ false: theme.GRAY_LIGHT, true: theme.PRIMARY }}
+                thumbColor={theme.WHITE}
               />
             }
           />
@@ -194,8 +202,8 @@ const SettingsScreen = ({ navigation }) => {
                 onValueChange={(value) => 
                   setNotificationSettings(prev => ({...prev, healthTips: value}))
                 }
-                trackColor={{ false: COLORS.GRAY_LIGHT, true: COLORS.PRIMARY }}
-                thumbColor={COLORS.WHITE}
+                trackColor={{ false: theme.GRAY_LIGHT, true: theme.PRIMARY }}
+                thumbColor={theme.WHITE}
               />
             }
           />
@@ -211,8 +219,8 @@ const SettingsScreen = ({ navigation }) => {
                 onValueChange={(value) => 
                   setNotificationSettings(prev => ({...prev, emergency: value}))
                 }
-                trackColor={{ false: COLORS.GRAY_LIGHT, true: COLORS.PRIMARY }}
-                thumbColor={COLORS.WHITE}
+                trackColor={{ false: theme.GRAY_LIGHT, true: theme.PRIMARY }}
+                thumbColor={theme.WHITE}
               />
             }
           />
@@ -220,7 +228,7 @@ const SettingsScreen = ({ navigation }) => {
 
         {/* Privacy & Security */}
         <SectionHeader title="Privacy & Security" />
-        <Card style={styles.section}>
+        <Card style={[styles.section, { backgroundColor: theme.CARD_BACKGROUND }]}>
           <SettingItem
             title="Share with Doctors"
             description="Allow doctors to access your health data"
@@ -232,8 +240,8 @@ const SettingsScreen = ({ navigation }) => {
                 onValueChange={(value) => 
                   setPrivacySettings(prev => ({...prev, shareWithDoctors: value}))
                 }
-                trackColor={{ false: COLORS.GRAY_LIGHT, true: COLORS.PRIMARY }}
-                thumbColor={COLORS.WHITE}
+                trackColor={{ false: theme.GRAY_LIGHT, true: theme.PRIMARY }}
+                thumbColor={theme.WHITE}
               />
             }
           />
@@ -249,8 +257,8 @@ const SettingsScreen = ({ navigation }) => {
                 onValueChange={(value) => 
                   setAppSettings(prev => ({...prev, biometricAuth: value}))
                 }
-                trackColor={{ false: COLORS.GRAY_LIGHT, true: COLORS.PRIMARY }}
-                thumbColor={COLORS.WHITE}
+                trackColor={{ false: theme.GRAY_LIGHT, true: theme.PRIMARY }}
+                thumbColor={theme.WHITE}
               />
             }
           />
@@ -272,7 +280,7 @@ const SettingsScreen = ({ navigation }) => {
 
         {/* App Settings */}
         <SectionHeader title="App Settings" />
-        <Card style={styles.section}>
+        <Card style={[styles.section, { backgroundColor: theme.CARD_BACKGROUND }]}>
           <SettingItem
             title="Dark Mode"
             description="Switch to dark theme"
@@ -283,10 +291,10 @@ const SettingsScreen = ({ navigation }) => {
                 value={appSettings.darkMode}
                 onValueChange={(value) => {
                   setAppSettings(prev => ({...prev, darkMode: value}));
-                  Alert.alert('Coming Soon', 'Dark mode will be available in a future update.');
+                  toggleTheme();
                 }}
-                trackColor={{ false: COLORS.GRAY_LIGHT, true: COLORS.PRIMARY }}
-                thumbColor={COLORS.WHITE}
+                trackColor={{ false: theme.GRAY_LIGHT, true: theme.PRIMARY }}
+                thumbColor={theme.WHITE}
               />
             }
           />
@@ -302,8 +310,8 @@ const SettingsScreen = ({ navigation }) => {
                 onValueChange={(value) => 
                   setAppSettings(prev => ({...prev, autoSync: value}))
                 }
-                trackColor={{ false: COLORS.GRAY_LIGHT, true: COLORS.PRIMARY }}
-                thumbColor={COLORS.WHITE}
+                trackColor={{ false: theme.GRAY_LIGHT, true: theme.PRIMARY }}
+                thumbColor={theme.WHITE}
               />
             }
           />
@@ -325,7 +333,7 @@ const SettingsScreen = ({ navigation }) => {
 
         {/* Support */}
         <SectionHeader title="Support & Help" />
-        <Card style={styles.section}>
+        <Card style={[styles.section, { backgroundColor: theme.CARD_BACKGROUND }]}>
           <SettingItem
             title="Help Center"
             description="Get help and find answers"
@@ -357,7 +365,7 @@ const SettingsScreen = ({ navigation }) => {
 
         {/* Data Management */}
         <SectionHeader title="Data Management" />
-        <Card style={styles.section}>
+        <Card style={[styles.section, { backgroundColor: theme.CARD_BACKGROUND }]}>
           <SettingItem
             title="Export My Data"
             description="Download a copy of your health data"
@@ -375,21 +383,21 @@ const SettingsScreen = ({ navigation }) => {
 
         {/* Danger Zone */}
         <SectionHeader title="Account" />
-        <Card style={styles.dangerSection}>
+        <Card style={[styles.dangerSection, { borderColor: theme.ERROR, backgroundColor: theme.CARD_BACKGROUND }]}>
           <TouchableOpacity style={styles.dangerItem} onPress={handleLogout}>
             <View style={styles.dangerLeft}>
-              <Ionicons name="log-out" size={20} color={COLORS.ERROR} />
-              <Text style={styles.dangerText}>Logout</Text>
+              <Ionicons name="log-out" size={20} color={theme.ERROR} />
+              <Text style={[styles.dangerText, { color: theme.ERROR }]}>Logout</Text>
             </View>
-            <Ionicons name="chevron-forward" size={20} color={COLORS.ERROR} />
+            <Ionicons name="chevron-forward" size={20} color={theme.ERROR} />
           </TouchableOpacity>
           
           <TouchableOpacity style={styles.dangerItem} onPress={handleDeleteAccount}>
             <View style={styles.dangerLeft}>
-              <Ionicons name="trash" size={20} color={COLORS.ERROR} />
-              <Text style={styles.dangerText}>Delete Account</Text>
+              <Ionicons name="trash" size={20} color={theme.ERROR} />
+              <Text style={[styles.dangerText, { color: theme.ERROR }]}>Delete Account</Text>
             </View>
-            <Ionicons name="chevron-forward" size={20} color={COLORS.ERROR} />
+            <Ionicons name="chevron-forward" size={20} color={theme.ERROR} />
           </TouchableOpacity>
         </Card>
       </ScrollView>
@@ -397,10 +405,10 @@ const SettingsScreen = ({ navigation }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (theme) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.BACKGROUND,
+    backgroundColor: theme.BACKGROUND,
   },
   content: {
     flex: 1,
@@ -408,6 +416,7 @@ const styles = StyleSheet.create({
   },
   profileSection: {
     marginBottom: SPACING.MD,
+    backgroundColor: theme.CARD_BACKGROUND,
   },
   profileHeader: {
     flexDirection: 'row',
@@ -417,7 +426,7 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: COLORS.PRIMARY,
+    backgroundColor: theme.PRIMARY,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: SPACING.MD,
@@ -428,17 +437,17 @@ const styles = StyleSheet.create({
   profileName: {
     fontSize: FONT_SIZES.LG,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginBottom: SPACING.XS / 2,
   },
   profileEmail: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     marginBottom: SPACING.XS / 2,
   },
   profileRole: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.PRIMARY,
+    color: theme.PRIMARY,
     fontWeight: '600',
   },
   editButton: {
@@ -447,7 +456,7 @@ const styles = StyleSheet.create({
   sectionHeader: {
     fontSize: FONT_SIZES.SM,
     fontWeight: 'bold',
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     marginTop: SPACING.LG,
     marginBottom: SPACING.SM,
     marginLeft: SPACING.XS,
@@ -455,6 +464,7 @@ const styles = StyleSheet.create({
   },
   section: {
     marginBottom: SPACING.SM,
+    backgroundColor: theme.CARD_BACKGROUND,
   },
   settingItem: {
     flexDirection: 'row',
@@ -462,7 +472,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: SPACING.MD,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.BORDER,
+    borderBottomColor: theme.BORDER,
   },
   settingLeft: {
     flexDirection: 'row',
@@ -473,7 +483,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: COLORS.GRAY_LIGHT,
+    backgroundColor: theme.GRAY_LIGHT,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: SPACING.MD,
@@ -484,21 +494,22 @@ const styles = StyleSheet.create({
   settingTitle: {
     fontSize: FONT_SIZES.MD,
     fontWeight: '600',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginBottom: SPACING.XS / 2,
   },
   settingDescription: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
   },
   settingRight: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   dangerSection: {
-    borderColor: COLORS.ERROR,
+    borderColor: theme.ERROR,
     borderWidth: 1,
     marginBottom: SPACING.XL,
+    backgroundColor: theme.CARD_BACKGROUND,
   },
   dangerItem: {
     flexDirection: 'row',
@@ -506,7 +517,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: SPACING.MD,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.ERROR + '20',
+    borderBottomColor: theme.ERROR + '20',
   },
   dangerLeft: {
     flexDirection: 'row',
@@ -515,7 +526,7 @@ const styles = StyleSheet.create({
   dangerText: {
     fontSize: FONT_SIZES.MD,
     fontWeight: '600',
-    color: COLORS.ERROR,
+    color: theme.ERROR,
     marginLeft: SPACING.MD,
   },
 });

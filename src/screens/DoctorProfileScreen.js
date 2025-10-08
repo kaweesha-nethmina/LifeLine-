@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import { doc, getDoc, collection, query, where, getDocs, orderBy } from 'firebase/firestore';
 import { db } from '../services/firebase';
 import {
@@ -24,6 +25,8 @@ import Button from '../components/Button';
 const DoctorProfileScreen = ({ route, navigation }) => {
   const { doctor } = route.params || {};
   const { userProfile } = useAuth();
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
   const [doctorData, setDoctorData] = useState(null);
   const [reviews, setReviews] = useState([]);
   const [selectedTab, setSelectedTab] = useState('about');
@@ -150,39 +153,39 @@ const DoctorProfileScreen = ({ route, navigation }) => {
 
   const TabButton = ({ title, value, active, onPress }) => (
     <TouchableOpacity
-      style={[styles.tabButton, active && styles.activeTab]}
+      style={[styles.tabButton, active && styles.activeTab, { borderBottomColor: active ? theme.PRIMARY : 'transparent' }]}
       onPress={onPress}
     >
-      <Text style={[styles.tabText, active && styles.activeTabText]}>
+      <Text style={[styles.tabText, active && styles.activeTabText, { color: active ? theme.PRIMARY : theme.TEXT_SECONDARY }]}>
         {title}
       </Text>
     </TouchableOpacity>
   );
 
   const ReviewCard = ({ review }) => (
-    <Card style={styles.reviewCard}>
+    <Card style={[styles.reviewCard, { backgroundColor: theme.CARD_BACKGROUND, borderColor: theme.BORDER }]}>
       <View style={styles.reviewHeader}>
         <View style={styles.patientInfo}>
-          <View style={styles.patientAvatar}>
-            <Text style={styles.patientInitial}>{review.patientName.charAt(0)}</Text>
+          <View style={[styles.patientAvatar, { backgroundColor: theme.PRIMARY }]}>
+            <Text style={[styles.patientInitial, { color: theme.WHITE }]}>{review.patientName.charAt(0)}</Text>
           </View>
           <View>
-            <Text style={styles.patientName}>{review.patientName}</Text>
+            <Text style={[styles.patientName, { color: theme.TEXT_PRIMARY }]}>{review.patientName}</Text>
             <View style={styles.ratingRow}>
               {[1, 2, 3, 4, 5].map((star) => (
                 <Ionicons
                   key={star}
                   name={star <= review.rating ? 'star' : 'star-outline'}
                   size={16}
-                  color={COLORS.WARNING}
+                  color={theme.WARNING}
                 />
               ))}
-              <Text style={styles.reviewDate}>{review.date}</Text>
+              <Text style={[styles.reviewDate, { color: theme.TEXT_SECONDARY }]}>{review.date}</Text>
             </View>
           </View>
         </View>
       </View>
-      <Text style={styles.reviewText}>{review.comment}</Text>
+      <Text style={[styles.reviewText, { color: theme.TEXT_SECONDARY }]}>{review.comment}</Text>
     </Card>
   );
 
@@ -190,14 +193,16 @@ const DoctorProfileScreen = ({ route, navigation }) => {
     <TouchableOpacity
       style={[
         styles.scheduleSlot,
-        available ? styles.availableSlot : styles.unavailableSlot
+        available ? styles.availableSlot : styles.unavailableSlot,
+        { backgroundColor: available ? theme.PRIMARY : theme.GRAY_LIGHT }
       ]}
       onPress={available ? onPress : null}
       disabled={!available}
     >
       <Text style={[
         styles.slotText,
-        available ? styles.availableSlotText : styles.unavailableSlotText
+        available ? styles.availableSlotText : styles.unavailableSlotText,
+        { color: available ? theme.WHITE : theme.TEXT_SECONDARY }
       ]}>
         {time}
       </Text>
@@ -206,9 +211,9 @@ const DoctorProfileScreen = ({ route, navigation }) => {
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, { backgroundColor: theme.BACKGROUND }]}>
         <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>Loading...</Text>
+          <Text style={[styles.errorText, { color: theme.TEXT_PRIMARY }]}>Loading...</Text>
         </View>
       </SafeAreaView>
     );
@@ -216,9 +221,9 @@ const DoctorProfileScreen = ({ route, navigation }) => {
 
   if (!doctorData) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, { backgroundColor: theme.BACKGROUND }]}>
         <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>Doctor information not available</Text>
+          <Text style={[styles.errorText, { color: theme.ERROR }]}>Doctor information not available</Text>
           <Button title="Go Back" onPress={() => navigation.goBack()} />
         </View>
       </SafeAreaView>
@@ -226,33 +231,33 @@ const DoctorProfileScreen = ({ route, navigation }) => {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.BACKGROUND }]}>
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* Header */}
-        <Card style={styles.headerCard}>
+        <Card style={[styles.headerCard, { backgroundColor: theme.CARD_BACKGROUND, borderColor: theme.BORDER }]}>
           <View style={styles.doctorHeader}>
-            <View style={styles.doctorAvatar}>
-              <Ionicons name="person" size={40} color={COLORS.WHITE} />
+            <View style={[styles.doctorAvatar, { backgroundColor: theme.PRIMARY }]}>
+              <Ionicons name="person" size={40} color={theme.WHITE} />
             </View>
             <View style={styles.doctorInfo}>
-              <Text style={styles.doctorName}>{doctorData.name}</Text>
-              <Text style={styles.doctorSpecialization}>{doctorData.specialization}</Text>
+              <Text style={[styles.doctorName, { color: theme.TEXT_PRIMARY }]}>{doctorData.name}</Text>
+              <Text style={[styles.doctorSpecialization, { color: theme.PRIMARY }]}>{doctorData.specialization}</Text>
               <View style={styles.ratingContainer}>
-                <Ionicons name="star" size={16} color={COLORS.WARNING} />
-                <Text style={styles.rating}>{doctorData.rating}</Text>
-                <Text style={styles.reviewCount}>({doctorData.reviewCount} reviews)</Text>
+                <Ionicons name="star" size={16} color={theme.WARNING} />
+                <Text style={[styles.ratingText, { color: theme.TEXT_PRIMARY }]}>{doctorData.rating}</Text>
+                <Text style={[styles.reviewCount, { color: theme.TEXT_SECONDARY }]}>({doctorData.reviewCount} reviews)</Text>
               </View>
               <View style={styles.locationContainer}>
-                <Ionicons name="location" size={16} color={COLORS.TEXT_SECONDARY} />
-                <Text style={styles.location}>{doctorData.location}</Text>
+                <Ionicons name="location" size={16} color={theme.TEXT_SECONDARY} />
+                <Text style={[styles.location, { color: theme.TEXT_SECONDARY }]}>{doctorData.location}</Text>
               </View>
             </View>
             <View style={styles.statusContainer}>
               <View style={[
                 styles.statusBadge,
-                { backgroundColor: doctorData.availableNow ? COLORS.SUCCESS : COLORS.GRAY_MEDIUM }
+                { backgroundColor: doctorData.availableNow ? theme.SUCCESS : theme.GRAY_MEDIUM }
               ]}>
-                <Text style={styles.statusText}>
+                <Text style={[styles.statusText, { color: theme.WHITE }]}>
                   {doctorData.availableNow ? 'Available' : 'Busy'}
                 </Text>
               </View>
@@ -260,18 +265,18 @@ const DoctorProfileScreen = ({ route, navigation }) => {
           </View>
 
           {/* Quick Stats */}
-          <View style={styles.statsContainer}>
+          <View style={[styles.statsContainer, { borderTopColor: theme.BORDER }]}>
             <View style={styles.statItem}>
-              <Text style={styles.statNumber}>{doctorData.experience}</Text>
-              <Text style={styles.statLabel}>Years Exp.</Text>
+              <Text style={[styles.statValue, { color: theme.PRIMARY }]}>{doctorData.experience}</Text>
+              <Text style={[styles.statLabel, { color: theme.TEXT_SECONDARY }]}>Years Exp.</Text>
             </View>
             <View style={styles.statItem}>
-              <Text style={styles.statNumber}>{doctorData.consultationFee}</Text>
-              <Text style={styles.statLabel}>Consultation</Text>
+              <Text style={[styles.statValue, { color: theme.PRIMARY }]}>{doctorData.consultationFee}</Text>
+              <Text style={[styles.statLabel, { color: theme.TEXT_SECONDARY }]}>Consultation</Text>
             </View>
             <View style={styles.statItem}>
-              <Text style={styles.statNumber}>{doctorData.patients || '500+'}</Text>
-              <Text style={styles.statLabel}>Patients</Text>
+              <Text style={[styles.statValue, { color: theme.PRIMARY }]}>{doctorData.patients || '500+'}</Text>
+              <Text style={[styles.statLabel, { color: theme.TEXT_SECONDARY }]}>Patients</Text>
             </View>
           </View>
         </Card>
@@ -292,7 +297,7 @@ const DoctorProfileScreen = ({ route, navigation }) => {
         </View>
 
         {/* Tabs */}
-        <View style={styles.tabContainer}>
+        <View style={[styles.tabContainer, { backgroundColor: theme.CARD_BACKGROUND, borderBottomColor: theme.BORDER }]}>
           <TabButton
             title="About"
             value="about"
@@ -315,34 +320,34 @@ const DoctorProfileScreen = ({ route, navigation }) => {
 
         {/* Tab Content */}
         {selectedTab === 'about' && (
-          <Card style={styles.tabContent}>
-            <Text style={styles.sectionTitle}>About Dr. {doctorData.name}</Text>
-            <Text style={styles.aboutText}>
+          <Card style={[styles.tabContent, { backgroundColor: theme.CARD_BACKGROUND, borderColor: theme.BORDER }]}>
+            <Text style={[styles.sectionTitle, { color: theme.TEXT_PRIMARY }]}>About Dr. {doctorData.name}</Text>
+            <Text style={[styles.aboutText, { color: theme.TEXT_SECONDARY }]}>
               {doctorData.about || 'Dr. ' + doctorData.name + ' is an experienced ' + doctorData.specialization.toLowerCase() + ' with ' + doctorData.experience + ' years of practice. Committed to providing excellent patient care and staying up-to-date with the latest medical advances.'}
             </Text>
 
-            <Text style={styles.sectionTitle}>Education & Certifications</Text>
+            <Text style={[styles.sectionTitle, { color: theme.TEXT_PRIMARY }]}>Education & Certifications</Text>
             {(doctorData.education || []).map((item, index) => (
               <View key={index} style={styles.educationItem}>
-                <Ionicons name="school" size={16} color={COLORS.PRIMARY} />
+                <Ionicons name="school" size={16} color={theme.PRIMARY} />
                 <View style={styles.educationText}>
-                  <Text style={styles.educationDegree}>{item.degree}</Text>
-                  <Text style={styles.educationInstitution}>{item.institution}</Text>
+                  <Text style={[styles.educationDegree, { color: theme.TEXT_PRIMARY }]}>{item.degree}</Text>
+                  <Text style={[styles.educationInstitution, { color: theme.TEXT_SECONDARY }]}>{item.institution}</Text>
                 </View>
               </View>
             ))}
 
-            <Text style={styles.sectionTitle}>Specializations</Text>
+            <Text style={[styles.sectionTitle, { color: theme.TEXT_PRIMARY }]}>Specializations</Text>
             <View style={styles.specializationsContainer}>
               {(doctorData.specializations || [doctorData.specialization]).map((spec, index) => (
-                <View key={index} style={styles.specializationTag}>
-                  <Text style={styles.specializationText}>{spec}</Text>
+                <View key={index} style={[styles.specializationTag, { backgroundColor: theme.GRAY_LIGHT }]}>
+                  <Text style={[styles.specializationText, { color: theme.TEXT_PRIMARY }]}>{spec}</Text>
                 </View>
               ))}
             </View>
 
-            <Text style={styles.sectionTitle}>Languages</Text>
-            <Text style={styles.languageText}>
+            <Text style={[styles.sectionTitle, { color: theme.TEXT_PRIMARY }]}>Languages</Text>
+            <Text style={[styles.languageText, { color: theme.TEXT_SECONDARY }]}>
               {(doctorData.languages || ['English']).join(', ')}
             </Text>
           </Card>
@@ -350,7 +355,7 @@ const DoctorProfileScreen = ({ route, navigation }) => {
 
         {selectedTab === 'reviews' && (
           <View style={styles.tabContent}>
-            <Text style={styles.sectionTitle}>Patient Reviews</Text>
+            <Text style={[styles.sectionTitle, { color: theme.TEXT_PRIMARY }]}>Patient Reviews</Text>
             {reviews.map((review) => (
               <ReviewCard key={review.id} review={review} />
             ))}
@@ -358,25 +363,25 @@ const DoctorProfileScreen = ({ route, navigation }) => {
         )}
 
         {selectedTab === 'schedule' && (
-          <Card style={styles.tabContent}>
-            <Text style={styles.sectionTitle}>Available Times</Text>
-            <Text style={styles.scheduleDate}>Today - {new Date().toLocaleDateString()}</Text>
+          <Card style={[styles.tabContent, { backgroundColor: theme.CARD_BACKGROUND, borderColor: theme.BORDER }]}>
+            <Text style={[styles.sectionTitle, { color: theme.TEXT_PRIMARY }]}>Available Times</Text>
+            <Text style={[styles.scheduleDate, { color: theme.TEXT_PRIMARY }]}>Today - {new Date().toLocaleDateString()}</Text>
             
-            <Text style={styles.timeSlotLabel}>Morning</Text>
+            <Text style={[styles.timeSlotLabel, { color: theme.TEXT_SECONDARY }]}>Morning</Text>
             <View style={styles.timeSlotsRow}>
               <ScheduleSlot time="09:00 AM" available={true} onPress={handleBookAppointment} />
               <ScheduleSlot time="10:00 AM" available={false} />
               <ScheduleSlot time="11:00 AM" available={true} onPress={handleBookAppointment} />
             </View>
 
-            <Text style={styles.timeSlotLabel}>Afternoon</Text>
+            <Text style={[styles.timeSlotLabel, { color: theme.TEXT_SECONDARY }]}>Afternoon</Text>
             <View style={styles.timeSlotsRow}>
               <ScheduleSlot time="02:00 PM" available={true} onPress={handleBookAppointment} />
               <ScheduleSlot time="03:00 PM" available={true} onPress={handleBookAppointment} />
               <ScheduleSlot time="04:00 PM" available={false} />
             </View>
 
-            <Text style={styles.timeSlotLabel}>Evening</Text>
+            <Text style={[styles.timeSlotLabel, { color: theme.TEXT_SECONDARY }]}>Evening</Text>
             <View style={styles.timeSlotsRow}>
               <ScheduleSlot time="06:00 PM" available={true} onPress={handleBookAppointment} />
               <ScheduleSlot time="07:00 PM" available={false} />
@@ -388,114 +393,106 @@ const DoctorProfileScreen = ({ route, navigation }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (theme) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.BACKGROUND,
+    backgroundColor: theme.BACKGROUND,
   },
   content: {
-    flex: 1,
     padding: SPACING.MD,
-  },
-  errorContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: SPACING.LG,
-  },
-  errorText: {
-    fontSize: FONT_SIZES.LG,
-    color: COLORS.ERROR,
-    marginBottom: SPACING.LG,
   },
   headerCard: {
     marginBottom: SPACING.MD,
+    backgroundColor: theme.CARD_BACKGROUND,
+    borderWidth: 1,
+    borderColor: theme.BORDER,
   },
   doctorHeader: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    marginBottom: SPACING.LG,
+    alignItems: 'center',
+    paddingVertical: SPACING.LG,
   },
   doctorAvatar: {
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: COLORS.PRIMARY,
+    backgroundColor: theme.PRIMARY,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: SPACING.MD,
+    marginBottom: SPACING.MD,
   },
   doctorInfo: {
-    flex: 1,
+    alignItems: 'center',
+    marginBottom: SPACING.MD,
   },
   doctorName: {
-    fontSize: FONT_SIZES.XL,
+    fontSize: FONT_SIZES.XXL,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
-    marginBottom: SPACING.XS / 2,
+    color: theme.TEXT_PRIMARY,
+    marginBottom: SPACING.XS,
   },
   doctorSpecialization: {
     fontSize: FONT_SIZES.MD,
-    color: COLORS.TEXT_SECONDARY,
-    marginBottom: SPACING.SM,
+    color: theme.PRIMARY,
+    marginBottom: SPACING.MD,
   },
   ratingContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: SPACING.SM,
+    marginBottom: SPACING.MD,
   },
-  rating: {
-    fontSize: FONT_SIZES.SM,
+  ratingText: {
+    fontSize: FONT_SIZES.MD,
     fontWeight: '600',
-    color: COLORS.TEXT_PRIMARY,
-    marginLeft: SPACING.XS / 2,
-    marginRight: SPACING.XS,
+    color: theme.TEXT_PRIMARY,
+    marginLeft: SPACING.XS,
+    marginRight: SPACING.MD,
   },
   reviewCount: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
   },
   locationContainer: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   location: {
-    fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_SECONDARY,
-    marginLeft: SPACING.XS / 2,
+    fontSize: FONT_SIZES.MD,
+    color: theme.TEXT_SECONDARY,
+    marginLeft: SPACING.XS,
   },
   statusContainer: {
-    alignItems: 'flex-end',
+    marginBottom: SPACING.MD,
   },
   statusBadge: {
-    paddingHorizontal: SPACING.SM,
-    paddingVertical: SPACING.XS / 2,
-    borderRadius: BORDER_RADIUS.SM,
+    paddingHorizontal: SPACING.MD,
+    paddingVertical: SPACING.XS,
+    borderRadius: BORDER_RADIUS.XL,
   },
   statusText: {
-    fontSize: FONT_SIZES.XS,
-    color: COLORS.WHITE,
+    fontSize: FONT_SIZES.SM,
     fontWeight: '600',
+    color: theme.WHITE,
   },
   statsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
+    width: '100%',
     paddingTop: SPACING.MD,
     borderTopWidth: 1,
-    borderTopColor: COLORS.BORDER,
+    borderTopColor: theme.BORDER,
   },
   statItem: {
     alignItems: 'center',
   },
-  statNumber: {
+  statValue: {
     fontSize: FONT_SIZES.LG,
     fontWeight: 'bold',
-    color: COLORS.PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginBottom: SPACING.XS / 2,
   },
   statLabel: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
   },
   actionButtons: {
     flexDirection: 'row',
@@ -510,10 +507,12 @@ const styles = StyleSheet.create({
   },
   tabContainer: {
     flexDirection: 'row',
-    backgroundColor: COLORS.WHITE,
+    backgroundColor: theme.CARD_BACKGROUND,
     borderRadius: BORDER_RADIUS.MD,
     padding: SPACING.XS,
     marginBottom: SPACING.MD,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.BORDER,
   },
   tabButton: {
     flex: 1,
@@ -522,28 +521,32 @@ const styles = StyleSheet.create({
     borderRadius: BORDER_RADIUS.SM,
   },
   activeTab: {
-    backgroundColor: COLORS.PRIMARY,
+    backgroundColor: theme.PRIMARY,
   },
   tabText: {
     fontSize: FONT_SIZES.SM,
     fontWeight: '600',
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
   },
   activeTabText: {
-    color: COLORS.WHITE,
+    color: theme.WHITE,
   },
   tabContent: {
     marginBottom: SPACING.XL,
+    backgroundColor: theme.CARD_BACKGROUND,
+    borderWidth: 1,
+    borderColor: theme.BORDER,
   },
   sectionTitle: {
     fontSize: FONT_SIZES.LG,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginBottom: SPACING.MD,
+    marginTop: SPACING.MD,
   },
   aboutText: {
     fontSize: FONT_SIZES.MD,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     lineHeight: 22,
     marginBottom: SPACING.LG,
   },
@@ -559,12 +562,12 @@ const styles = StyleSheet.create({
   educationDegree: {
     fontSize: FONT_SIZES.MD,
     fontWeight: '600',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginBottom: SPACING.XS / 2,
   },
   educationInstitution: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
   },
   specializationsContainer: {
     flexDirection: 'row',
@@ -572,7 +575,6 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.LG,
   },
   specializationTag: {
-    backgroundColor: COLORS.GRAY_LIGHT,
     paddingHorizontal: SPACING.MD,
     paddingVertical: SPACING.XS,
     borderRadius: BORDER_RADIUS.XL,
@@ -581,16 +583,19 @@ const styles = StyleSheet.create({
   },
   specializationText: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     fontWeight: '500',
   },
   languageText: {
     fontSize: FONT_SIZES.MD,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     marginBottom: SPACING.LG,
   },
   reviewCard: {
     marginBottom: SPACING.SM,
+    backgroundColor: theme.CARD_BACKGROUND,
+    borderWidth: 1,
+    borderColor: theme.BORDER,
   },
   reviewHeader: {
     marginBottom: SPACING.SM,
@@ -603,7 +608,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: COLORS.PRIMARY,
+    backgroundColor: theme.PRIMARY,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: SPACING.SM,
@@ -611,12 +616,12 @@ const styles = StyleSheet.create({
   patientInitial: {
     fontSize: FONT_SIZES.MD,
     fontWeight: 'bold',
-    color: COLORS.WHITE,
+    color: theme.WHITE,
   },
   patientName: {
     fontSize: FONT_SIZES.MD,
     fontWeight: '600',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginBottom: SPACING.XS / 2,
   },
   ratingRow: {
@@ -625,24 +630,24 @@ const styles = StyleSheet.create({
   },
   reviewDate: {
     fontSize: FONT_SIZES.XS,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     marginLeft: SPACING.SM,
   },
   reviewText: {
     fontSize: FONT_SIZES.MD,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     lineHeight: 20,
   },
   scheduleDate: {
     fontSize: FONT_SIZES.MD,
     fontWeight: '600',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginBottom: SPACING.LG,
   },
   timeSlotLabel: {
     fontSize: FONT_SIZES.SM,
     fontWeight: '600',
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     marginBottom: SPACING.SM,
     marginTop: SPACING.MD,
   },
@@ -659,20 +664,20 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.SM,
   },
   availableSlot: {
-    backgroundColor: COLORS.PRIMARY,
+    backgroundColor: theme.PRIMARY,
   },
   unavailableSlot: {
-    backgroundColor: COLORS.GRAY_LIGHT,
+    backgroundColor: theme.GRAY_LIGHT,
   },
   slotText: {
     fontSize: FONT_SIZES.SM,
     fontWeight: '600',
   },
   availableSlotText: {
-    color: COLORS.WHITE,
+    color: theme.WHITE,
   },
   unavailableSlotText: {
-    color: COLORS.GRAY_MEDIUM,
+    color: theme.TEXT_SECONDARY,
   },
 });
 

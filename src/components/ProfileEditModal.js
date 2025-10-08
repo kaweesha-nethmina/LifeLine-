@@ -12,6 +12,7 @@ import {
   Platform
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '../context/ThemeContext';
 import { COLORS, FONT_SIZES, SPACING, BORDER_RADIUS, USER_ROLES } from '../constants';
 import Button from './Button';
 
@@ -24,6 +25,7 @@ const ProfileEditModal = ({
   isDoctor,
   isEmergencyOperator
 }) => {
+  const { theme } = useTheme();
   const [editForm, setEditForm] = useState({
     firstName: userProfile?.firstName || '',
     lastName: userProfile?.lastName || '',
@@ -101,69 +103,93 @@ const ProfileEditModal = ({
         style={styles.keyboardAvoidingView}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Edit Profile</Text>
+        <View style={[styles.modalOverlay, { backgroundColor: theme.OVERLAY }]}>
+          <View style={[styles.modalContent, { backgroundColor: theme.WHITE, maxHeight: '95%', maxWidth: 700 }]}>
+            <View style={[styles.modalHeader, { borderBottomColor: theme.BORDER }]}>
+              <Text style={[styles.modalTitle, { color: theme.TEXT_PRIMARY }]}>Edit Profile</Text>
               <TouchableOpacity onPress={onClose}>
-                <Ionicons name="close" size={24} color={COLORS.GRAY_DARK} />
+                <Ionicons name="close" size={24} color={theme.GRAY_DARK} />
               </TouchableOpacity>
             </View>
             
             <ScrollView style={styles.modalForm} keyboardShouldPersistTaps="handled">
               {/* Personal Information Section */}
-              <View style={styles.sectionHeader}>
-                <Text style={styles.sectionHeaderText}>Personal Information</Text>
+              <View style={[styles.sectionHeader, { borderBottomColor: theme.BORDER }]}>
+                <Text style={[styles.sectionHeaderText, { color: theme.TEXT_SECONDARY }]}>Personal Information</Text>
               </View>
               
               <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>First Name</Text>
+                <Text style={[styles.inputLabel, { color: theme.TEXT_PRIMARY }]}>First Name</Text>
                 <TextInput
-                  style={styles.input}
+                  style={[styles.input, { 
+                    borderWidth: 1, 
+                    borderColor: theme.BORDER, 
+                    backgroundColor: theme.WHITE, 
+                    color: theme.TEXT_PRIMARY 
+                  }]}
                   value={editForm.firstName}
                   onChangeText={(text) => setEditForm({...editForm, firstName: text})}
                   placeholder="Enter first name"
-                  placeholderTextColor={COLORS.GRAY_MEDIUM}
+                  placeholderTextColor={theme.GRAY_MEDIUM}
                 />
               </View>
               
               <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Last Name</Text>
+                <Text style={[styles.inputLabel, { color: theme.TEXT_PRIMARY }]}>Last Name</Text>
                 <TextInput
-                  style={styles.input}
+                  style={[styles.input, { 
+                    borderWidth: 1, 
+                    borderColor: theme.BORDER, 
+                    backgroundColor: theme.WHITE, 
+                    color: theme.TEXT_PRIMARY 
+                  }]}
                   value={editForm.lastName}
                   onChangeText={(text) => setEditForm({...editForm, lastName: text})}
                   placeholder="Enter last name"
-                  placeholderTextColor={COLORS.GRAY_MEDIUM}
+                  placeholderTextColor={theme.GRAY_MEDIUM}
                 />
               </View>
               
               <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Phone Number</Text>
+                <Text style={[styles.inputLabel, { color: theme.TEXT_PRIMARY }]}>Phone Number</Text>
                 <TextInput
-                  style={styles.input}
+                  style={[styles.input, { 
+                    borderWidth: 1, 
+                    borderColor: theme.BORDER, 
+                    backgroundColor: theme.WHITE, 
+                    color: theme.TEXT_PRIMARY 
+                  }]}
                   value={editForm.phone}
                   onChangeText={(text) => setEditForm({...editForm, phone: text})}
                   placeholder="Enter phone number"
-                  placeholderTextColor={COLORS.GRAY_MEDIUM}
+                  placeholderTextColor={theme.GRAY_MEDIUM}
                   keyboardType="phone-pad"
                 />
               </View>
               
               <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Date of Birth</Text>
+                <Text style={[styles.inputLabel, { color: theme.TEXT_PRIMARY }]}>Date of Birth</Text>
                 <TextInput
-                  style={styles.input}
+                  style={[styles.input, { 
+                    borderWidth: 1, 
+                    borderColor: theme.BORDER, 
+                    backgroundColor: theme.WHITE, 
+                    color: theme.TEXT_PRIMARY 
+                  }]}
                   value={editForm.dateOfBirth}
                   onChangeText={(text) => setEditForm({...editForm, dateOfBirth: text})}
                   placeholder="YYYY-MM-DD"
-                  placeholderTextColor={COLORS.GRAY_MEDIUM}
+                  placeholderTextColor={theme.GRAY_MEDIUM}
                 />
               </View>
               
               <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Gender</Text>
-                <View style={styles.pickerContainer}>
+                <Text style={[styles.inputLabel, { color: theme.TEXT_PRIMARY }]}>Gender</Text>
+                <View style={[styles.pickerContainer, { 
+                  borderWidth: 1, 
+                  borderColor: theme.BORDER, 
+                  backgroundColor: theme.WHITE 
+                }]}>
                   <TouchableOpacity 
                     style={styles.pickerButton}
                     onPress={() => {
@@ -182,22 +208,27 @@ const ProfileEditModal = ({
                       );
                     }}
                   >
-                    <Text style={styles.pickerText}>
+                    <Text style={[styles.pickerText, { color: theme.TEXT_PRIMARY }]}>
                       {editForm.gender || 'Select Gender'}
                     </Text>
-                    <Ionicons name="chevron-down" size={20} color={COLORS.GRAY_MEDIUM} />
+                    <Ionicons name="chevron-down" size={20} color={theme.GRAY_MEDIUM} />
                   </TouchableOpacity>
                 </View>
               </View>
               
               <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Address</Text>
+                <Text style={[styles.inputLabel, { color: theme.TEXT_PRIMARY }]}>Address</Text>
                 <TextInput
-                  style={[styles.input, styles.textArea]}
+                  style={[styles.input, styles.textArea, { 
+                    borderWidth: 1, 
+                    borderColor: theme.BORDER, 
+                    backgroundColor: theme.WHITE, 
+                    color: theme.TEXT_PRIMARY 
+                  }]}
                   value={editForm.address}
                   onChangeText={(text) => setEditForm({...editForm, address: text})}
                   placeholder="Enter address"
-                  placeholderTextColor={COLORS.GRAY_MEDIUM}
+                  placeholderTextColor={theme.GRAY_MEDIUM}
                   multiline
                   numberOfLines={3}
                 />
@@ -206,42 +237,57 @@ const ProfileEditModal = ({
               {/* Medical Information Section (Patient/Doctor) */}
               {(isPatient || isDoctor) && (
                 <>
-                  <View style={styles.sectionHeader}>
-                    <Text style={styles.sectionHeaderText}>Medical Information</Text>
+                  <View style={[styles.sectionHeader, { borderBottomColor: theme.BORDER }]}>
+                    <Text style={[styles.sectionHeaderText, { color: theme.TEXT_SECONDARY }]}>Medical Information</Text>
                   </View>
                   
                   <View style={styles.inputGroup}>
-                    <Text style={styles.inputLabel}>Blood Type</Text>
+                    <Text style={[styles.inputLabel, { color: theme.TEXT_PRIMARY }]}>Blood Type</Text>
                     <TextInput
-                      style={styles.input}
+                      style={[styles.input, { 
+                        borderWidth: 1, 
+                        borderColor: theme.BORDER, 
+                        backgroundColor: theme.WHITE, 
+                        color: theme.TEXT_PRIMARY 
+                      }]}
                       value={editForm.bloodType}
                       onChangeText={(text) => setEditForm({...editForm, bloodType: text})}
                       placeholder="Enter blood type (e.g., A+, B-, O+)"
-                      placeholderTextColor={COLORS.GRAY_MEDIUM}
+                      placeholderTextColor={theme.GRAY_MEDIUM}
                     />
                   </View>
                   
                   <View style={styles.inputGroup}>
-                    <Text style={styles.inputLabel}>Allergies</Text>
+                    <Text style={[styles.inputLabel, { color: theme.TEXT_PRIMARY }]}>Allergies</Text>
                     <TextInput
-                      style={[styles.input, styles.textArea]}
+                      style={[styles.input, styles.textArea, { 
+                        borderWidth: 1, 
+                        borderColor: theme.BORDER, 
+                        backgroundColor: theme.WHITE, 
+                        color: theme.TEXT_PRIMARY 
+                      }]}
                       value={editForm.allergies}
                       onChangeText={(text) => setEditForm({...editForm, allergies: text})}
                       placeholder="Enter allergies (separated by commas)"
-                      placeholderTextColor={COLORS.GRAY_MEDIUM}
+                      placeholderTextColor={theme.GRAY_MEDIUM}
                       multiline
                       numberOfLines={3}
                     />
                   </View>
                   
                   <View style={styles.inputGroup}>
-                    <Text style={styles.inputLabel}>Emergency Contact</Text>
+                    <Text style={[styles.inputLabel, { color: theme.TEXT_PRIMARY }]}>Emergency Contact</Text>
                     <TextInput
-                      style={styles.input}
+                      style={[styles.input, { 
+                        borderWidth: 1, 
+                        borderColor: theme.BORDER, 
+                        backgroundColor: theme.WHITE, 
+                        color: theme.TEXT_PRIMARY 
+                      }]}
                       value={editForm.emergencyContact}
                       onChangeText={(text) => setEditForm({...editForm, emergencyContact: text})}
                       placeholder="Enter emergency contact"
-                      placeholderTextColor={COLORS.GRAY_MEDIUM}
+                      placeholderTextColor={theme.GRAY_MEDIUM}
                       keyboardType="phone-pad"
                     />
                   </View>
@@ -251,40 +297,55 @@ const ProfileEditModal = ({
               {/* Doctor Information Section */}
               {isDoctor && (
                 <>
-                  <View style={styles.sectionHeader}>
-                    <Text style={styles.sectionHeaderText}>Professional Information</Text>
+                  <View style={[styles.sectionHeader, { borderBottomColor: theme.BORDER }]}>
+                    <Text style={[styles.sectionHeaderText, { color: theme.TEXT_SECONDARY }]}>Professional Information</Text>
                   </View>
                   
                   <View style={styles.inputGroup}>
-                    <Text style={styles.inputLabel}>Specialization</Text>
+                    <Text style={[styles.inputLabel, { color: theme.TEXT_PRIMARY }]}>Specialization</Text>
                     <TextInput
-                      style={styles.input}
+                      style={[styles.input, { 
+                        borderWidth: 1, 
+                        borderColor: theme.BORDER, 
+                        backgroundColor: theme.WHITE, 
+                        color: theme.TEXT_PRIMARY 
+                      }]}
                       value={editForm.specialization}
                       onChangeText={(text) => setEditForm({...editForm, specialization: text})}
                       placeholder="Enter specialization"
-                      placeholderTextColor={COLORS.GRAY_MEDIUM}
+                      placeholderTextColor={theme.GRAY_MEDIUM}
                     />
                   </View>
                   
                   <View style={styles.inputGroup}>
-                    <Text style={styles.inputLabel}>License Number</Text>
+                    <Text style={[styles.inputLabel, { color: theme.TEXT_PRIMARY }]}>License Number</Text>
                     <TextInput
-                      style={styles.input}
+                      style={[styles.input, { 
+                        borderWidth: 1, 
+                        borderColor: theme.BORDER, 
+                        backgroundColor: theme.WHITE, 
+                        color: theme.TEXT_PRIMARY 
+                      }]}
                       value={editForm.licenseNumber}
                       onChangeText={(text) => setEditForm({...editForm, licenseNumber: text})}
                       placeholder="Enter license number"
-                      placeholderTextColor={COLORS.GRAY_MEDIUM}
+                      placeholderTextColor={theme.GRAY_MEDIUM}
                     />
                   </View>
                   
                   <View style={styles.inputGroup}>
-                    <Text style={styles.inputLabel}>Years of Experience</Text>
+                    <Text style={[styles.inputLabel, { color: theme.TEXT_PRIMARY }]}>Years of Experience</Text>
                     <TextInput
-                      style={styles.input}
+                      style={[styles.input, { 
+                        borderWidth: 1, 
+                        borderColor: theme.BORDER, 
+                        backgroundColor: theme.WHITE, 
+                        color: theme.TEXT_PRIMARY 
+                      }]}
                       value={editForm.experience}
                       onChangeText={(text) => setEditForm({...editForm, experience: text})}
                       placeholder="Enter years of experience"
-                      placeholderTextColor={COLORS.GRAY_MEDIUM}
+                      placeholderTextColor={theme.GRAY_MEDIUM}
                       keyboardType="numeric"
                     />
                   </View>
@@ -294,29 +355,39 @@ const ProfileEditModal = ({
               {/* Emergency Operator Information Section */}
               {isEmergencyOperator && (
                 <>
-                  <View style={styles.sectionHeader}>
-                    <Text style={styles.sectionHeaderText}>Professional Information</Text>
+                  <View style={[styles.sectionHeader, { borderBottomColor: theme.BORDER }]}>
+                    <Text style={[styles.sectionHeaderText, { color: theme.TEXT_SECONDARY }]}>Professional Information</Text>
                   </View>
                   
                   <View style={styles.inputGroup}>
-                    <Text style={styles.inputLabel}>Department</Text>
+                    <Text style={[styles.inputLabel, { color: theme.TEXT_PRIMARY }]}>Department</Text>
                     <TextInput
-                      style={styles.input}
+                      style={[styles.input, { 
+                        borderWidth: 1, 
+                        borderColor: theme.BORDER, 
+                        backgroundColor: theme.WHITE, 
+                        color: theme.TEXT_PRIMARY 
+                      }]}
                       value={editForm.department}
                       onChangeText={(text) => setEditForm({...editForm, department: text})}
                       placeholder="Enter department"
-                      placeholderTextColor={COLORS.GRAY_MEDIUM}
+                      placeholderTextColor={theme.GRAY_MEDIUM}
                     />
                   </View>
                   
                   <View style={styles.inputGroup}>
-                    <Text style={styles.inputLabel}>Position</Text>
+                    <Text style={[styles.inputLabel, { color: theme.TEXT_PRIMARY }]}>Position</Text>
                     <TextInput
-                      style={styles.input}
+                      style={[styles.input, { 
+                        borderWidth: 1, 
+                        borderColor: theme.BORDER, 
+                        backgroundColor: theme.WHITE, 
+                        color: theme.TEXT_PRIMARY 
+                      }]}
                       value={editForm.position}
                       onChangeText={(text) => setEditForm({...editForm, position: text})}
                       placeholder="Enter position"
-                      placeholderTextColor={COLORS.GRAY_MEDIUM}
+                      placeholderTextColor={theme.GRAY_MEDIUM}
                     />
                   </View>
                 </>

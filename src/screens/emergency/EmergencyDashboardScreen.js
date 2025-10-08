@@ -9,6 +9,7 @@ import {
   RefreshControl,
   Alert
 } from 'react-native';
+import { useTheme } from '../../context/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../context/AuthContext';
 import {
@@ -31,6 +32,8 @@ import Button from '../../components/Button';
 
 const EmergencyDashboardScreen = ({ navigation }) => {
   const { userProfile } = useAuth();
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
   const [dashboardData, setDashboardData] = useState({
     activeEmergencies: [],
     pendingDispatches: [],
@@ -381,7 +384,7 @@ const EmergencyDashboardScreen = ({ navigation }) => {
         showsVerticalScrollIndicator={false}
       >
         {/* Header */}
-        <View style={styles.header}>
+        <View style={[styles.header, { backgroundColor: theme.EMERGENCY }]}>
           <View style={styles.welcomeContainer}>
             <Text style={styles.welcomeText}>Emergency Control Center</Text>
             <Text style={styles.operatorName}>
@@ -508,10 +511,10 @@ const EmergencyDashboardScreen = ({ navigation }) => {
 
 
 
-const styles = StyleSheet.create({
+const getStyles = (theme) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.BACKGROUND,
+    backgroundColor: theme.BACKGROUND,
   },
   content: {
     flex: 1,
@@ -519,7 +522,6 @@ const styles = StyleSheet.create({
   header: {
     paddingHorizontal: SPACING.MD,
     paddingVertical: SPACING.LG,
-    backgroundColor: COLORS.EMERGENCY,
   },
   welcomeContainer: {
     marginBottom: SPACING.SM,
@@ -527,17 +529,17 @@ const styles = StyleSheet.create({
   welcomeText: {
     fontSize: FONT_SIZES.XL,
     fontWeight: 'bold',
-    color: COLORS.WHITE,
+    color: theme.WHITE,
     marginBottom: SPACING.XS,
   },
   operatorName: {
     fontSize: FONT_SIZES.MD,
-    color: COLORS.WHITE,
+    color: theme.WHITE,
     marginBottom: SPACING.XS / 2,
   },
   shiftInfo: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.WHITE,
+    color: theme.WHITE,
     opacity: 0.9,
   },
   alertButton: {
@@ -548,7 +550,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 5,
     right: 5,
-    backgroundColor: COLORS.WARNING,
+    backgroundColor: theme.WARNING,
     borderRadius: 10,
     minWidth: 20,
     height: 20,
@@ -557,7 +559,7 @@ const styles = StyleSheet.create({
   },
   alertBadgeText: {
     fontSize: FONT_SIZES.XS,
-    color: COLORS.WHITE,
+    color: theme.WHITE,
     fontWeight: 'bold',
   },
   statisticsGrid: {
@@ -570,6 +572,7 @@ const styles = StyleSheet.create({
     width: '48%',
     marginBottom: SPACING.MD,
     marginHorizontal: '1%',
+    backgroundColor: theme.CARD_BACKGROUND,
   },
   statHeader: {
     flexDirection: 'row',
@@ -596,21 +599,22 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: FONT_SIZES.XXL,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginBottom: SPACING.XS / 2,
   },
   statLabel: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     marginBottom: SPACING.XS / 2,
   },
   statSubtitle: {
     fontSize: FONT_SIZES.XS,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
   },
   quickActionsCard: {
     margin: SPACING.MD,
     marginTop: 0,
+    backgroundColor: theme.CARD_BACKGROUND,
   },
   quickActionsGrid: {
     flexDirection: 'row',
@@ -627,7 +631,7 @@ const styles = StyleSheet.create({
   quickActionText: {
     fontSize: FONT_SIZES.SM,
     fontWeight: 'bold',
-    color: COLORS.WHITE,
+    color: theme.WHITE,
     marginTop: SPACING.SM,
     textAlign: 'center',
   },
@@ -644,16 +648,17 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: FONT_SIZES.LG,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
   },
   viewAllText: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.PRIMARY,
+    color: theme.PRIMARY,
     fontWeight: '600',
   },
   emergencyCard: {
     marginBottom: SPACING.MD,
     borderLeftWidth: 4,
+    backgroundColor: theme.CARD_BACKGROUND,
   },
   emergencyHeader: {
     flexDirection: 'row',
@@ -666,24 +671,24 @@ const styles = StyleSheet.create({
   },
   emergencyId: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.PRIMARY,
+    color: theme.PRIMARY,
     fontWeight: 'bold',
     marginBottom: SPACING.XS / 2,
   },
   patientName: {
     fontSize: FONT_SIZES.MD,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginBottom: SPACING.XS / 2,
   },
   emergencyType: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     marginBottom: SPACING.XS / 2,
   },
   emergencyTime: {
     fontSize: FONT_SIZES.XS,
-    color: COLORS.GRAY_MEDIUM,
+    color: theme.GRAY_MEDIUM,
   },
   emergencyStatus: {
     alignItems: 'flex-end',
@@ -696,16 +701,16 @@ const styles = StyleSheet.create({
   },
   priorityText: {
     fontSize: FONT_SIZES.XS,
-    color: COLORS.WHITE,
+    color: theme.WHITE,
     fontWeight: 'bold',
   },
   locationText: {
     fontSize: FONT_SIZES.XS,
-    color: COLORS.INFO,
+    color: theme.INFO,
   },
   emergencyDescription: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     lineHeight: 20,
     marginBottom: SPACING.MD,
   },
@@ -714,7 +719,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     paddingTop: SPACING.MD,
     borderTopWidth: 1,
-    borderTopColor: COLORS.BORDER,
+    borderTopColor: theme.BORDER,
   },
   actionButton: {
     flexDirection: 'row',
@@ -725,15 +730,16 @@ const styles = StyleSheet.create({
   },
   actionText: {
     fontSize: FONT_SIZES.XS,
-    color: COLORS.WHITE,
+    color: theme.WHITE,
     fontWeight: 'bold',
     marginLeft: SPACING.XS,
   },
   alertCard: {
     marginBottom: SPACING.SM,
-    backgroundColor: COLORS.INFO + '10',
+    backgroundColor: theme.INFO + '10',
     borderLeftWidth: 4,
-    borderLeftColor: COLORS.INFO,
+    borderLeftColor: theme.INFO,
+    backgroundColor: theme.CARD_BACKGROUND,
   },
   alertHeader: {
     flexDirection: 'row',
@@ -743,33 +749,34 @@ const styles = StyleSheet.create({
   alertTitle: {
     fontSize: FONT_SIZES.SM,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginLeft: SPACING.SM,
     flex: 1,
   },
   alertTime: {
     fontSize: FONT_SIZES.XS,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
   },
   alertMessage: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     lineHeight: 18,
   },
   emptyState: {
     alignItems: 'center',
     paddingVertical: SPACING.XXL,
+    backgroundColor: theme.CARD_BACKGROUND,
   },
   emptyTitle: {
     fontSize: FONT_SIZES.XL,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginTop: SPACING.MD,
     marginBottom: SPACING.XS,
   },
   emptySubtitle: {
     fontSize: FONT_SIZES.MD,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     textAlign: 'center',
   },
 });

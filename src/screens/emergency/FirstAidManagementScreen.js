@@ -11,6 +11,7 @@ import {
   Modal,
   FlatList
 } from 'react-native';
+import { useTheme } from '../../context/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
 import {
   COLORS,
@@ -25,6 +26,8 @@ import { db } from '../../services/firebase';
 import { collection, addDoc, updateDoc, deleteDoc, doc } from 'firebase/firestore';
 
 const FirstAidManagementScreen = ({ navigation }) => {
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
   const [firstAidGuides, setFirstAidGuides] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedGuide, setSelectedGuide] = useState(null);
@@ -452,35 +455,35 @@ const FirstAidManagementScreen = ({ navigation }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (theme) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.BACKGROUND,
+    backgroundColor: theme.BACKGROUND,
   },
   header: {
     paddingHorizontal: SPACING.MD,
     paddingVertical: SPACING.MD,
-    backgroundColor: COLORS.WHITE,
+    backgroundColor: theme.CARD_BACKGROUND,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.BORDER,
+    borderBottomColor: theme.BORDER,
   },
   title: {
     fontSize: FONT_SIZES.XXL,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginBottom: SPACING.XS,
   },
   subtitle: {
     fontSize: FONT_SIZES.MD,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
   },
   actionsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     padding: SPACING.MD,
-    backgroundColor: COLORS.WHITE,
+    backgroundColor: theme.CARD_BACKGROUND,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.BORDER,
+    borderBottomColor: theme.BORDER,
   },
   addButton: {
     flex: 1,
@@ -502,18 +505,19 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: FONT_SIZES.LG,
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     fontWeight: 'bold',
     marginTop: SPACING.MD,
   },
   emptySubtext: {
     fontSize: FONT_SIZES.MD,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     marginTop: SPACING.XS,
     textAlign: 'center',
   },
   guideCard: {
     marginBottom: SPACING.MD,
+    backgroundColor: theme.CARD_BACKGROUND,
   },
   guideHeader: {
     flexDirection: 'row',
@@ -534,12 +538,12 @@ const styles = StyleSheet.create({
   guideTitle: {
     fontSize: FONT_SIZES.LG,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginBottom: SPACING.XS,
   },
   guideDescription: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     marginBottom: SPACING.XS,
   },
   guideMeta: {
@@ -547,7 +551,7 @@ const styles = StyleSheet.create({
   },
   metaText: {
     fontSize: FONT_SIZES.XS,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     marginRight: SPACING.XS,
   },
   actionButtons: {
@@ -557,7 +561,7 @@ const styles = StyleSheet.create({
   editButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.PRIMARY,
+    backgroundColor: theme.PRIMARY,
     paddingHorizontal: SPACING.MD,
     paddingVertical: SPACING.SM,
     borderRadius: BORDER_RADIUS.SM,
@@ -566,19 +570,19 @@ const styles = StyleSheet.create({
   deleteButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.ERROR,
+    backgroundColor: theme.ERROR,
     paddingHorizontal: SPACING.MD,
     paddingVertical: SPACING.SM,
     borderRadius: BORDER_RADIUS.SM,
   },
   actionButtonText: {
-    color: COLORS.WHITE,
+    color: theme.WHITE,
     fontWeight: 'bold',
     marginLeft: SPACING.XS,
   },
   modalContainer: {
     flex: 1,
-    backgroundColor: COLORS.BACKGROUND,
+    backgroundColor: theme.BACKGROUND,
   },
   modalHeader: {
     flexDirection: 'row',
@@ -586,14 +590,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: SPACING.MD,
     paddingVertical: SPACING.MD,
-    backgroundColor: COLORS.WHITE,
+    backgroundColor: theme.CARD_BACKGROUND,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.BORDER,
+    borderBottomColor: theme.BORDER,
   },
   modalTitle: {
     fontSize: FONT_SIZES.XL,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
   },
   closeButton: {
     padding: SPACING.XS,
@@ -605,11 +609,12 @@ const styles = StyleSheet.create({
   formCard: {
     marginBottom: SPACING.MD,
     padding: SPACING.MD,
+    backgroundColor: theme.CARD_BACKGROUND,
   },
   formTitle: {
     fontSize: FONT_SIZES.LG,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginBottom: SPACING.MD,
   },
   stepsHeader: {
@@ -623,17 +628,18 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     marginBottom: SPACING.XS,
     fontWeight: '600',
   },
   input: {
     borderWidth: 1,
-    borderColor: COLORS.BORDER,
+    borderColor: theme.BORDER,
     borderRadius: BORDER_RADIUS.SM,
     padding: SPACING.MD,
     fontSize: FONT_SIZES.MD,
-    backgroundColor: COLORS.WHITE,
+    backgroundColor: theme.INPUT_BACKGROUND,
+    color: theme.TEXT_PRIMARY,
   },
   textArea: {
     height: 80,
@@ -649,7 +655,7 @@ const styles = StyleSheet.create({
   stepContainer: {
     marginBottom: SPACING.LG,
     padding: SPACING.MD,
-    backgroundColor: COLORS.GRAY_LIGHT,
+    backgroundColor: theme.BUTTON_SECONDARY,
     borderRadius: BORDER_RADIUS.SM,
   },
   stepHeader: {
@@ -661,7 +667,7 @@ const styles = StyleSheet.create({
   stepNumber: {
     fontSize: FONT_SIZES.MD,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
   },
   removeStepButton: {
     padding: SPACING.XS,
@@ -670,9 +676,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     padding: SPACING.MD,
-    backgroundColor: COLORS.WHITE,
+    backgroundColor: theme.CARD_BACKGROUND,
     borderTopWidth: 1,
-    borderTopColor: COLORS.BORDER,
+    borderTopColor: theme.BORDER,
   },
   cancelButton: {
     flex: 1,

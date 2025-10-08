@@ -10,6 +10,7 @@ import {
   Modal,
   TextInput
 } from 'react-native';
+import { useTheme } from '../../context/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../context/AuthContext';
 import {
@@ -23,6 +24,8 @@ import Button from '../../components/Button';
 
 const EmergencyProfileScreen = ({ navigation }) => {
   const { userProfile, logout } = useAuth();
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showShiftModal, setShowShiftModal] = useState(false);
   const [editedProfile, setEditedProfile] = useState({
@@ -393,10 +396,10 @@ const EmergencyProfileScreen = ({ navigation }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (theme) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.BACKGROUND,
+    backgroundColor: theme.BACKGROUND,
   },
   content: {
     flex: 1,
@@ -406,12 +409,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: SPACING.XL,
     marginBottom: SPACING.MD,
+    backgroundColor: theme.CARD_BACKGROUND,
   },
   profileAvatar: {
     width: 100,
     height: 100,
     borderRadius: 50,
-    backgroundColor: COLORS.EMERGENCY,
+    backgroundColor: theme.EMERGENCY,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: SPACING.MD,
@@ -419,22 +423,22 @@ const styles = StyleSheet.create({
   profileInitials: {
     fontSize: FONT_SIZES.XXL,
     fontWeight: 'bold',
-    color: COLORS.WHITE,
+    color: theme.WHITE,
   },
   profileName: {
     fontSize: FONT_SIZES.XXL,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginBottom: SPACING.XS,
   },
   profileTitle: {
     fontSize: FONT_SIZES.MD,
-    color: COLORS.PRIMARY,
+    color: theme.PRIMARY,
     marginBottom: SPACING.XS,
   },
   profileBadge: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     marginBottom: SPACING.MD,
   },
   editButton: {
@@ -451,6 +455,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: SPACING.MD,
     marginHorizontal: SPACING.XS,
+    backgroundColor: theme.CARD_BACKGROUND,
   },
   statIcon: {
     width: 50,
@@ -463,21 +468,22 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: FONT_SIZES.XL,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginBottom: SPACING.XS / 2,
   },
   statTitle: {
     fontSize: FONT_SIZES.XS,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     textAlign: 'center',
   },
   profileSection: {
     marginBottom: SPACING.MD,
+    backgroundColor: theme.CARD_BACKGROUND,
   },
   sectionTitle: {
     fontSize: FONT_SIZES.LG,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginBottom: SPACING.MD,
   },
   profileItem: {
@@ -486,7 +492,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: SPACING.MD,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.GRAY_LIGHT,
+    borderBottomColor: theme.BORDER,
   },
   profileItemLeft: {
     flexDirection: 'row',
@@ -499,12 +505,12 @@ const styles = StyleSheet.create({
   },
   profileItemLabel: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     marginBottom: SPACING.XS / 2,
   },
   profileItemValue: {
     fontSize: FONT_SIZES.MD,
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     fontWeight: '500',
   },
   actionsContainer: {
@@ -521,7 +527,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   modalContent: {
-    backgroundColor: COLORS.WHITE,
+    backgroundColor: theme.CARD_BACKGROUND,
     borderRadius: BORDER_RADIUS.LG,
     padding: SPACING.LG,
     width: '90%',
@@ -536,7 +542,7 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: FONT_SIZES.XL,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
   },
   modalBody: {
     marginBottom: SPACING.MD,
@@ -547,17 +553,18 @@ const styles = StyleSheet.create({
   inputLabel: {
     fontSize: FONT_SIZES.SM,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginBottom: SPACING.SM,
   },
   textInput: {
     borderWidth: 1,
-    borderColor: COLORS.BORDER,
+    borderColor: theme.BORDER,
     borderRadius: BORDER_RADIUS.MD,
     paddingHorizontal: SPACING.MD,
     paddingVertical: SPACING.SM,
     fontSize: FONT_SIZES.MD,
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
+    backgroundColor: theme.INPUT_BACKGROUND,
   },
   modalActions: {
     flexDirection: 'row',
@@ -571,23 +578,23 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: SPACING.LG,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.BORDER,
+    borderBottomColor: theme.BORDER,
     marginBottom: SPACING.MD,
   },
   shiftTitle: {
     fontSize: FONT_SIZES.LG,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginBottom: SPACING.SM,
   },
   shiftDetails: {
     fontSize: FONT_SIZES.MD,
-    color: COLORS.PRIMARY,
+    color: theme.PRIMARY,
     marginBottom: SPACING.XS,
   },
   shiftDate: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
   },
   shiftStats: {
     flexDirection: 'row',
@@ -600,12 +607,12 @@ const styles = StyleSheet.create({
   shiftStatValue: {
     fontSize: FONT_SIZES.XL,
     fontWeight: 'bold',
-    color: COLORS.PRIMARY,
+    color: theme.PRIMARY,
     marginBottom: SPACING.XS,
   },
   shiftStatLabel: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
   },
   shiftActions: {
     flexDirection: 'row',

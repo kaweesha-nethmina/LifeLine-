@@ -10,6 +10,7 @@ import {
   Alert,
   Image
 } from 'react-native';
+import { useTheme } from '../context/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../context/AuthContext';
 import {
@@ -34,6 +35,8 @@ import useProfilePicture from '../hooks/useProfilePicture';
 
 const PatientAppointmentsScreen = ({ navigation }) => {
   const { userProfile } = useAuth();
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
   const { fetchUserProfilePicture, getCachedProfilePicture } = useProfilePicture();
   const [appointments, setAppointments] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
@@ -352,171 +355,172 @@ const PatientAppointmentsScreen = ({ navigation }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (theme) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.BACKGROUND,
+    backgroundColor: theme.BACKGROUND,
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: COLORS.PRIMARY,
     paddingHorizontal: SPACING.MD,
-    paddingVertical: SPACING.MD,
-    paddingTop: SPACING.LG,
+    paddingVertical: SPACING.LG,
+    backgroundColor: theme.CARD_BACKGROUND,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.BORDER,
   },
-  backButton: {
-    padding: SPACING.XS,
-  },
-  headerTitle: {
-    flex: 1,
+  title: {
     fontSize: FONT_SIZES.XL,
     fontWeight: 'bold',
-    color: COLORS.WHITE,
-    textAlign: 'center',
-    marginLeft: -30, // Adjust for back button
+    color: theme.TEXT_PRIMARY,
+    marginBottom: SPACING.XS,
   },
-  headerSpacer: {
-    width: 30, // Match back button width
+  subtitle: {
+    fontSize: FONT_SIZES.MD,
+    color: theme.TEXT_SECONDARY,
   },
   filterContainer: {
-    backgroundColor: COLORS.WHITE,
+    backgroundColor: theme.CARD_BACKGROUND,
     paddingHorizontal: SPACING.MD,
     paddingVertical: SPACING.SM,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.BORDER,
+    borderBottomColor: theme.BORDER,
   },
   filterButton: {
-    backgroundColor: COLORS.GRAY_LIGHT,
     paddingHorizontal: SPACING.MD,
-    paddingVertical: SPACING.XS,
+    paddingVertical: SPACING.SM,
     borderRadius: BORDER_RADIUS.XL,
     marginRight: SPACING.SM,
-    marginBottom: SPACING.XS,
+    backgroundColor: theme.BUTTON_SECONDARY,
   },
   activeFilterButton: {
-    backgroundColor: COLORS.PRIMARY,
+    backgroundColor: theme.PRIMARY,
   },
   filterButtonText: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_PRIMARY,
-    fontWeight: '600',
+    color: theme.TEXT_SECONDARY,
+    fontWeight: '500',
   },
   activeFilterButtonText: {
-    color: COLORS.WHITE,
+    color: theme.WHITE,
   },
-  appointmentsList: {
+  content: {
     flex: 1,
     padding: SPACING.MD,
-  },
-  appointmentCard: {
-    backgroundColor: COLORS.WHITE,
-    borderRadius: BORDER_RADIUS.MD,
-    padding: SPACING.MD,
-    marginBottom: SPACING.MD,
-    shadowColor: COLORS.BLACK,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  appointmentHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: SPACING.XS,
-  },
-  appointmentTitle: {
-    fontSize: FONT_SIZES.LG,
-    fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
-  },
-  appointmentStatus: {
-    flexDirection: 'row',
-  },
-  statusBadge: {
-    paddingHorizontal: SPACING.SM,
-    paddingVertical: SPACING.XS / 2,
-    borderRadius: BORDER_RADIUS.SM,
-  },
-  statusText: {
-    fontSize: FONT_SIZES.XS,
-    color: COLORS.WHITE,
-    fontWeight: '600',
-  },
-  appointmentSubtitle: {
-    fontSize: FONT_SIZES.MD,
-    color: COLORS.TEXT_SECONDARY,
-    marginBottom: SPACING.XS,
-  },
-  appointmentDate: {
-    fontSize: FONT_SIZES.MD,
-    color: COLORS.TEXT_PRIMARY,
-    fontWeight: '500',
-    marginBottom: SPACING.MD,
-  },
-  appointmentActions: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  joinButton: {
-    backgroundColor: COLORS.SUCCESS,
-    paddingHorizontal: SPACING.MD,
-    paddingVertical: SPACING.SM,
-    borderRadius: BORDER_RADIUS.SM,
-    flex: 1,
-    marginRight: SPACING.SM,
-  },
-  joinButtonText: {
-    fontSize: FONT_SIZES.SM,
-    color: COLORS.WHITE,
-    fontWeight: '600',
-    textAlign: 'center',
-  },
-  detailsButton: {
-    borderWidth: 1,
-    borderColor: COLORS.BORDER,
-    paddingHorizontal: SPACING.MD,
-    paddingVertical: SPACING.SM,
-    borderRadius: BORDER_RADIUS.SM,
-    flex: 1,
-    marginLeft: SPACING.SM,
-  },
-  detailsButtonText: {
-    fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_PRIMARY,
-    fontWeight: '600',
-    textAlign: 'center',
   },
   emptyState: {
-    flex: 1,
     alignItems: 'center',
-    justifyContent: 'center',
-    padding: SPACING.XL,
+    paddingVertical: SPACING.XXL,
+    marginTop: SPACING.XL,
+    backgroundColor: theme.CARD_BACKGROUND,
   },
   emptyTitle: {
     fontSize: FONT_SIZES.XL,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginTop: SPACING.MD,
     marginBottom: SPACING.XS,
   },
   emptySubtitle: {
     fontSize: FONT_SIZES.MD,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     textAlign: 'center',
-    marginBottom: SPACING.LG,
+    paddingHorizontal: SPACING.MD,
   },
-  bookButton: {
-    backgroundColor: COLORS.PRIMARY,
-    paddingHorizontal: SPACING.XL,
-    paddingVertical: SPACING.MD,
-    borderRadius: BORDER_RADIUS.SM,
+  appointmentCard: {
+    marginBottom: SPACING.MD,
+    backgroundColor: theme.CARD_BACKGROUND,
   },
-  bookButtonText: {
+  appointmentHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: SPACING.MD,
+  },
+  doctorInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  doctorAvatar: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: theme.PRIMARY,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: SPACING.MD,
+  },
+  doctorAvatarImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 25,
+  },
+  doctorDetails: {
+    flex: 1,
+  },
+  appointmentTitle: {
     fontSize: FONT_SIZES.MD,
-    color: COLORS.WHITE,
+    fontWeight: 'bold',
+    color: theme.TEXT_PRIMARY,
+    marginBottom: SPACING.XS / 2,
+  },
+  appointmentSubtitle: {
+    fontSize: FONT_SIZES.SM,
+    color: theme.TEXT_SECONDARY,
+    marginBottom: SPACING.XS / 2,
+  },
+  appointmentMeta: {
+    alignItems: 'flex-end',
+  },
+  statusBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: SPACING.SM,
+    paddingVertical: SPACING.XS / 2,
+    borderRadius: BORDER_RADIUS.SM,
+    marginBottom: SPACING.XS,
+  },
+  statusText: {
+    fontSize: FONT_SIZES.XS,
+    color: theme.WHITE,
     fontWeight: '600',
+    marginLeft: SPACING.XS / 2,
+  },
+  appointmentDetails: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: SPACING.SM,
+  },
+  detailItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: SPACING.MD,
+  },
+  detailText: {
+    fontSize: FONT_SIZES.SM,
+    color: theme.TEXT_SECONDARY,
+    marginLeft: SPACING.XS,
+  },
+  appointmentActions: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    borderTopWidth: 1,
+    borderTopColor: theme.BORDER,
+    paddingTop: SPACING.MD,
+  },
+  actionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: SPACING.SM,
+    paddingHorizontal: SPACING.MD,
+    borderRadius: BORDER_RADIUS.SM,
+    backgroundColor: theme.PRIMARY,
+  },
+  actionButtonText: {
+    fontSize: FONT_SIZES.SM,
+    color: theme.WHITE,
+    fontWeight: '600',
+    marginLeft: SPACING.XS,
   },
 });
 

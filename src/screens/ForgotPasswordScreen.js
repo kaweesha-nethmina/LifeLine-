@@ -1,33 +1,42 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView } from 'react-native';
+import { useTheme } from '../context/ThemeContext';
 import { COLORS, FONT_SIZES, SPACING } from '../constants';
 
 const ForgotPasswordScreen = () => {
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Forgot Password</Text>
-      <Text style={styles.subtitle}>This screen will be implemented</Text>
-    </View>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.BACKGROUND }]}>
+      <View style={styles.content}>
+        <Text style={[styles.title, { color: theme.TEXT_PRIMARY }]}>Forgot Password</Text>
+        <Text style={[styles.subtitle, { color: theme.TEXT_SECONDARY }]}>This screen will be implemented</Text>
+      </View>
+    </SafeAreaView>
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (theme) => StyleSheet.create({
   container: {
+    flex: 1,
+    backgroundColor: theme.BACKGROUND,
+  },
+  content: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: COLORS.WHITE,
     padding: SPACING.LG,
   },
   title: {
     fontSize: FONT_SIZES.XL,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginBottom: SPACING.MD,
   },
   subtitle: {
     fontSize: FONT_SIZES.MD,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     textAlign: 'center',
   },
 });

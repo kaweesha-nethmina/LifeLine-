@@ -11,6 +11,7 @@ import {
   RefreshControl
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '../context/ThemeContext';
 import {
   COLORS,
   FONT_SIZES,
@@ -22,6 +23,8 @@ import Button from '../components/Button';
 import { fetchFirstAidGuides, seedFirstAidGuides, firstAidGuidesMockData } from '../services/firstAidService';
 
 const FirstAidScreen = ({ navigation }) => {
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedGuide, setSelectedGuide] = useState(null);
   const [firstAidGuides, setFirstAidGuides] = useState([]);
@@ -73,17 +76,27 @@ const FirstAidScreen = ({ navigation }) => {
 
   const CategoryButton = ({ category, active, onPress }) => (
     <TouchableOpacity
-      style={[styles.categoryButton, active && styles.activeCategoryButton]}
+      style={[
+        styles.categoryButton,
+        active && styles.activeCategoryButton,
+        { 
+          backgroundColor: active ? theme.PRIMARY : theme.GRAY_LIGHT,
+          borderColor: theme.BORDER
+        }
+      ]}
       onPress={onPress}
     >
       <Ionicons 
         name={category.icon} 
         size={20} 
-        color={active ? COLORS.WHITE : COLORS.TEXT_SECONDARY} 
+        color={active ? theme.WHITE : theme.TEXT_SECONDARY} 
       />
       <Text style={[
         styles.categoryText,
-        active && styles.activeCategoryText
+        active && styles.activeCategoryText,
+        { 
+          color: active ? theme.WHITE : theme.TEXT_SECONDARY
+        }
       ]}>
         {category.name}
       </Text>
@@ -91,100 +104,100 @@ const FirstAidScreen = ({ navigation }) => {
   );
 
   const FirstAidCard = ({ guide }) => (
-    <Card style={styles.guideCard}>
+    <Card style={[styles.guideCard, { backgroundColor: theme.CARD_BACKGROUND, borderColor: theme.BORDER }]}>
       <TouchableOpacity
         onPress={() => setSelectedGuide(guide)}
       >
         <View style={styles.guideHeader}>
           <View style={[styles.guideIcon, { backgroundColor: guide.color }]}>
-            <Ionicons name={guide.icon} size={32} color={COLORS.WHITE} />
+            <Ionicons name={guide.icon} size={32} color={theme.WHITE} />
           </View>
           <View style={styles.guideInfo}>
-            <Text style={styles.guideTitle}>{guide.title}</Text>
-            <Text style={styles.guideDescription}>{guide.description}</Text>
+            <Text style={[styles.guideTitle, { color: theme.TEXT_PRIMARY }]}>{guide.title}</Text>
+            <Text style={[styles.guideDescription, { color: theme.TEXT_SECONDARY }]}>{guide.description}</Text>
             <View style={styles.guideMeta}>
               <View style={styles.metaItem}>
-                <Ionicons name="time-outline" size={14} color={COLORS.TEXT_SECONDARY} />
-                <Text style={styles.metaText}>{guide.time}</Text>
+                <Ionicons name="time-outline" size={14} color={theme.TEXT_SECONDARY} />
+                <Text style={[styles.metaText, { color: theme.TEXT_SECONDARY }]}>{guide.time}</Text>
               </View>
               <View style={styles.metaItem}>
-                <Ionicons name="bar-chart-outline" size={14} color={COLORS.TEXT_SECONDARY} />
-                <Text style={styles.metaText}>{guide.difficulty}</Text>
+                <Ionicons name="bar-chart-outline" size={14} color={theme.TEXT_SECONDARY} />
+                <Text style={[styles.metaText, { color: theme.TEXT_SECONDARY }]}>{guide.difficulty}</Text>
               </View>
             </View>
           </View>
-          <Ionicons name="chevron-forward" size={24} color={COLORS.GRAY_MEDIUM} />
+          <Ionicons name="chevron-forward" size={24} color={theme.GRAY_MEDIUM} />
         </View>
       </TouchableOpacity>
     </Card>
   );
 
   const GuideDetailView = () => (
-    <SafeAreaView style={styles.detailContainer}>
-      <View style={styles.detailHeader}>
+    <SafeAreaView style={[styles.detailContainer, { backgroundColor: theme.BACKGROUND }]}>
+      <View style={[styles.detailHeader, { backgroundColor: theme.CARD_BACKGROUND, borderBottomColor: theme.BORDER }]}>
         <TouchableOpacity
           style={styles.backButton}
           onPress={() => setSelectedGuide(null)}
         >
-          <Ionicons name="arrow-back" size={24} color={COLORS.TEXT_PRIMARY} />
+          <Ionicons name="arrow-back" size={24} color={theme.TEXT_PRIMARY} />
         </TouchableOpacity>
-        <Text style={styles.detailTitle}>{selectedGuide.title}</Text>
+        <Text style={[styles.detailTitle, { color: theme.TEXT_PRIMARY }]}>{selectedGuide.title}</Text>
         <TouchableOpacity
-          style={styles.emergencyButton}
+          style={[styles.emergencyButton, { backgroundColor: theme.EMERGENCY }]}
           onPress={() => Alert.alert('Emergency', 'Call 911 for immediate medical assistance')}
         >
-          <Ionicons name="call" size={20} color={COLORS.WHITE} />
+          <Ionicons name="call" size={20} color={theme.WHITE} />
         </TouchableOpacity>
       </View>
 
       <ScrollView style={styles.detailContent}>
-        <Card style={styles.overviewCard}>
+        <Card style={[styles.overviewCard, { backgroundColor: theme.CARD_BACKGROUND, borderColor: theme.BORDER }]}>
           <View style={styles.overviewHeader}>
             <View style={[styles.detailIcon, { backgroundColor: selectedGuide.color }]}>
-              <Ionicons name={selectedGuide.icon} size={24} color={COLORS.WHITE} />
+              <Ionicons name={selectedGuide.icon} size={24} color={theme.WHITE} />
             </View>
             <View style={styles.overviewText}>
-              <Text style={styles.overviewTitle}>{selectedGuide.title}</Text>
-              <Text style={styles.overviewDescription}>{selectedGuide.description}</Text>
+              <Text style={[styles.overviewTitle, { color: theme.TEXT_PRIMARY }]}>{selectedGuide.title}</Text>
+              <Text style={[styles.overviewDescription, { color: theme.TEXT_SECONDARY }]}>{selectedGuide.description}</Text>
             </View>
           </View>
           
-          <View style={styles.overviewMeta}>
+          <View style={[styles.overviewMeta, { borderTopColor: theme.BORDER }]}>
             <View style={styles.overviewMetaItem}>
-              <Ionicons name="time" size={16} color={COLORS.PRIMARY} />
-              <Text style={styles.overviewMetaText}>{selectedGuide.time}</Text>
+              <Ionicons name="time" size={16} color={theme.PRIMARY} />
+              <Text style={[styles.overviewMetaText, { color: theme.PRIMARY }]}>{selectedGuide.time}</Text>
             </View>
             <View style={styles.overviewMetaItem}>
-              <Ionicons name="bar-chart" size={16} color={COLORS.PRIMARY} />
-              <Text style={styles.overviewMetaText}>{selectedGuide.difficulty}</Text>
+              <Ionicons name="bar-chart" size={16} color={theme.PRIMARY} />
+              <Text style={[styles.overviewMetaText, { color: theme.PRIMARY }]}>{selectedGuide.difficulty}</Text>
             </View>
           </View>
         </Card>
 
         {selectedGuide.steps.map((step, index) => (
-          <Card key={index} style={styles.stepCard}>
+          <Card key={index} style={[styles.stepCard, { backgroundColor: theme.CARD_BACKGROUND, borderColor: theme.BORDER }]}>
             <View style={styles.stepHeader}>
-              <View style={styles.stepNumber}>
-                <Text style={styles.stepNumberText}>{step.step}</Text>
+              <View style={[styles.stepNumber, { backgroundColor: theme.PRIMARY }]}>
+                <Text style={[styles.stepNumberText, { color: theme.WHITE }]}>{step.step}</Text>
               </View>
-              <Text style={styles.stepTitle}>{step.title}</Text>
+              <Text style={[styles.stepTitle, { color: theme.TEXT_PRIMARY }]}>{step.title}</Text>
             </View>
-            <Text style={styles.stepDescription}>{step.description}</Text>
+            <Text style={[styles.stepDescription, { color: theme.TEXT_SECONDARY }]}>{step.description}</Text>
             {step.tips && (
-              <View style={styles.stepTips}>
-                <Ionicons name="bulb" size={16} color={COLORS.WARNING} />
-                <Text style={styles.stepTipsText}>{step.tips}</Text>
+              <View style={[styles.stepTips, { backgroundColor: theme.WARNING + '10', borderLeftColor: theme.WARNING }]}>
+                <Ionicons name="bulb" size={16} color={theme.WARNING} />
+                <Text style={[styles.stepTipsText, { color: theme.TEXT_PRIMARY }]}>{step.tips}</Text>
               </View>
             )}
           </Card>
         ))}
 
-        <Card style={styles.emergencyCard}>
+        <Card style={[styles.emergencyCard, { backgroundColor: theme.EMERGENCY + '10', borderColor: theme.EMERGENCY }]}>
           <View style={styles.emergencyHeader}>
-            <Ionicons name="warning" size={24} color={COLORS.EMERGENCY} />
-            <Text style={styles.emergencyTitle}>When to Call 911</Text>
+            <Ionicons name="warning" size={24} color={theme.EMERGENCY} />
+            <Text style={[styles.emergencyTitle, { color: theme.EMERGENCY }]}>When to Call 911</Text>
           </View>
-          <Text style={styles.emergencyText}>
+          <Text style={[styles.emergencyText, { color: theme.TEXT_PRIMARY }]}>
             • Person is unconscious or unresponsive{'\n'}
             • Severe bleeding that won't stop{'\n'}
             • Difficulty breathing or no breathing{'\n'}
@@ -210,9 +223,9 @@ const FirstAidScreen = ({ navigation }) => {
   // Show loading state
   if (loading) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, { backgroundColor: theme.BACKGROUND }]}>
         <View style={styles.loadingContainer}>
-          <Text>Loading First Aid Guides...</Text>
+          <Text style={{ color: theme.TEXT_PRIMARY }}>Loading First Aid Guides...</Text>
         </View>
       </SafeAreaView>
     );
@@ -221,9 +234,9 @@ const FirstAidScreen = ({ navigation }) => {
   // Show error state
   if (error) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, { backgroundColor: theme.BACKGROUND }]}>
         <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>{error}</Text>
+          <Text style={[styles.errorText, { color: theme.ERROR }]}>{error}</Text>
           <Button 
             title="Retry" 
             onPress={loadFirstAidGuides} 
@@ -235,24 +248,24 @@ const FirstAidScreen = ({ navigation }) => {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.BACKGROUND }]}>
       {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.title}>First Aid Guide</Text>
-        <Text style={styles.subtitle}>Emergency medical procedures and safety tips</Text>
+      <View style={[styles.header, { backgroundColor: theme.CARD_BACKGROUND, borderBottomColor: theme.BORDER }]}>
+        <Text style={[styles.title, { color: theme.TEXT_PRIMARY }]}>First Aid Guide</Text>
+        <Text style={[styles.subtitle, { color: theme.TEXT_SECONDARY }]}>Emergency medical procedures and safety tips</Text>
         
         <TouchableOpacity 
-          style={styles.emergencyBanner}
+          style={[styles.emergencyBanner, { backgroundColor: theme.EMERGENCY }]}
           onPress={() => Alert.alert('Emergency', 'Call 911 for immediate medical assistance')}
         >
-          <Ionicons name="warning" size={20} color={COLORS.WHITE} />
-          <Text style={styles.emergencyBannerText}>Emergency? Call 911</Text>
-          <Ionicons name="call" size={20} color={COLORS.WHITE} />
+          <Ionicons name="warning" size={20} color={theme.WHITE} />
+          <Text style={[styles.emergencyBannerText, { color: theme.WHITE }]}>Emergency? Call 911</Text>
+          <Ionicons name="call" size={20} color={theme.WHITE} />
         </TouchableOpacity>
       </View>
 
       {/* Categories */}
-      <View style={styles.categoriesContainer}>
+      <View style={[styles.categoriesContainer, { backgroundColor: theme.CARD_BACKGROUND, borderBottomColor: theme.BORDER }]}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
           {categories.map((category) => (
             <CategoryButton
@@ -270,7 +283,7 @@ const FirstAidScreen = ({ navigation }) => {
         style={styles.guidesList} 
         showsVerticalScrollIndicator={false}
         refreshControl={
-          <RefreshControl refreshing={loading} onRefresh={loadFirstAidGuides} />
+          <RefreshControl refreshing={loading} onRefresh={loadFirstAidGuides} colors={[theme.PRIMARY]} />
         }
       >
         {filteredGuides.map((guide) => (
@@ -281,51 +294,37 @@ const FirstAidScreen = ({ navigation }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (theme) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.BACKGROUND,
+    backgroundColor: theme.BACKGROUND,
   },
   header: {
     paddingHorizontal: SPACING.MD,
-    paddingVertical: SPACING.MD,
-    backgroundColor: COLORS.WHITE,
+    paddingVertical: SPACING.LG,
+    backgroundColor: theme.CARD_BACKGROUND,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.BORDER,
+    borderBottomColor: theme.BORDER,
   },
   title: {
-    fontSize: FONT_SIZES.XXL,
+    fontSize: FONT_SIZES.XL,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginBottom: SPACING.XS,
   },
   subtitle: {
     fontSize: FONT_SIZES.MD,
-    color: COLORS.TEXT_SECONDARY,
-    marginBottom: SPACING.MD,
-  },
-  emergencyBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: COLORS.EMERGENCY,
-    paddingHorizontal: SPACING.MD,
-    paddingVertical: SPACING.SM,
-    borderRadius: BORDER_RADIUS.MD,
-  },
-  emergencyBannerText: {
-    fontSize: FONT_SIZES.MD,
-    color: COLORS.WHITE,
-    fontWeight: 'bold',
-    flex: 1,
-    textAlign: 'center',
+    color: theme.TEXT_SECONDARY,
   },
   categoriesContainer: {
-    backgroundColor: COLORS.WHITE,
-    paddingVertical: SPACING.SM,
     paddingHorizontal: SPACING.MD,
+    paddingVertical: SPACING.SM,
+    backgroundColor: theme.CARD_BACKGROUND,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.BORDER,
+    borderBottomColor: theme.BORDER,
+  },
+  categoriesScrollView: {
+    paddingVertical: SPACING.XS,
   },
   categoryButton: {
     flexDirection: 'row',
@@ -334,35 +333,43 @@ const styles = StyleSheet.create({
     paddingVertical: SPACING.SM,
     borderRadius: BORDER_RADIUS.XL,
     marginRight: SPACING.SM,
-    backgroundColor: COLORS.GRAY_LIGHT,
+    borderWidth: 1,
   },
   activeCategoryButton: {
-    backgroundColor: COLORS.PRIMARY,
+    backgroundColor: theme.PRIMARY,
   },
   categoryText: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_SECONDARY,
-    marginLeft: SPACING.XS,
     fontWeight: '500',
+    marginLeft: SPACING.XS,
   },
   activeCategoryText: {
-    color: COLORS.WHITE,
+    color: theme.WHITE,
   },
-  guidesList: {
+  content: {
     flex: 1,
     padding: SPACING.MD,
   },
+  sectionTitle: {
+    fontSize: FONT_SIZES.LG,
+    fontWeight: 'bold',
+    color: theme.TEXT_PRIMARY,
+    marginBottom: SPACING.MD,
+  },
   guideCard: {
     marginBottom: SPACING.MD,
+    backgroundColor: theme.CARD_BACKGROUND,
+    borderWidth: 1,
+    borderColor: theme.BORDER,
   },
   guideHeader: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   guideIcon: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+    width: 50,
+    height: 50,
+    borderRadius: 25,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: SPACING.MD,
@@ -371,14 +378,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   guideTitle: {
-    fontSize: FONT_SIZES.LG,
+    fontSize: FONT_SIZES.MD,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
     marginBottom: SPACING.XS / 2,
   },
   guideDescription: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     marginBottom: SPACING.SM,
   },
   guideMeta: {
@@ -391,12 +397,12 @@ const styles = StyleSheet.create({
   },
   metaText: {
     fontSize: FONT_SIZES.XS,
-    color: COLORS.TEXT_SECONDARY,
-    marginLeft: SPACING.XS / 2,
+    color: theme.TEXT_SECONDARY,
+    marginLeft: SPACING.XS,
   },
   detailContainer: {
     flex: 1,
-    backgroundColor: COLORS.BACKGROUND,
+    backgroundColor: theme.BACKGROUND,
   },
   detailHeader: {
     flexDirection: 'row',
@@ -404,24 +410,24 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: SPACING.MD,
     paddingVertical: SPACING.MD,
-    backgroundColor: COLORS.WHITE,
+    backgroundColor: theme.CARD_BACKGROUND,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.BORDER,
+    borderBottomColor: theme.BORDER,
   },
   backButton: {
-    padding: SPACING.XS,
+    padding: SPACING.SM,
   },
   detailTitle: {
     fontSize: FONT_SIZES.LG,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     flex: 1,
     textAlign: 'center',
+    marginHorizontal: SPACING.MD,
   },
   emergencyButton: {
-    backgroundColor: COLORS.EMERGENCY,
     padding: SPACING.SM,
-    borderRadius: BORDER_RADIUS.SM,
+    borderRadius: BORDER_RADIUS.MD,
   },
   detailContent: {
     flex: 1,
@@ -429,6 +435,9 @@ const styles = StyleSheet.create({
   },
   overviewCard: {
     marginBottom: SPACING.MD,
+    backgroundColor: theme.CARD_BACKGROUND,
+    borderWidth: 1,
+    borderColor: theme.BORDER,
   },
   overviewHeader: {
     flexDirection: 'row',
@@ -449,19 +458,19 @@ const styles = StyleSheet.create({
   overviewTitle: {
     fontSize: FONT_SIZES.LG,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginBottom: SPACING.XS / 2,
   },
   overviewDescription: {
     fontSize: FONT_SIZES.MD,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
   },
   overviewMeta: {
     flexDirection: 'row',
     justifyContent: 'space-around',
     paddingTop: SPACING.MD,
     borderTopWidth: 1,
-    borderTopColor: COLORS.BORDER,
+    borderTopColor: theme.BORDER,
   },
   overviewMetaItem: {
     flexDirection: 'row',
@@ -469,12 +478,15 @@ const styles = StyleSheet.create({
   },
   overviewMetaText: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.PRIMARY,
+    color: theme.PRIMARY,
     marginLeft: SPACING.XS,
     fontWeight: '600',
   },
   stepCard: {
     marginBottom: SPACING.MD,
+    backgroundColor: theme.CARD_BACKGROUND,
+    borderWidth: 1,
+    borderColor: theme.BORDER,
   },
   stepHeader: {
     flexDirection: 'row',
@@ -485,48 +497,48 @@ const styles = StyleSheet.create({
     width: 30,
     height: 30,
     borderRadius: 15,
-    backgroundColor: COLORS.PRIMARY,
+    backgroundColor: theme.PRIMARY,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: SPACING.MD,
   },
   stepNumberText: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.WHITE,
+    color: theme.WHITE,
     fontWeight: 'bold',
   },
   stepTitle: {
     fontSize: FONT_SIZES.LG,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     flex: 1,
   },
   stepDescription: {
     fontSize: FONT_SIZES.MD,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     lineHeight: 22,
     marginBottom: SPACING.SM,
   },
   stepTips: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    backgroundColor: COLORS.WARNING + '10',
+    backgroundColor: theme.WARNING + '10',
     padding: SPACING.SM,
     borderRadius: BORDER_RADIUS.SM,
     borderLeftWidth: 3,
-    borderLeftColor: COLORS.WARNING,
+    borderLeftColor: theme.WARNING,
   },
   stepTipsText: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginLeft: SPACING.SM,
     flex: 1,
     fontStyle: 'italic',
   },
   emergencyCard: {
-    backgroundColor: COLORS.EMERGENCY + '10',
+    backgroundColor: theme.EMERGENCY + '10',
     borderWidth: 1,
-    borderColor: COLORS.EMERGENCY,
+    borderColor: theme.EMERGENCY,
     marginTop: SPACING.MD,
     marginBottom: SPACING.XL,
   },
@@ -538,17 +550,17 @@ const styles = StyleSheet.create({
   emergencyTitle: {
     fontSize: FONT_SIZES.LG,
     fontWeight: 'bold',
-    color: COLORS.EMERGENCY,
+    color: theme.EMERGENCY,
     marginLeft: SPACING.SM,
   },
   emergencyText: {
     fontSize: FONT_SIZES.MD,
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     lineHeight: 22,
     marginBottom: SPACING.MD,
   },
   emergencyCallButton: {
-    backgroundColor: COLORS.EMERGENCY,
+    backgroundColor: theme.EMERGENCY,
   },
   loadingContainer: {
     flex: 1,
@@ -566,7 +578,7 @@ const styles = StyleSheet.create({
   
   errorText: {
     fontSize: FONT_SIZES.MD,
-    color: COLORS.ERROR,
+    color: theme.ERROR,
     textAlign: 'center',
     marginBottom: SPACING.MD,
   },

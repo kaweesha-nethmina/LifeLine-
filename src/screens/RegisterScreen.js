@@ -10,6 +10,7 @@ import {
   Alert
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '../context/ThemeContext';
 import Button from '../components/Button';
 import Input from '../components/Input';
 import { useAuth } from '../context/AuthContext';
@@ -18,7 +19,9 @@ import { COLORS, FONT_SIZES, SPACING, USER_ROLES } from '../constants';
 const RegisterScreen = ({ route, navigation }) => {
   const { role } = route.params || { role: USER_ROLES.PATIENT };
   const { register, loading, error, clearError } = useAuth();
-  
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
+
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -90,7 +93,7 @@ const RegisterScreen = ({ route, navigation }) => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.BACKGROUND }]}>
       <KeyboardAvoidingView 
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardView}
@@ -102,8 +105,8 @@ const RegisterScreen = ({ route, navigation }) => {
         >
           <View style={styles.content}>
             <View style={styles.header}>
-              <Text style={styles.title}>Create Account</Text>
-              <Text style={styles.subtitle}>
+              <Text style={[styles.title, { color: theme.TEXT_PRIMARY }]}>Create Account</Text>
+              <Text style={[styles.subtitle, { color: theme.TEXT_SECONDARY }]}>
                 Join LifeLine+ as a {role.replace('_', ' ')}
               </Text>
             </View>
@@ -163,9 +166,9 @@ const RegisterScreen = ({ route, navigation }) => {
               />
 
               {error && (
-                <View style={styles.errorContainer}>
-                  <Ionicons name="alert-circle" size={20} color={COLORS.ERROR} />
-                  <Text style={styles.errorText}>{error}</Text>
+                <View style={[styles.errorContainer, { backgroundColor: theme.ERROR + '20' }]}>
+                  <Ionicons name="alert-circle" size={20} color={theme.ERROR} />
+                  <Text style={[styles.errorText, { color: theme.ERROR }]}>{error}</Text>
                 </View>
               )}
 
@@ -180,7 +183,7 @@ const RegisterScreen = ({ route, navigation }) => {
             </View>
 
             <View style={styles.footer}>
-              <Text style={styles.footerText}>
+              <Text style={[styles.footerText, { color: theme.TEXT_SECONDARY }]}>
                 Already have an account?{' '}
               </Text>
               <Button
@@ -189,7 +192,7 @@ const RegisterScreen = ({ route, navigation }) => {
                 variant="outline"
                 size="small"
                 style={styles.signInButton}
-                textStyle={{ color: COLORS.PRIMARY }}
+                textStyle={{ color: theme.PRIMARY }}
               />
             </View>
           </View>
@@ -199,10 +202,10 @@ const RegisterScreen = ({ route, navigation }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (theme) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.WHITE,
+    backgroundColor: theme.BACKGROUND,
   },
   keyboardView: {
     flex: 1,
@@ -221,12 +224,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: FONT_SIZES.XXL,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginBottom: SPACING.SM,
   },
   subtitle: {
     fontSize: FONT_SIZES.MD,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     textAlign: 'center',
     lineHeight: 22,
   },
@@ -236,14 +239,14 @@ const styles = StyleSheet.create({
   errorContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.ERROR + '20',
+    backgroundColor: theme.ERROR + '20',
     padding: SPACING.MD,
     borderRadius: 8,
     marginBottom: SPACING.LG,
   },
   errorText: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.ERROR,
+    color: theme.ERROR,
     marginLeft: SPACING.SM,
     flex: 1,
   },
@@ -257,7 +260,7 @@ const styles = StyleSheet.create({
   },
   footerText: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
   },
   signInButton: {
     backgroundColor: 'transparent',

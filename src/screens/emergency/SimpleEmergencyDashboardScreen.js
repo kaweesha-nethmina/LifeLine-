@@ -9,6 +9,7 @@ import {
   RefreshControl,
   Alert
 } from 'react-native';
+import { useTheme } from '../../context/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../context/AuthContext';
 import {
@@ -22,6 +23,8 @@ import Button from '../../components/Button';
 
 const SimpleEmergencyDashboardScreen = ({ navigation }) => {
   const { userProfile } = useAuth();
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
   const [refreshing, setRefreshing] = useState(false);
 
   const onRefresh = async () => {
@@ -123,10 +126,10 @@ const SimpleEmergencyDashboardScreen = ({ navigation }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (theme) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.BACKGROUND,
+    backgroundColor: theme.BACKGROUND,
   },
   content: {
     flex: 1,
@@ -134,7 +137,7 @@ const styles = StyleSheet.create({
   header: {
     paddingHorizontal: SPACING.MD,
     paddingVertical: SPACING.LG,
-    backgroundColor: COLORS.EMERGENCY,
+    backgroundColor: theme.EMERGENCY,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -145,17 +148,17 @@ const styles = StyleSheet.create({
   welcomeText: {
     fontSize: FONT_SIZES.XL,
     fontWeight: 'bold',
-    color: COLORS.WHITE,
+    color: theme.WHITE,
     marginBottom: SPACING.XS,
   },
   operatorName: {
     fontSize: FONT_SIZES.MD,
-    color: COLORS.WHITE,
+    color: theme.WHITE,
     marginBottom: SPACING.XS / 2,
   },
   shiftInfo: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.WHITE,
+    color: theme.WHITE,
     opacity: 0.9,
   },
   alertButton: {
@@ -166,7 +169,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 5,
     right: 5,
-    backgroundColor: COLORS.WARNING,
+    backgroundColor: theme.WARNING,
     borderRadius: 10,
     minWidth: 20,
     height: 20,
@@ -175,7 +178,7 @@ const styles = StyleSheet.create({
   },
   alertBadgeText: {
     fontSize: FONT_SIZES.XS,
-    color: COLORS.WHITE,
+    color: theme.WHITE,
     fontWeight: 'bold',
   },
   statisticsGrid: {
@@ -188,6 +191,7 @@ const styles = StyleSheet.create({
     width: '48%',
     marginBottom: SPACING.MD,
     marginHorizontal: '1%',
+    backgroundColor: theme.CARD_BACKGROUND,
   },
   statHeader: {
     flexDirection: 'row',
@@ -205,21 +209,22 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: FONT_SIZES.XXL,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginBottom: SPACING.XS / 2,
   },
   statLabel: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     marginBottom: SPACING.XS / 2,
   },
   statSubtitle: {
     fontSize: FONT_SIZES.XS,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
   },
   quickActionsCard: {
     margin: SPACING.MD,
     marginTop: 0,
+    backgroundColor: theme.CARD_BACKGROUND,
   },
   quickActionsGrid: {
     flexDirection: 'row',
@@ -236,7 +241,7 @@ const styles = StyleSheet.create({
   quickActionText: {
     fontSize: FONT_SIZES.SM,
     fontWeight: 'bold',
-    color: COLORS.WHITE,
+    color: theme.WHITE,
     marginTop: SPACING.SM,
     textAlign: 'center',
   },
@@ -253,27 +258,28 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: FONT_SIZES.LG,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
   },
   viewAllText: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.PRIMARY,
+    color: theme.PRIMARY,
     fontWeight: '600',
   },
   emptyState: {
     alignItems: 'center',
     paddingVertical: SPACING.XXL,
+    backgroundColor: theme.CARD_BACKGROUND,
   },
   emptyTitle: {
     fontSize: FONT_SIZES.XL,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginTop: SPACING.MD,
     marginBottom: SPACING.XS,
   },
   emptySubtitle: {
     fontSize: FONT_SIZES.MD,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     textAlign: 'center',
   },
 });

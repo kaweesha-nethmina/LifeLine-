@@ -2,7 +2,7 @@ import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS } from '../constants';
+import { useTheme } from '../context/ThemeContext';
 
 // Emergency Operator Screens
 import SimpleEmergencyDashboardScreen from '../screens/emergency/SimpleEmergencyDashboardScreen';
@@ -29,148 +29,174 @@ const ResourcesStack = createStackNavigator();
 const FirstAidStack = createStackNavigator();
 const ProfileStack = createStackNavigator();
 
-const DashboardStackNavigator = () => (
-  <DashboardStack.Navigator
-    screenOptions={{
-      headerStyle: {
-        backgroundColor: COLORS.EMERGENCY,
-      },
-      headerTintColor: COLORS.WHITE,
-      headerTitleStyle: {
-        fontWeight: 'bold',
-      },
-    }}
-  >
-    <DashboardStack.Screen 
-      name="DashboardMain" 
-      component={SimpleEmergencyDashboardScreen} 
-      options={{ title: 'Emergency Control Center' }}
-    />
-    <DashboardStack.Screen 
-      name="Notifications" 
-      component={NotificationsScreen}
-      options={{ title: 'Emergency Alerts' }}
-    />
-  </DashboardStack.Navigator>
-);
+const DashboardStackNavigator = () => {
+  const { theme } = useTheme();
+  
+  return (
+    <DashboardStack.Navigator
+      screenOptions={{
+        headerStyle: {
+          backgroundColor: theme.EMERGENCY,
+        },
+        headerTintColor: theme.WHITE,
+        headerTitleStyle: {
+          fontWeight: 'bold',
+        },
+      }}
+    >
+      <DashboardStack.Screen 
+        name="DashboardMain" 
+        component={SimpleEmergencyDashboardScreen} 
+        options={{ title: 'Emergency Control Center' }}
+      />
+      <DashboardStack.Screen 
+        name="Notifications" 
+        component={NotificationsScreen}
+        options={{ title: 'Emergency Alerts' }}
+      />
+    </DashboardStack.Navigator>
+  );
+};
 
-const SOSStackNavigator = () => (
-  <SOSStack.Navigator
-    screenOptions={{
-      headerStyle: {
-        backgroundColor: COLORS.EMERGENCY,
-      },
-      headerTintColor: COLORS.WHITE,
-      headerTitleStyle: {
-        fontWeight: 'bold',
-      },
-    }}
-  >
-    <SOSStack.Screen 
-      name="SOSMain" 
-      component={SOSManagementScreen}
-      options={{ title: 'SOS Management' }}
-    />
-    <SOSStack.Screen 
-      name="VideoCall" 
-      component={VideoCallScreen}
-      options={{ title: 'Emergency Video Call' }}
-    />
-    <SOSStack.Screen 
-      name="Chat" 
-      component={ChatScreen}
-      options={{ title: 'Emergency Chat' }}
-    />
-  </SOSStack.Navigator>
-);
+const SOSStackNavigator = () => {
+  const { theme } = useTheme();
+  
+  return (
+    <SOSStack.Navigator
+      screenOptions={{
+        headerStyle: {
+          backgroundColor: theme.EMERGENCY,
+        },
+        headerTintColor: theme.WHITE,
+        headerTitleStyle: {
+          fontWeight: 'bold',
+        },
+      }}
+    >
+      <SOSStack.Screen 
+        name="SOSMain" 
+        component={SOSManagementScreen}
+        options={{ title: 'SOS Management' }}
+      />
+      <SOSStack.Screen 
+        name="VideoCall" 
+        component={VideoCallScreen}
+        options={{ title: 'Emergency Video Call' }}
+      />
+      <SOSStack.Screen 
+        name="Chat" 
+        component={ChatScreen}
+        options={{ title: 'Emergency Chat' }}
+      />
+    </SOSStack.Navigator>
+  );
+};
 
-const DispatchStackNavigator = () => (
-  <DispatchStack.Navigator
-    screenOptions={{
-      headerStyle: {
-        backgroundColor: COLORS.EMERGENCY,
-      },
-      headerTintColor: COLORS.WHITE,
-      headerTitleStyle: {
-        fontWeight: 'bold',
-      },
-    }}
-  >
-    <DispatchStack.Screen 
-      name="DispatchMain" 
-      component={AmbulanceDispatchScreen}
-      options={{ title: 'Ambulance Dispatch' }}
-    />
-  </DispatchStack.Navigator>
-);
+const DispatchStackNavigator = () => {
+  const { theme } = useTheme();
+  
+  return (
+    <DispatchStack.Navigator
+      screenOptions={{
+        headerStyle: {
+          backgroundColor: theme.EMERGENCY,
+        },
+        headerTintColor: theme.WHITE,
+        headerTitleStyle: {
+          fontWeight: 'bold',
+        },
+      }}
+    >
+      <DispatchStack.Screen 
+        name="DispatchMain" 
+        component={AmbulanceDispatchScreen}
+        options={{ title: 'Ambulance Dispatch' }}
+      />
+    </DispatchStack.Navigator>
+  );
+};
 
-const ResourcesStackNavigator = () => (
-  <ResourcesStack.Navigator
-    screenOptions={{
-      headerStyle: {
-        backgroundColor: COLORS.EMERGENCY,
-      },
-      headerTintColor: COLORS.WHITE,
-      headerTitleStyle: {
-        fontWeight: 'bold',
-      },
-    }}
-  >
-    <ResourcesStack.Screen 
-      name="ResourcesMain" 
-      component={EmergencyResourcesScreen}
-      options={{ title: 'Emergency Resources' }}
-    />
-  </ResourcesStack.Navigator>
-);
+const ResourcesStackNavigator = () => {
+  const { theme } = useTheme();
+  
+  return (
+    <ResourcesStack.Navigator
+      screenOptions={{
+        headerStyle: {
+          backgroundColor: theme.EMERGENCY,
+        },
+        headerTintColor: theme.WHITE,
+        headerTitleStyle: {
+          fontWeight: 'bold',
+        },
+      }}
+    >
+      <ResourcesStack.Screen 
+        name="ResourcesMain" 
+        component={EmergencyResourcesScreen}
+        options={{ title: 'Emergency Resources' }}
+      />
+    </ResourcesStack.Navigator>
+  );
+};
 
-const FirstAidStackNavigator = () => (
-  <FirstAidStack.Navigator
-    screenOptions={{
-      headerStyle: {
-        backgroundColor: COLORS.EMERGENCY,
-      },
-      headerTintColor: COLORS.WHITE,
-      headerTitleStyle: {
-        fontWeight: 'bold',
-      },
-    }}
-  >
-    <FirstAidStack.Screen 
-      name="FirstAidMain" 
-      component={FirstAidManagementScreen}
-      options={{ title: 'First Aid Management' }}
-    />
-  </FirstAidStack.Navigator>
-);
+const FirstAidStackNavigator = () => {
+  const { theme } = useTheme();
+  
+  return (
+    <FirstAidStack.Navigator
+      screenOptions={{
+        headerStyle: {
+          backgroundColor: theme.EMERGENCY,
+        },
+        headerTintColor: theme.WHITE,
+        headerTitleStyle: {
+          fontWeight: 'bold',
+        },
+      }}
+    >
+      <FirstAidStack.Screen 
+        name="FirstAidMain" 
+        component={FirstAidManagementScreen}
+        options={{ title: 'First Aid Management' }}
+      />
+    </FirstAidStack.Navigator>
+  );
+};
 
-const ProfileStackNavigator = () => (
-  <ProfileStack.Navigator
-    screenOptions={{
-      headerStyle: {
-        backgroundColor: COLORS.EMERGENCY,
-      },
-      headerTintColor: COLORS.WHITE,
-      headerTitleStyle: {
-        fontWeight: 'bold',
-      },
-    }}
-  >
-    <ProfileStack.Screen 
-      name="ProfileMain" 
-      component={EmergencyProfileScreen}
-      options={{ title: 'Operator Profile' }}
-    />
-    <ProfileStack.Screen 
-      name="Settings" 
-      component={SettingsScreen}
-      options={{ title: 'Settings' }}
-    />
-  </ProfileStack.Navigator>
-);
+const ProfileStackNavigator = () => {
+  const { theme } = useTheme();
+  
+  return (
+    <ProfileStack.Navigator
+      screenOptions={{
+        headerStyle: {
+          backgroundColor: theme.EMERGENCY,
+        },
+        headerTintColor: theme.WHITE,
+        headerTitleStyle: {
+          fontWeight: 'bold',
+        },
+      }}
+    >
+      <ProfileStack.Screen 
+        name="ProfileMain" 
+        component={EmergencyProfileScreen}
+        options={{ title: 'Operator Profile' }}
+      />
+      <ProfileStack.Screen 
+        name="Settings" 
+        component={SettingsScreen}
+        options={{ title: 'Settings' }}
+      />
+    </ProfileStack.Navigator>
+  );
+};
 
 // Main Tab Navigator for Emergency Operators
 const EmergencyTabNavigator = () => {
+  const { theme } = useTheme();
+  
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -193,12 +219,12 @@ const EmergencyTabNavigator = () => {
 
           return <Ionicons name={iconName} size={size} color={color} />;
         },
-        tabBarActiveTintColor: COLORS.EMERGENCY,
-        tabBarInactiveTintColor: COLORS.GRAY_MEDIUM,
+        tabBarActiveTintColor: theme.EMERGENCY,
+        tabBarInactiveTintColor: theme.GRAY_MEDIUM,
         tabBarStyle: {
-          backgroundColor: COLORS.WHITE,
+          backgroundColor: theme.CARD_BACKGROUND,
           borderTopWidth: 1,
-          borderTopColor: COLORS.BORDER,
+          borderTopColor: theme.BORDER,
           paddingBottom: 5,
           paddingTop: 5,
           height: 60,
@@ -216,8 +242,8 @@ const EmergencyTabNavigator = () => {
         options={{
           tabBarBadge: '!',
           tabBarBadgeStyle: {
-            backgroundColor: COLORS.ERROR,
-            color: COLORS.WHITE,
+            backgroundColor: theme.ERROR,
+            color: theme.WHITE,
           },
         }}
       />

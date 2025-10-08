@@ -13,6 +13,7 @@ import {
   Platform,
   Share
 } from 'react-native';
+import { useTheme } from '../context/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../context/AuthContext';
 import {
@@ -39,6 +40,8 @@ import * as Print from 'expo-print';
 
 const PrescriptionScreen = ({ navigation }) => {
   const { user, userProfile } = useAuth();
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
   const [prescriptions, setPrescriptions] = useState([]);
   const [filterType, setFilterType] = useState('all'); // all, active, completed, expired
   const [selectedPrescription, setSelectedPrescription] = useState(null);
@@ -1039,52 +1042,52 @@ This is an electronically generated prescription. Please consult your doctor if 
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (theme) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.BACKGROUND,
+    backgroundColor: theme.BACKGROUND,
   },
   header: {
     paddingHorizontal: SPACING.MD,
     paddingVertical: SPACING.LG,
-    backgroundColor: COLORS.WHITE,
+    backgroundColor: theme.CARD_BACKGROUND,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.BORDER,
+    borderBottomColor: theme.BORDER,
   },
   title: {
     fontSize: FONT_SIZES.XL,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginBottom: SPACING.XS,
   },
   subtitle: {
     fontSize: FONT_SIZES.MD,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
   },
   filterContainer: {
-    backgroundColor: COLORS.WHITE,
+    backgroundColor: theme.CARD_BACKGROUND,
     paddingHorizontal: SPACING.MD,
     paddingVertical: SPACING.SM,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.BORDER,
+    borderBottomColor: theme.BORDER,
   },
   filterButton: {
     paddingHorizontal: SPACING.MD,
     paddingVertical: SPACING.SM,
     borderRadius: BORDER_RADIUS.XL,
     marginRight: SPACING.SM,
-    backgroundColor: COLORS.GRAY_LIGHT,
+    backgroundColor: theme.BUTTON_SECONDARY,
   },
   activeFilterButton: {
-    backgroundColor: COLORS.PRIMARY,
+    backgroundColor: theme.PRIMARY,
   },
   filterButtonText: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     fontWeight: '500',
   },
   activeFilterButtonText: {
-    color: COLORS.WHITE,
+    color: theme.WHITE,
   },
   content: {
     flex: 1,
@@ -1094,22 +1097,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: SPACING.XXL,
     marginTop: SPACING.XL,
+    backgroundColor: theme.CARD_BACKGROUND,
   },
   emptyTitle: {
     fontSize: FONT_SIZES.XL,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginTop: SPACING.MD,
     marginBottom: SPACING.XS,
   },
   emptySubtitle: {
     fontSize: FONT_SIZES.MD,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     textAlign: 'center',
     paddingHorizontal: SPACING.MD,
   },
   prescriptionCard: {
     marginBottom: SPACING.MD,
+    backgroundColor: theme.CARD_BACKGROUND,
   },
   prescriptionHeader: {
     flexDirection: 'row',
@@ -1126,7 +1131,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: COLORS.PRIMARY,
+    backgroundColor: theme.PRIMARY,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: SPACING.MD,
@@ -1137,17 +1142,17 @@ const styles = StyleSheet.create({
   medicationName: {
     fontSize: FONT_SIZES.MD,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginBottom: SPACING.XS / 2,
   },
   medicationDosage: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     marginBottom: SPACING.XS / 2,
   },
   prescribedBy: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.PRIMARY,
+    color: theme.PRIMARY,
     fontWeight: '600',
   },
   prescriptionStatus: {
@@ -1159,11 +1164,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.SM,
     paddingVertical: SPACING.XS / 2,
     borderRadius: BORDER_RADIUS.SM,
-    backgroundColor: COLORS.SUCCESS,
+    backgroundColor: theme.SUCCESS,
   },
   statusText: {
     fontSize: FONT_SIZES.XS,
-    color: COLORS.WHITE,
+    color: theme.WHITE,
     fontWeight: '600',
     marginLeft: SPACING.XS / 2,
   },
@@ -1179,7 +1184,7 @@ const styles = StyleSheet.create({
   },
   metaText: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     marginLeft: SPACING.XS,
   },
   todayDoses: {
@@ -1188,7 +1193,7 @@ const styles = StyleSheet.create({
   dosesTitle: {
     fontSize: FONT_SIZES.SM,
     fontWeight: '600',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginBottom: SPACING.XS,
   },
   dosesContainer: {
@@ -1201,27 +1206,27 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.SM,
     paddingVertical: SPACING.XS,
     borderRadius: BORDER_RADIUS.SM,
-    backgroundColor: COLORS.GRAY_LIGHT,
+    backgroundColor: theme.BUTTON_SECONDARY,
     marginRight: SPACING.XS,
     marginBottom: SPACING.XS,
   },
   doseTaken: {
-    backgroundColor: COLORS.SUCCESS,
+    backgroundColor: theme.SUCCESS,
   },
   doseTime: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginRight: SPACING.XS / 2,
   },
   doseTimeTaken: {
-    color: COLORS.WHITE,
+    color: theme.WHITE,
   },
   prescriptionActions: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     borderTopWidth: 1,
-    borderTopColor: COLORS.BORDER,
+    borderTopColor: theme.BORDER,
     paddingTop: SPACING.MD,
   },
   reminderToggle: {
@@ -1230,7 +1235,7 @@ const styles = StyleSheet.create({
   },
   reminderText: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginRight: SPACING.SM,
   },
   actionButton: {
@@ -1239,13 +1244,13 @@ const styles = StyleSheet.create({
   },
   actionButtonText: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.PRIMARY,
+    color: theme.PRIMARY,
     fontWeight: '600',
     marginLeft: SPACING.XS,
   },
   modalContainer: {
     flex: 1,
-    backgroundColor: COLORS.BACKGROUND,
+    backgroundColor: theme.BACKGROUND,
   },
   modalHeader: {
     flexDirection: 'row',
@@ -1253,14 +1258,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: SPACING.MD,
     paddingVertical: SPACING.LG,
-    backgroundColor: COLORS.WHITE,
+    backgroundColor: theme.CARD_BACKGROUND,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.BORDER,
+    borderBottomColor: theme.BORDER,
   },
   modalTitle: {
     fontSize: FONT_SIZES.XL,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
   },
   modalHeaderActions: {
     flexDirection: 'row',
@@ -1280,16 +1285,17 @@ const styles = StyleSheet.create({
   detailCard: {
     padding: SPACING.LG,
     marginBottom: SPACING.MD,
+    backgroundColor: theme.CARD_BACKGROUND,
   },
   detailMedicationName: {
     fontSize: FONT_SIZES.XL,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginBottom: SPACING.SM,
   },
   detailDosage: {
     fontSize: FONT_SIZES.MD,
-    color: COLORS.PRIMARY,
+    color: theme.PRIMARY,
     marginBottom: SPACING.LG,
   },
   detailSection: {
@@ -1298,17 +1304,17 @@ const styles = StyleSheet.create({
   detailSectionTitle: {
     fontSize: FONT_SIZES.MD,
     fontWeight: '600',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginBottom: SPACING.XS,
   },
   detailText: {
     fontSize: FONT_SIZES.MD,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     lineHeight: 20,
   },
   detailSubtext: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.GRAY_MEDIUM,
+    color: theme.GRAY_MEDIUM,
     marginTop: SPACING.XS,
   },
   editButtonContainer: {
@@ -1323,19 +1329,19 @@ const styles = StyleSheet.create({
   },
   inputLabel: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     fontWeight: '600',
     marginBottom: SPACING.XS,
   },
   textInput: {
     borderWidth: 1,
-    borderColor: COLORS.BORDER,
+    borderColor: theme.BORDER,
     borderRadius: BORDER_RADIUS.MD,
     paddingHorizontal: SPACING.MD,
     paddingVertical: SPACING.SM,
     fontSize: FONT_SIZES.MD,
-    color: COLORS.TEXT_PRIMARY,
-    backgroundColor: COLORS.WHITE,
+    color: theme.TEXT_PRIMARY,
+    backgroundColor: theme.INPUT_BACKGROUND,
   },
   textArea: {
     height: 80,

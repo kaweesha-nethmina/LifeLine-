@@ -15,12 +15,15 @@ import Card from '../components/Card';
 import Button from '../components/Button';
 import { COLORS, FONT_SIZES, SPACING, EMERGENCY_STATUS } from '../constants';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import LocationService from '../services/locationService';
 import { db, collection, addDoc, query, where, getDocs, doc, updateDoc } from '../services/firebase';
 import { serverTimestamp } from 'firebase/firestore';
 
 const EmergencyScreen = ({ navigation, route }) => {
   const { user, userProfile } = useAuth();
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
   const [isActivating, setIsActivating] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [isEmergencyActive, setIsEmergencyActive] = useState(false);
@@ -319,21 +322,21 @@ const EmergencyScreen = ({ navigation, route }) => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.BACKGROUND }]}>
       <ScrollView style={styles.scrollView}>
         <View style={styles.content}>
           {/* Emergency Status */}
           {isEmergencyActive && (
-            <Card style={styles.statusCard}>
+            <Card style={[styles.statusCard, { backgroundColor: theme.CARD_BACKGROUND, borderColor: theme.BORDER }]}>
               <View style={styles.statusHeader}>
-                <Ionicons name="warning" size={24} color={COLORS.EMERGENCY} />
-                <Text style={styles.statusTitle}>Emergency Active</Text>
+                <Ionicons name="warning" size={24} color={theme.EMERGENCY} />
+                <Text style={[styles.statusTitle, { color: theme.TEXT_PRIMARY }]}>Emergency Active</Text>
               </View>
-              <Text style={styles.statusText}>
+              <Text style={[styles.statusText, { color: theme.TEXT_SECONDARY }]}>
                 Emergency services have been notified. Help is on the way.
               </Text>
               {location && (
-                <Text style={styles.locationText}>
+                <Text style={[styles.locationText, { color: theme.TEXT_SECONDARY }]}>
                   Location: {location.latitude.toFixed(6)}, {location.longitude.toFixed(6)}
                 </Text>
               )}
@@ -341,12 +344,13 @@ const EmergencyScreen = ({ navigation, route }) => {
           )}
 
           {/* SOS Button */}
-          <Card style={styles.sosCard}>
+          <Card style={[styles.sosCard, { backgroundColor: theme.EMERGENCY_LIGHT }]}>
             <View style={styles.sosContainer}>
               <TouchableOpacity
                 style={[
                   styles.sosButton,
-                  isEmergencyActive && styles.sosButtonActive
+                  isEmergencyActive && styles.sosButtonActive,
+                  { backgroundColor: isEmergencyActive ? theme.ERROR : theme.EMERGENCY }
                 ]}
                 onPress={isEmergencyActive ? endEmergency : () => setShowConfirmation(true)}
                 disabled={isActivating}
@@ -354,13 +358,13 @@ const EmergencyScreen = ({ navigation, route }) => {
                 <Ionicons 
                   name={isEmergencyActive ? "stop-circle" : "warning"} 
                   size={60} 
-                  color={isEmergencyActive ? COLORS.WHITE : COLORS.WHITE} 
+                  color={theme.WHITE} 
                 />
-                <Text style={styles.sosText}>
+                <Text style={[styles.sosText, { color: theme.WHITE }]}>
                   {isEmergencyActive ? 'STOP SOS' : 'SOS'}
                 </Text>
               </TouchableOpacity>
-              <Text style={styles.sosDescription}>
+              <Text style={[styles.sosDescription, { color: theme.TEXT_SECONDARY }]}>
                 {isActivating ? 'Activating emergency...' : 
                  isEmergencyActive ? 'Press to stop emergency' : 
                  'Press to activate emergency SOS'}
@@ -370,16 +374,16 @@ const EmergencyScreen = ({ navigation, route }) => {
 
           {/* Emergency Contacts */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Emergency Contacts</Text>
+            <Text style={[styles.sectionTitle, { color: theme.TEXT_PRIMARY }]}>Emergency Contacts</Text>
             {emergencyContacts.map((contact, index) => (
-              <Card key={index} style={styles.contactCard}>
+              <Card key={index} style={[styles.contactCard, { backgroundColor: theme.CARD_BACKGROUND, borderColor: theme.BORDER }]}>
                 <View style={styles.contactItem}>
-                  <View style={styles.contactIcon}>
-                    <Ionicons name={contact.icon} size={24} color={COLORS.EMERGENCY} />
+                  <View style={[styles.contactIcon, { backgroundColor: theme.EMERGENCY_LIGHT }]}>
+                    <Ionicons name={contact.icon} size={24} color={theme.EMERGENCY} />
                   </View>
                   <View style={styles.contactInfo}>
-                    <Text style={styles.contactName}>{contact.name}</Text>
-                    <Text style={styles.contactNumber}>{contact.number}</Text>
+                    <Text style={[styles.contactName, { color: theme.TEXT_PRIMARY }]}>{contact.name}</Text>
+                    <Text style={[styles.contactNumber, { color: theme.TEXT_SECONDARY }]}>{contact.number}</Text>
                   </View>
                   <Button
                     title="Call"
@@ -394,14 +398,14 @@ const EmergencyScreen = ({ navigation, route }) => {
 
           {/* Quick Actions */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Emergency Features</Text>
+            <Text style={[styles.sectionTitle, { color: theme.TEXT_PRIMARY }]}>Emergency Features</Text>
             <Button
               title="Share Live Location"
               onPress={() => navigation.navigate('EmergencyMap')}
               variant="outline"
               size="large"
               style={styles.actionButton}
-              icon={<Ionicons name="location" size={20} color={COLORS.PRIMARY} />}
+              icon={<Ionicons name="location" size={20} color={theme.PRIMARY} />}
             />
             <Button
               title="First Aid Guide"
@@ -409,7 +413,7 @@ const EmergencyScreen = ({ navigation, route }) => {
               variant="outline"
               size="large"
               style={styles.actionButton}
-              icon={<Ionicons name="book" size={20} color={COLORS.PRIMARY} />}
+              icon={<Ionicons name="book" size={20} color={theme.PRIMARY} />}
             />
           </View>
         </View>
@@ -422,23 +426,23 @@ const EmergencyScreen = ({ navigation, route }) => {
         visible={showConfirmation}
         onRequestClose={() => setShowConfirmation(false)}
       >
-        <View style={styles.overlay}>
-          <Card style={styles.confirmationCard}>
-            <Ionicons name="warning" size={48} color={COLORS.EMERGENCY} />
-            <Text style={styles.confirmationTitle}>Activate Emergency?</Text>
-            <Text style={styles.confirmationText}>
+        <View style={[styles.overlay, { backgroundColor: theme.OVERLAY }]}>
+          <Card style={[styles.confirmationCard, { backgroundColor: theme.CARD_BACKGROUND }]}>
+            <Ionicons name="warning" size={48} color={theme.EMERGENCY} />
+            <Text style={[styles.confirmationTitle, { color: theme.TEXT_PRIMARY }]}>Activate Emergency?</Text>
+            <Text style={[styles.confirmationText, { color: theme.TEXT_SECONDARY }]}>
               This will notify emergency services and your emergency contacts.
             </Text>
             <View style={styles.confirmationButtons}>
               <Button
                 title="Cancel"
                 onPress={() => setShowConfirmation(false)}
-                style={styles.cancelButton}
+                style={[styles.cancelButton, { backgroundColor: theme.ERROR }]}
               />
               <Button
                 title="Confirm"
                 onPress={activateSOS}
-                style={styles.confirmButton}
+                style={[styles.confirmButton, { backgroundColor: theme.SUCCESS }]}
               />
             </View>
           </Card>
@@ -449,15 +453,15 @@ const EmergencyScreen = ({ navigation, route }) => {
 };
 
 const emergencyContacts = [
-  { name: 'Ambulance', number: '911', icon: 'medical' },
+  { name: 'Ambulance', number: '1990', icon: 'medical' },
   { name: 'Fire Department', number: '911', icon: 'flame' },
-  { name: 'Police', number: '911', icon: 'shield' },
+  { name: 'Police', number: '119', icon: 'shield' },
 ];
 
-const styles = StyleSheet.create({
+const getStyles = (theme) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.BACKGROUND,
+    backgroundColor: theme.BACKGROUND,
   },
   scrollView: {
     flex: 1,
@@ -467,10 +471,12 @@ const styles = StyleSheet.create({
     paddingVertical: SPACING.MD,
   },
   statusCard: {
-    backgroundColor: COLORS.WHITE,
+    backgroundColor: theme.CARD_BACKGROUND,
     borderRadius: 8,
     padding: SPACING.MD,
     marginBottom: SPACING.LG,
+    borderWidth: 1,
+    borderColor: theme.BORDER,
   },
   statusHeader: {
     flexDirection: 'row',
@@ -480,20 +486,20 @@ const styles = StyleSheet.create({
   statusTitle: {
     fontSize: FONT_SIZES.LG,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginLeft: SPACING.SM,
   },
   statusText: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     marginBottom: SPACING.SM,
   },
   locationText: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.GRAY_MEDIUM,
+    color: theme.TEXT_SECONDARY,
   },
   sosCard: {
-    backgroundColor: COLORS.EMERGENCY_LIGHT,
+    backgroundColor: theme.EMERGENCY_LIGHT,
     marginBottom: SPACING.XL,
   },
   sosContainer: {
@@ -504,28 +510,28 @@ const styles = StyleSheet.create({
     width: 150,
     height: 150,
     borderRadius: 75,
-    backgroundColor: COLORS.EMERGENCY,
+    backgroundColor: theme.EMERGENCY,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: SPACING.MD,
-    shadowColor: COLORS.BLACK,
+    shadowColor: theme.BLACK,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
     elevation: 8,
   },
   sosButtonActive: {
-    backgroundColor: COLORS.ERROR,
+    backgroundColor: theme.ERROR,
   },
   sosText: {
     fontSize: FONT_SIZES.XL,
     fontWeight: 'bold',
-    color: COLORS.WHITE,
+    color: theme.WHITE,
     marginTop: SPACING.SM,
   },
   sosDescription: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     textAlign: 'center',
     marginTop: SPACING.SM,
   },
@@ -535,11 +541,14 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: FONT_SIZES.LG,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginBottom: SPACING.MD,
   },
   contactCard: {
     marginBottom: SPACING.SM,
+    backgroundColor: theme.CARD_BACKGROUND,
+    borderWidth: 1,
+    borderColor: theme.BORDER,
   },
   contactItem: {
     flexDirection: 'row',
@@ -549,7 +558,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: COLORS.EMERGENCY_LIGHT,
+    backgroundColor: theme.EMERGENCY_LIGHT,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: SPACING.MD,
@@ -560,11 +569,11 @@ const styles = StyleSheet.create({
   contactName: {
     fontSize: FONT_SIZES.MD,
     fontWeight: '600',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
   },
   contactNumber: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     marginTop: SPACING.XS,
   },
   actionButton: {
@@ -577,7 +586,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   confirmationCard: {
-    backgroundColor: COLORS.WHITE,
+    backgroundColor: theme.CARD_BACKGROUND,
     borderRadius: 8,
     padding: SPACING.MD,
     alignItems: 'center',
@@ -586,12 +595,12 @@ const styles = StyleSheet.create({
   confirmationTitle: {
     fontSize: FONT_SIZES.XL,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginBottom: SPACING.SM,
   },
   confirmationText: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     marginBottom: SPACING.LG,
     textAlign: 'center',
   },
@@ -601,14 +610,14 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   cancelButton: {
-    backgroundColor: COLORS.ERROR,
+    backgroundColor: theme.ERROR,
     borderRadius: 8,
     paddingVertical: SPACING.SM,
     flex: 1,
     marginRight: SPACING.SM,
   },
   confirmButton: {
-    backgroundColor: COLORS.SUCCESS,
+    backgroundColor: theme.SUCCESS,
     borderRadius: 8,
     paddingVertical: SPACING.SM,
     flex: 1,

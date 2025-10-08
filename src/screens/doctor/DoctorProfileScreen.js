@@ -11,12 +11,12 @@ import {
   TextInput,
   Image
 } from 'react-native';
+import { useTheme } from '../../context/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useAuth } from '../../context/AuthContext';
 import { supabaseStorage } from '../../services/supabase';
 import {
-  COLORS,
   FONT_SIZES,
   SPACING,
   BORDER_RADIUS
@@ -26,6 +26,8 @@ import Button from '../../components/Button';
 
 const DoctorProfileScreen = ({ navigation }) => {
   const { userProfile, updateUserProfile, logout } = useAuth();
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
   const [doctorData, setDoctorData] = useState({});
   const [showEditModal, setShowEditModal] = useState(false);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
@@ -179,14 +181,14 @@ const DoctorProfileScreen = ({ navigation }) => {
   };
 
   const ProfileHeader = () => (
-    <Card style={styles.headerCard}>
+    <Card style={[styles.headerCard, { backgroundColor: theme.CARD_BACKGROUND, borderColor: theme.BORDER }]}>
       <View style={styles.profileHeader}>
         <TouchableOpacity 
           style={styles.avatarContainer}
           onPress={handleAvatarPress}
           disabled={isUploadingAvatar}
         >
-          <View style={styles.avatar}>
+          <View style={[styles.avatar, { backgroundColor: theme.PRIMARY }]}>
             {doctorData?.profilePictureURL || userProfile?.profilePictureURL ? (
               <Image 
                 source={{ uri: doctorData?.profilePictureURL || userProfile?.profilePictureURL }} 
@@ -194,36 +196,36 @@ const DoctorProfileScreen = ({ navigation }) => {
                 onError={() => console.log('Doctor avatar image load error')}
               />
             ) : (
-              <Text style={styles.avatarText}>
+              <Text style={[styles.avatarText, { color: theme.WHITE }]}>
                 {doctorData.firstName?.charAt(0)}{doctorData.lastName?.charAt(0)}
               </Text>
             )}
             {isUploadingAvatar && (
               <View style={styles.uploadingOverlay}>
-                <Ionicons name="cloud-upload" size={20} color={COLORS.WHITE} />
+                <Ionicons name="cloud-upload" size={20} color={theme.WHITE} />
               </View>
             )}
           </View>
           <TouchableOpacity 
-            style={styles.editAvatarButton}
+            style={[styles.editAvatarButton, { backgroundColor: theme.SUCCESS }]}
             onPress={handleAvatarPress}
             disabled={isUploadingAvatar}
           >
-            <Ionicons name="camera" size={16} color={COLORS.WHITE} />
+            <Ionicons name="camera" size={16} color={theme.WHITE} />
           </TouchableOpacity>
         </TouchableOpacity>
         
         <View style={styles.headerInfo}>
-          <Text style={styles.doctorName}>
+          <Text style={[styles.doctorName, { color: theme.TEXT_PRIMARY }]}>
             Dr. {doctorData.firstName} {doctorData.lastName}
           </Text>
-          <Text style={styles.specialization}>{doctorData.specialization}</Text>
-          <Text style={styles.licenseNumber}>License: {doctorData.licenseNumber}</Text>
+          <Text style={[styles.specialization, { color: theme.PRIMARY }]}>{doctorData.specialization}</Text>
+          <Text style={[styles.licenseNumber, { color: theme.TEXT_SECONDARY }]}>{doctorData.licenseNumber ? `License: ${doctorData.licenseNumber}` : 'License: Not provided'}</Text>
           
           <View style={styles.ratingContainer}>
-            <Ionicons name="star" size={16} color={COLORS.WARNING} />
-            <Text style={styles.rating}>{doctorData.rating}</Text>
-            <Text style={styles.ratingCount}>({doctorData.totalPatients} patients)</Text>
+            <Ionicons name="star" size={16} color={theme.WARNING} />
+            <Text style={[styles.rating, { color: theme.TEXT_PRIMARY }]}>{doctorData.rating || 0}</Text>
+            <Text style={[styles.ratingCount, { color: theme.TEXT_SECONDARY }]}>({doctorData.totalPatients || 0} patients)</Text>
           </View>
         </View>
         
@@ -231,58 +233,58 @@ const DoctorProfileScreen = ({ navigation }) => {
           style={styles.editButton}
           onPress={handleEditProfile}
         >
-          <Ionicons name="create-outline" size={20} color={COLORS.PRIMARY} />
+          <Ionicons name="create-outline" size={20} color={theme.PRIMARY} />
         </TouchableOpacity>
       </View>
     </Card>
   );
 
   const StatsSection = () => (
-    <Card style={styles.statsCard}>
-      <Text style={styles.sectionTitle}>Professional Stats</Text>
+    <Card style={[styles.statsCard, { backgroundColor: theme.CARD_BACKGROUND, borderColor: theme.BORDER }]}>
+      <Text style={[styles.sectionTitle, { color: theme.TEXT_PRIMARY }]}>Professional Stats</Text>
       <View style={styles.statsGrid}>
         <View style={styles.statItem}>
-          <Text style={styles.statNumber}>{doctorData.yearsOfExperience}</Text>
-          <Text style={styles.statLabel}>Years Experience</Text>
+          <Text style={[styles.statNumber, { color: theme.PRIMARY }]}>{doctorData.yearsOfExperience || 0}</Text>
+          <Text style={[styles.statLabel, { color: theme.TEXT_SECONDARY }]}>Years Experience</Text>
         </View>
         <View style={styles.statItem}>
-          <Text style={styles.statNumber}>{doctorData.totalPatients}</Text>
-          <Text style={styles.statLabel}>Total Patients</Text>
+          <Text style={[styles.statNumber, { color: theme.PRIMARY }]}>{doctorData.totalPatients || 0}</Text>
+          <Text style={[styles.statLabel, { color: theme.TEXT_SECONDARY }]}>Total Patients</Text>
         </View>
         <View style={styles.statItem}>
-          <Text style={styles.statNumber}>{doctorData.totalConsultations}</Text>
-          <Text style={styles.statLabel}>Consultations</Text>
+          <Text style={[styles.statNumber, { color: theme.PRIMARY }]}>{doctorData.totalConsultations || 0}</Text>
+          <Text style={[styles.statLabel, { color: theme.TEXT_SECONDARY }]}>Consultations</Text>
         </View>
         <View style={styles.statItem}>
-          <Text style={styles.statNumber}>LKR {doctorData.consultationFee}</Text>
-          <Text style={styles.statLabel}>Consultation Fee</Text>
+          <Text style={[styles.statNumber, { color: theme.PRIMARY }]}>LKR {doctorData.consultationFee || 0}</Text>
+          <Text style={[styles.statLabel, { color: theme.TEXT_SECONDARY }]}>Consultation Fee</Text>
         </View>
       </View>
     </Card>
   );
 
   const InfoSection = ({ title, data, icon }) => (
-    <Card style={styles.infoCard}>
+    <Card style={[styles.infoCard, { backgroundColor: theme.CARD_BACKGROUND, borderColor: theme.BORDER }]}>
       <View style={styles.sectionHeader}>
         <View style={styles.sectionTitleContainer}>
-          <Ionicons name={icon} size={20} color={COLORS.PRIMARY} />
-          <Text style={styles.sectionTitle}>{title}</Text>
+          <Ionicons name={icon} size={20} color={theme.PRIMARY} />
+          <Text style={[styles.sectionTitle, { color: theme.TEXT_PRIMARY }]}>{title}</Text>
         </View>
       </View>
       
       {Array.isArray(data) ? (
         data.map((item, index) => (
-          <Text key={index} style={styles.infoText}>• {item}</Text>
+          <Text key={index} style={[styles.infoText, { color: theme.TEXT_PRIMARY }]}>• {item}</Text>
         ))
       ) : typeof data === 'object' ? (
         Object.entries(data).map(([key, value]) => (
-          <View key={key} style={styles.infoRow}>
-            <Text style={styles.infoLabel}>{key.charAt(0).toUpperCase() + key.slice(1)}:</Text>
-            <Text style={styles.infoValue}>{value}</Text>
+          <View key={key} style={[styles.infoRow, { borderBottomColor: theme.BORDER }]}>
+            <Text style={[styles.infoLabel, { color: theme.TEXT_SECONDARY }]}>{key.charAt(0).toUpperCase() + key.slice(1)}:</Text>
+            <Text style={[styles.infoValue, { color: theme.TEXT_PRIMARY }]}>{value}</Text>
           </View>
         ))
       ) : (
-        <Text style={styles.infoText}>{data}</Text>
+        <Text style={[styles.infoText, { color: theme.TEXT_PRIMARY }]}>{data || 'Not provided'}</Text>
       )}
     </Card>
   );
@@ -290,35 +292,35 @@ const DoctorProfileScreen = ({ navigation }) => {
   const ActionButtons = () => (
     <View style={styles.actionButtons}>
       <TouchableOpacity
-        style={styles.actionButton}
+        style={[styles.actionButton, { backgroundColor: theme.CARD_BACKGROUND }]}
         onPress={() => navigation.navigate('Settings')}
       >
-        <Ionicons name="settings-outline" size={20} color={COLORS.INFO} />
-        <Text style={[styles.actionText, { color: COLORS.INFO }]}>Settings</Text>
+        <Ionicons name="settings-outline" size={20} color={theme.INFO} />
+        <Text style={[styles.actionText, { color: theme.INFO }]}>Settings</Text>
       </TouchableOpacity>
 
       <TouchableOpacity
-        style={styles.actionButton}
+        style={[styles.actionButton, { backgroundColor: theme.CARD_BACKGROUND }]}
         onPress={() => Alert.alert('Feature Coming Soon', 'Professional credentials management will be available soon.')}
       >
-        <Ionicons name="document-text-outline" size={20} color={COLORS.SUCCESS} />
-        <Text style={[styles.actionText, { color: COLORS.SUCCESS }]}>Credentials</Text>
+        <Ionicons name="document-text-outline" size={20} color={theme.SUCCESS} />
+        <Text style={[styles.actionText, { color: theme.SUCCESS }]}>Credentials</Text>
       </TouchableOpacity>
 
       <TouchableOpacity
-        style={styles.actionButton}
+        style={[styles.actionButton, { backgroundColor: theme.CARD_BACKGROUND }]}
         onPress={() => Alert.alert('Feature Coming Soon', 'Schedule management will be available soon.')}
       >
-        <Ionicons name="calendar-outline" size={20} color={COLORS.WARNING} />
-        <Text style={[styles.actionText, { color: COLORS.WARNING }]}>Schedule</Text>
+        <Ionicons name="calendar-outline" size={20} color={theme.WARNING} />
+        <Text style={[styles.actionText, { color: theme.WARNING }]}>Schedule</Text>
       </TouchableOpacity>
 
       <TouchableOpacity
-        style={styles.actionButton}
+        style={[styles.actionButton, { backgroundColor: theme.CARD_BACKGROUND }]}
         onPress={handleLogout}
       >
-        <Ionicons name="log-out-outline" size={20} color={COLORS.ERROR} />
-        <Text style={[styles.actionText, { color: COLORS.ERROR }]}>Logout</Text>
+        <Ionicons name="log-out-outline" size={20} color={theme.ERROR} />
+        <Text style={[styles.actionText, { color: theme.ERROR }]}>Logout</Text>
       </TouchableOpacity>
     </View>
   );
@@ -374,157 +376,205 @@ const DoctorProfileScreen = ({ navigation }) => {
         transparent={true}
         onRequestClose={() => setShowEditModal(false)}
       >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
+        <View style={[styles.modalOverlay, { backgroundColor: theme.OVERLAY }]}>
+          <View style={[styles.modalContent, { backgroundColor: theme.CARD_BACKGROUND }]}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Edit Profile</Text>
+              <Text style={[styles.modalTitle, { color: theme.TEXT_PRIMARY }]}>Edit Profile</Text>
               <TouchableOpacity onPress={() => setShowEditModal(false)}>
-                <Ionicons name="close" size={24} color={COLORS.TEXT_PRIMARY} />
+                <Ionicons name="close" size={24} color={theme.TEXT_PRIMARY} />
               </TouchableOpacity>
             </View>
 
             <ScrollView style={styles.formContainer} showsVerticalScrollIndicator={false}>
               <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>First Name</Text>
+                <Text style={[styles.inputLabel, { color: theme.TEXT_PRIMARY }]}>First Name</Text>
                 <TextInput
-                  style={styles.textInput}
+                  style={[styles.textInput, { 
+                    borderColor: theme.BORDER, 
+                    color: theme.TEXT_PRIMARY,
+                    backgroundColor: theme.BACKGROUND
+                  }]}
                   value={editData.firstName}
                   onChangeText={(text) => setEditData({...editData, firstName: text})}
                   placeholder="Enter first name"
-                  placeholderTextColor={COLORS.GRAY_MEDIUM}
+                  placeholderTextColor={theme.TEXT_SECONDARY}
                 />
               </View>
 
               <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Last Name</Text>
+                <Text style={[styles.inputLabel, { color: theme.TEXT_PRIMARY }]}>Last Name</Text>
                 <TextInput
-                  style={styles.textInput}
+                  style={[styles.textInput, { 
+                    borderColor: theme.BORDER, 
+                    color: theme.TEXT_PRIMARY,
+                    backgroundColor: theme.BACKGROUND
+                  }]}
                   value={editData.lastName}
                   onChangeText={(text) => setEditData({...editData, lastName: text})}
                   placeholder="Enter last name"
-                  placeholderTextColor={COLORS.GRAY_MEDIUM}
+                  placeholderTextColor={theme.TEXT_SECONDARY}
                 />
               </View>
 
               <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Specialization</Text>
+                <Text style={[styles.inputLabel, { color: theme.TEXT_PRIMARY }]}>Specialization</Text>
                 <TextInput
-                  style={styles.textInput}
+                  style={[styles.textInput, { 
+                    borderColor: theme.BORDER, 
+                    color: theme.TEXT_PRIMARY,
+                    backgroundColor: theme.BACKGROUND
+                  }]}
                   value={editData.specialization}
                   onChangeText={(text) => setEditData({...editData, specialization: text})}
                   placeholder="Enter specialization"
-                  placeholderTextColor={COLORS.GRAY_MEDIUM}
+                  placeholderTextColor={theme.TEXT_SECONDARY}
                 />
               </View>
 
               <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>License Number</Text>
+                <Text style={[styles.inputLabel, { color: theme.TEXT_PRIMARY }]}>License Number</Text>
                 <TextInput
-                  style={styles.textInput}
+                  style={[styles.textInput, { 
+                    borderColor: theme.BORDER, 
+                    color: theme.TEXT_PRIMARY,
+                    backgroundColor: theme.BACKGROUND
+                  }]}
                   value={editData.licenseNumber}
                   onChangeText={(text) => setEditData({...editData, licenseNumber: text})}
                   placeholder="Enter license number"
-                  placeholderTextColor={COLORS.GRAY_MEDIUM}
+                  placeholderTextColor={theme.TEXT_SECONDARY}
                 />
               </View>
 
               <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Years of Experience</Text>
+                <Text style={[styles.inputLabel, { color: theme.TEXT_PRIMARY }]}>Years of Experience</Text>
                 <TextInput
-                  style={styles.textInput}
+                  style={[styles.textInput, { 
+                    borderColor: theme.BORDER, 
+                    color: theme.TEXT_PRIMARY,
+                    backgroundColor: theme.BACKGROUND
+                  }]}
                   value={editData.yearsOfExperience}
                   onChangeText={(text) => setEditData({...editData, yearsOfExperience: text})}
                   placeholder="Enter years of experience"
                   keyboardType="numeric"
-                  placeholderTextColor={COLORS.GRAY_MEDIUM}
+                  placeholderTextColor={theme.TEXT_SECONDARY}
                 />
               </View>
 
               <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Consultation Fee (LKR)</Text>
+                <Text style={[styles.inputLabel, { color: theme.TEXT_PRIMARY }]}>Consultation Fee (LKR)</Text>
                 <TextInput
-                  style={styles.textInput}
+                  style={[styles.textInput, { 
+                    borderColor: theme.BORDER, 
+                    color: theme.TEXT_PRIMARY,
+                    backgroundColor: theme.BACKGROUND
+                  }]}
                   value={editData.consultationFee}
                   onChangeText={(text) => setEditData({...editData, consultationFee: text})}
                   placeholder="Enter consultation fee"
                   keyboardType="numeric"
-                  placeholderTextColor={COLORS.GRAY_MEDIUM}
+                  placeholderTextColor={theme.TEXT_SECONDARY}
                 />
               </View>
 
               <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Biography</Text>
+                <Text style={[styles.inputLabel, { color: theme.TEXT_PRIMARY }]}>Biography</Text>
                 <TextInput
-                  style={[styles.textInput, styles.textArea]}
+                  style={[styles.textInput, styles.textArea, { 
+                    borderColor: theme.BORDER, 
+                    color: theme.TEXT_PRIMARY,
+                    backgroundColor: theme.BACKGROUND
+                  }]}
                   value={editData.bio}
                   onChangeText={(text) => setEditData({...editData, bio: text})}
                   placeholder="Enter your professional biography..."
                   multiline
                   numberOfLines={4}
-                  placeholderTextColor={COLORS.GRAY_MEDIUM}
+                  placeholderTextColor={theme.TEXT_SECONDARY}
                 />
               </View>
 
               <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Education (comma separated)</Text>
+                <Text style={[styles.inputLabel, { color: theme.TEXT_PRIMARY }]}>Education (comma separated)</Text>
                 <TextInput
-                  style={[styles.textInput, styles.textArea]}
+                  style={[styles.textInput, styles.textArea, { 
+                    borderColor: theme.BORDER, 
+                    color: theme.TEXT_PRIMARY,
+                    backgroundColor: theme.BACKGROUND
+                  }]}
                   value={editData.education.join(', ')}
                   onChangeText={(text) => setEditData({...editData, education: text.split(',').map(item => item.trim())})}
                   placeholder="Enter education details"
                   multiline
                   numberOfLines={3}
-                  placeholderTextColor={COLORS.GRAY_MEDIUM}
+                  placeholderTextColor={theme.TEXT_SECONDARY}
                 />
               </View>
 
               <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Certifications (comma separated)</Text>
+                <Text style={[styles.inputLabel, { color: theme.TEXT_PRIMARY }]}>Certifications (comma separated)</Text>
                 <TextInput
-                  style={[styles.textInput, styles.textArea]}
+                  style={[styles.textInput, styles.textArea, { 
+                    borderColor: theme.BORDER, 
+                    color: theme.TEXT_PRIMARY,
+                    backgroundColor: theme.BACKGROUND
+                  }]}
                   value={editData.certifications.join(', ')}
                   onChangeText={(text) => setEditData({...editData, certifications: text.split(',').map(item => item.trim())})}
                   placeholder="Enter certifications"
                   multiline
                   numberOfLines={3}
-                  placeholderTextColor={COLORS.GRAY_MEDIUM}
+                  placeholderTextColor={theme.TEXT_SECONDARY}
                 />
               </View>
 
               <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Languages (comma separated)</Text>
+                <Text style={[styles.inputLabel, { color: theme.TEXT_PRIMARY }]}>Languages (comma separated)</Text>
                 <TextInput
-                  style={styles.textInput}
+                  style={[styles.textInput, { 
+                    borderColor: theme.BORDER, 
+                    color: theme.TEXT_PRIMARY,
+                    backgroundColor: theme.BACKGROUND
+                  }]}
                   value={editData.languages.join(', ')}
                   onChangeText={(text) => setEditData({...editData, languages: text.split(',').map(item => item.trim())})}
                   placeholder="Enter languages"
-                  placeholderTextColor={COLORS.GRAY_MEDIUM}
+                  placeholderTextColor={theme.TEXT_SECONDARY}
                 />
               </View>
 
               <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Hospital Affiliations (comma separated)</Text>
+                <Text style={[styles.inputLabel, { color: theme.TEXT_PRIMARY }]}>Hospital Affiliations (comma separated)</Text>
                 <TextInput
-                  style={[styles.textInput, styles.textArea]}
+                  style={[styles.textInput, styles.textArea, { 
+                    borderColor: theme.BORDER, 
+                    color: theme.TEXT_PRIMARY,
+                    backgroundColor: theme.BACKGROUND
+                  }]}
                   value={editData.hospitalAffiliations.join(', ')}
                   onChangeText={(text) => setEditData({...editData, hospitalAffiliations: text.split(',').map(item => item.trim())})}
                   placeholder="Enter hospital affiliations"
                   multiline
                   numberOfLines={3}
-                  placeholderTextColor={COLORS.GRAY_MEDIUM}
+                  placeholderTextColor={theme.TEXT_SECONDARY}
                 />
               </View>
 
               <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Achievements (comma separated)</Text>
+                <Text style={[styles.inputLabel, { color: theme.TEXT_PRIMARY }]}>Achievements (comma separated)</Text>
                 <TextInput
-                  style={[styles.textInput, styles.textArea]}
+                  style={[styles.textInput, styles.textArea, { 
+                    borderColor: theme.BORDER, 
+                    color: theme.TEXT_PRIMARY,
+                    backgroundColor: theme.BACKGROUND
+                  }]}
                   value={editData.achievements.join(', ')}
                   onChangeText={(text) => setEditData({...editData, achievements: text.split(',').map(item => item.trim())})}
                   placeholder="Enter achievements"
                   multiline
                   numberOfLines={3}
-                  placeholderTextColor={COLORS.GRAY_MEDIUM}
+                  placeholderTextColor={theme.TEXT_SECONDARY}
                 />
               </View>
             </ScrollView>
@@ -549,7 +599,7 @@ const DoctorProfileScreen = ({ navigation }) => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.BACKGROUND }]}>
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         <ProfileHeader />
         <StatsSection />
@@ -598,10 +648,10 @@ const DoctorProfileScreen = ({ navigation }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (theme) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.BACKGROUND,
+    backgroundColor: theme.BACKGROUND,
   },
   content: {
     flex: 1,
@@ -609,6 +659,9 @@ const styles = StyleSheet.create({
   },
   headerCard: {
     marginBottom: SPACING.MD,
+    backgroundColor: theme.CARD_BACKGROUND,
+    borderWidth: 1,
+    borderColor: theme.BORDER,
   },
   profileHeader: {
     flexDirection: 'row',
@@ -622,7 +675,7 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: COLORS.PRIMARY,
+    backgroundColor: theme.PRIMARY,
     justifyContent: 'center',
     alignItems: 'center',
     overflow: 'hidden',
@@ -646,7 +699,7 @@ const styles = StyleSheet.create({
   avatarText: {
     fontSize: FONT_SIZES.XL,
     fontWeight: 'bold',
-    color: COLORS.WHITE,
+    color: theme.WHITE,
   },
   editAvatarButton: {
     position: 'absolute',
@@ -655,7 +708,7 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: COLORS.SUCCESS,
+    backgroundColor: theme.SUCCESS,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -665,18 +718,18 @@ const styles = StyleSheet.create({
   doctorName: {
     fontSize: FONT_SIZES.XL,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginBottom: SPACING.XS / 2,
   },
   specialization: {
     fontSize: FONT_SIZES.MD,
-    color: COLORS.PRIMARY,
+    color: theme.PRIMARY,
     fontWeight: '600',
     marginBottom: SPACING.XS / 2,
   },
   licenseNumber: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     marginBottom: SPACING.SM,
   },
   ratingContainer: {
@@ -686,19 +739,22 @@ const styles = StyleSheet.create({
   rating: {
     fontSize: FONT_SIZES.MD,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginLeft: SPACING.XS / 2,
     marginRight: SPACING.XS,
   },
   ratingCount: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
   },
   editButton: {
     padding: SPACING.SM,
   },
   statsCard: {
     marginBottom: SPACING.MD,
+    backgroundColor: theme.CARD_BACKGROUND,
+    borderWidth: 1,
+    borderColor: theme.BORDER,
   },
   statsGrid: {
     flexDirection: 'row',
@@ -712,16 +768,19 @@ const styles = StyleSheet.create({
   statNumber: {
     fontSize: FONT_SIZES.XL,
     fontWeight: 'bold',
-    color: COLORS.PRIMARY,
+    color: theme.PRIMARY,
     marginBottom: SPACING.XS / 2,
   },
   statLabel: {
     fontSize: FONT_SIZES.XS,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     textAlign: 'center',
   },
   infoCard: {
     marginBottom: SPACING.MD,
+    backgroundColor: theme.CARD_BACKGROUND,
+    borderWidth: 1,
+    borderColor: theme.BORDER,
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -736,12 +795,12 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: FONT_SIZES.LG,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     marginLeft: SPACING.SM,
   },
   infoText: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     lineHeight: 20,
     marginBottom: SPACING.XS,
   },
@@ -751,16 +810,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: SPACING.XS,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.GRAY_LIGHT,
+    borderBottomColor: theme.BORDER,
   },
   infoLabel: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_SECONDARY,
+    color: theme.TEXT_SECONDARY,
     fontWeight: '500',
   },
   infoValue: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
   },
   actionButtons: {
     flexDirection: 'row',
@@ -774,10 +833,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: SPACING.MD,
     paddingHorizontal: SPACING.SM,
-    backgroundColor: COLORS.WHITE,
+    backgroundColor: theme.CARD_BACKGROUND,
     borderRadius: BORDER_RADIUS.MD,
     marginBottom: SPACING.SM,
-    shadowColor: COLORS.BLACK,
+    shadowColor: theme.BLACK,
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
@@ -790,12 +849,12 @@ const styles = StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: theme.OVERLAY,
     justifyContent: 'center',
     alignItems: 'center',
   },
   modalContent: {
-    backgroundColor: COLORS.WHITE,
+    backgroundColor: theme.CARD_BACKGROUND,
     borderRadius: BORDER_RADIUS.LG,
     padding: SPACING.LG,
     width: '90%',
@@ -810,7 +869,7 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: FONT_SIZES.XL,
     fontWeight: 'bold',
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
   },
   formContainer: {
     maxHeight: 400,
@@ -821,18 +880,19 @@ const styles = StyleSheet.create({
   },
   inputLabel: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
     fontWeight: '600',
     marginBottom: SPACING.XS,
   },
   textInput: {
     borderWidth: 1,
-    borderColor: COLORS.BORDER,
+    borderColor: theme.BORDER,
     borderRadius: BORDER_RADIUS.MD,
     paddingHorizontal: SPACING.MD,
     paddingVertical: SPACING.SM,
     fontSize: FONT_SIZES.MD,
-    color: COLORS.TEXT_PRIMARY,
+    color: theme.TEXT_PRIMARY,
+    backgroundColor: theme.BACKGROUND,
   },
   textArea: {
     height: 80,

@@ -2,7 +2,7 @@ import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS } from '../constants';
+import { useTheme } from '../context/ThemeContext';
 
 // Doctor Screens
 import DoctorDashboardScreen from '../screens/doctor/DoctorDashboardScreen';
@@ -30,143 +30,165 @@ const PatientsStack = createStackNavigator();
 const ConsultationsStack = createStackNavigator();
 const ProfileStack = createStackNavigator();
 
-const DashboardStackNavigator = () => (
-  <DashboardStack.Navigator
-    screenOptions={{
-      headerStyle: {
-        backgroundColor: COLORS.PRIMARY,
-      },
-      headerTintColor: COLORS.WHITE,
-      headerTitleStyle: {
-        fontWeight: 'bold',
-      },
-    }}
-  >
-    <DashboardStack.Screen 
-      name="DashboardMain" 
-      component={DoctorDashboardScreen} 
-      options={{ title: 'Doctor Dashboard' }}
-    />
-    <DashboardStack.Screen 
-      name="Notifications" 
-      component={NotificationsScreen}
-      options={{ title: 'Notifications' }}
-    />
-  </DashboardStack.Navigator>
-);
+const DashboardStackNavigator = () => {
+  const { theme } = useTheme();
+  
+  return (
+    <DashboardStack.Navigator
+      screenOptions={{
+        headerStyle: {
+          backgroundColor: theme.PRIMARY,
+        },
+        headerTintColor: theme.WHITE,
+        headerTitleStyle: {
+          fontWeight: 'bold',
+        },
+      }}
+    >
+      <DashboardStack.Screen 
+        name="DashboardMain" 
+        component={DoctorDashboardScreen} 
+        options={{ title: 'Doctor Dashboard' }}
+      />
+      <DashboardStack.Screen 
+        name="Notifications" 
+        component={NotificationsScreen}
+        options={{ title: 'Notifications' }}
+      />
+    </DashboardStack.Navigator>
+  );
+};
 
-const AppointmentsStackNavigator = () => (
-  <AppointmentsStack.Navigator
-    screenOptions={{
-      headerStyle: {
-        backgroundColor: COLORS.PRIMARY,
-      },
-      headerTintColor: COLORS.WHITE,
-      headerTitleStyle: {
-        fontWeight: 'bold',
-      },
-    }}
-  >
-    <AppointmentsStack.Screen 
-      name="AppointmentsMain" 
-      component={DoctorAppointmentsScreen}
-      options={{ title: 'My Appointments' }}
-    />
-    <AppointmentsStack.Screen 
-      name="VideoCall" 
-      component={VideoCallScreen}
-      options={{ title: 'Video Consultation' }}
-    />
-    <AppointmentsStack.Screen 
-      name="Chat" 
-      component={ChatScreen}
-      options={{ title: 'Patient Chat' }}
-    />
-  </AppointmentsStack.Navigator>
-);
+const AppointmentsStackNavigator = () => {
+  const { theme } = useTheme();
+  
+  return (
+    <AppointmentsStack.Navigator
+      screenOptions={{
+        headerStyle: {
+          backgroundColor: theme.PRIMARY,
+        },
+        headerTintColor: theme.WHITE,
+        headerTitleStyle: {
+          fontWeight: 'bold',
+        },
+      }}
+    >
+      <AppointmentsStack.Screen 
+        name="AppointmentsMain" 
+        component={DoctorAppointmentsScreen}
+        options={{ title: 'My Appointments' }}
+      />
+      <AppointmentsStack.Screen 
+        name="VideoCall" 
+        component={VideoCallScreen}
+        options={{ title: 'Video Consultation' }}
+      />
+      <AppointmentsStack.Screen 
+        name="Chat" 
+        component={ChatScreen}
+        options={{ title: 'Patient Chat' }}
+      />
+    </AppointmentsStack.Navigator>
+  );
+};
 
-const PatientsStackNavigator = () => (
-  <PatientsStack.Navigator
-    screenOptions={{
-      headerStyle: {
-        backgroundColor: COLORS.PRIMARY,
-      },
-      headerTintColor: COLORS.WHITE,
-      headerTitleStyle: {
-        fontWeight: 'bold',
-      },
-    }}
-  >
-    <PatientsStack.Screen 
-      name="PatientsMain" 
-      component={DoctorPatientsScreen}
-      options={{ title: 'My Patients' }}
-    />
-    <PatientsStack.Screen 
-      name="Prescriptions" 
-      component={DoctorPrescriptionsScreen}
-      options={{ title: 'Manage Prescriptions' }}
-    />
-  </PatientsStack.Navigator>
-);
+const PatientsStackNavigator = () => {
+  const { theme } = useTheme();
+  
+  return (
+    <PatientsStack.Navigator
+      screenOptions={{
+        headerStyle: {
+          backgroundColor: theme.PRIMARY,
+        },
+        headerTintColor: theme.WHITE,
+        headerTitleStyle: {
+          fontWeight: 'bold',
+        },
+      }}
+    >
+      <PatientsStack.Screen 
+        name="PatientsMain" 
+        component={DoctorPatientsScreen}
+        options={{ title: 'My Patients' }}
+      />
+      <PatientsStack.Screen 
+        name="Prescriptions" 
+        component={DoctorPrescriptionsScreen}
+        options={{ title: 'Manage Prescriptions' }}
+      />
+    </PatientsStack.Navigator>
+  );
+};
 
-const ConsultationsStackNavigator = () => (
-  <ConsultationsStack.Navigator
-    screenOptions={{
-      headerStyle: {
-        backgroundColor: COLORS.PRIMARY,
-      },
-      headerTintColor: COLORS.WHITE,
-      headerTitleStyle: {
-        fontWeight: 'bold',
-      },
-    }}
-  >
-    <ConsultationsStack.Screen 
-      name="ConsultationsMain" 
-      component={DoctorConsultationScreen}
-      options={{ title: 'Consultations' }}
-    />
-    <ConsultationsStack.Screen 
-      name="VideoCall" 
-      component={VideoCallScreen}
-      options={{ title: 'Video Consultation' }}
-    />
-    <ConsultationsStack.Screen 
-      name="Chat" 
-      component={ChatScreen}
-      options={{ title: 'Patient Chat' }}
-    />
-  </ConsultationsStack.Navigator>
-);
+const ConsultationsStackNavigator = () => {
+  const { theme } = useTheme();
+  
+  return (
+    <ConsultationsStack.Navigator
+      screenOptions={{
+        headerStyle: {
+          backgroundColor: theme.PRIMARY,
+        },
+        headerTintColor: theme.WHITE,
+        headerTitleStyle: {
+          fontWeight: 'bold',
+        },
+      }}
+    >
+      <ConsultationsStack.Screen 
+        name="ConsultationsMain" 
+        component={DoctorConsultationScreen}
+        options={{ title: 'Consultations' }}
+      />
+      <ConsultationsStack.Screen 
+        name="VideoCall" 
+        component={VideoCallScreen}
+        options={{ title: 'Video Consultation' }}
+      />
+      <ConsultationsStack.Screen 
+        name="Chat" 
+        component={ChatScreen}
+        options={{ title: 'Patient Chat' }}
+      />
+    </ConsultationsStack.Navigator>
+  );
+};
 
-const ProfileStackNavigator = () => (
-  <ProfileStack.Navigator
-    screenOptions={{
-      headerStyle: {
-        backgroundColor: COLORS.PRIMARY,
-      },
-      headerTintColor: COLORS.WHITE,
-      headerTitleStyle: {
-        fontWeight: 'bold',
-      },
-    }}
-  >
-    <ProfileStack.Screen 
-      name="ProfileMain" 
-      component={DoctorProfileScreen}
-      options={{ title: 'Doctor Profile' }}
-    />
-    <ProfileStack.Screen 
-      name="Settings" 
-      component={SettingsScreen}
-      options={{ title: 'Settings' }}
-    />
-  </ProfileStack.Navigator>
-);
+const ProfileStackNavigator = () => {
+  const { theme } = useTheme();
+  
+  return (
+    <ProfileStack.Navigator
+      screenOptions={{
+        headerStyle: {
+          backgroundColor: theme.PRIMARY,
+        },
+        headerTintColor: theme.WHITE,
+        headerTitleStyle: {
+          fontWeight: 'bold',
+        },
+      }}
+    >
+      <ProfileStack.Screen 
+        name="ProfileMain" 
+        component={DoctorProfileScreen}
+        options={{ title: 'Doctor Profile' }}
+      />
+      <ProfileStack.Screen 
+        name="Settings" 
+        component={SettingsScreen}
+        options={{ title: 'Settings' }}
+      />
+    </ProfileStack.Navigator>
+  );
+};
 
 // Main Tab Navigator for Doctors
 const DoctorTabNavigator = () => {
+  const { theme } = useTheme();
+  
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -187,12 +209,12 @@ const DoctorTabNavigator = () => {
 
           return <Ionicons name={iconName} size={size} color={color} />;
         },
-        tabBarActiveTintColor: COLORS.PRIMARY,
-        tabBarInactiveTintColor: COLORS.GRAY_MEDIUM,
+        tabBarActiveTintColor: theme.PRIMARY,
+        tabBarInactiveTintColor: theme.GRAY_MEDIUM,
         tabBarStyle: {
-          backgroundColor: COLORS.WHITE,
+          backgroundColor: theme.CARD_BACKGROUND,
           borderTopWidth: 1,
-          borderTopColor: COLORS.BORDER,
+          borderTopColor: theme.BORDER,
           paddingBottom: 5,
           paddingTop: 5,
           height: 60,

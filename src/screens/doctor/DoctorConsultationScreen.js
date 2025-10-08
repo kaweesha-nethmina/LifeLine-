@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../context/AuthContext';
+import { useTheme } from '../../context/ThemeContext';
 import {
   collection,
   query,
@@ -36,6 +37,7 @@ import NotificationService from '../../services/notificationService';
 
 const DoctorConsultationScreen = ({ navigation }) => {
   const { userProfile } = useAuth();
+  const { theme } = useTheme();
   const [consultations, setConsultations] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
   const [filterStatus, setFilterStatus] = useState('active'); // active, scheduled, completed, all
@@ -309,12 +311,13 @@ const DoctorConsultationScreen = ({ navigation }) => {
 
   const FilterButton = ({ status, title, active, onPress }) => (
     <TouchableOpacity
-      style={[styles.filterButton, active && styles.activeFilterButton]}
+      style={[styles.filterButton, active && styles.activeFilterButton, { backgroundColor: active ? theme.PRIMARY : theme.GRAY_LIGHT }]}
       onPress={onPress}
     >
       <Text style={[
         styles.filterButtonText,
-        active && styles.activeFilterButtonText
+        active && styles.activeFilterButtonText,
+        { color: active ? theme.WHITE : theme.TEXT_SECONDARY }
       ]}>
         {title}
       </Text>
@@ -330,7 +333,7 @@ const DoctorConsultationScreen = ({ navigation }) => {
     const canStart = consultation.status === CONSULTATION_STATUS.CONFIRMED;
 
     return (
-      <Card style={styles.consultationCard}>
+      <Card style={[styles.consultationCard, { backgroundColor: theme.CARD_BACKGROUND, borderColor: theme.BORDER }]}>
         <View style={styles.consultationHeader}>
           <View style={styles.patientInfo}>
             <View style={[
@@ -340,15 +343,15 @@ const DoctorConsultationScreen = ({ navigation }) => {
               <Ionicons 
                 name={getConsultationTypeIcon(consultation.type)} 
                 size={20} 
-                color={COLORS.WHITE} 
+                color={theme.WHITE} 
               />
             </View>
             <View style={styles.consultationDetails}>
-              <Text style={styles.patientName}>{consultation.patientName}</Text>
-              <Text style={styles.consultationType}>
+              <Text style={[styles.patientName, { color: theme.TEXT_PRIMARY }]}>{consultation.patientName}</Text>
+              <Text style={[styles.consultationType, { color: theme.PRIMARY }]}>
                 {consultation.type.charAt(0).toUpperCase() + consultation.type.slice(1)} Consultation
               </Text>
-              <Text style={styles.consultationTime}>
+              <Text style={[styles.consultationTime, { color: theme.TEXT_SECONDARY }]}>
                 {consultation.appointmentDate ? 
                   `${consultation.appointmentDate} at ${consultation.appointmentTime}` : 
                   'In Progress'
@@ -361,14 +364,14 @@ const DoctorConsultationScreen = ({ navigation }) => {
               styles.statusBadge, 
               { backgroundColor: getStatusColor(consultation.status) }
             ]}>
-              <Text style={styles.statusText}>
+              <Text style={[styles.statusText, { color: theme.WHITE }]}>
                 {consultation.status.replace('_', ' ').charAt(0).toUpperCase() + consultation.status.replace('_', ' ').slice(1)}
               </Text>
             </View>
           </View>
         </View>
 
-        <Text style={styles.consultationReason}>{consultation.symptoms}</Text>
+        <Text style={[styles.consultationReason, { color: theme.TEXT_SECONDARY }]}>{consultation.symptoms}</Text>
 
         <View style={styles.consultationActions}>
           {canStart && (
@@ -403,7 +406,7 @@ const DoctorConsultationScreen = ({ navigation }) => {
               style={styles.iconButton}
               onPress={() => handleConsultationAction(consultation, 'reschedule')}
             >
-              <Ionicons name="calendar-outline" size={20} color={COLORS.WARNING} />
+              <Ionicons name="calendar-outline" size={20} color={theme.WARNING} />
             </TouchableOpacity>
           )}
           {canCancel && (
@@ -411,7 +414,7 @@ const DoctorConsultationScreen = ({ navigation }) => {
               style={styles.iconButton}
               onPress={() => handleConsultationAction(consultation, 'cancel')}
             >
-              <Ionicons name="close-outline" size={20} color={COLORS.ERROR} />
+              <Ionicons name="close-outline" size={20} color={theme.ERROR} />
             </TouchableOpacity>
           )}
           <TouchableOpacity
@@ -424,7 +427,7 @@ const DoctorConsultationScreen = ({ navigation }) => {
               patientName: consultation.patientName
             })}
           >
-            <Ionicons name="chatbubble-outline" size={20} color={COLORS.INFO} />
+            <Ionicons name="chatbubble-outline" size={20} color={theme.INFO} />
           </TouchableOpacity>
         </View>
       </Card>
@@ -442,36 +445,36 @@ const DoctorConsultationScreen = ({ navigation }) => {
         transparent={true}
         onRequestClose={() => setShowConsultationModal(false)}
       >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
+        <View style={[styles.modalOverlay, { backgroundColor: 'rgba(0, 0, 0, 0.5)' }]}>
+          <View style={[styles.modalContent, { backgroundColor: theme.CARD_BACKGROUND }]}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Complete Consultation</Text>
+              <Text style={[styles.modalTitle, { color: theme.TEXT_PRIMARY }]}>Complete Consultation</Text>
               <TouchableOpacity onPress={() => setShowConsultationModal(false)}>
-                <Ionicons name="close" size={24} color={COLORS.TEXT_PRIMARY} />
+                <Ionicons name="close" size={24} color={theme.TEXT_PRIMARY} />
               </TouchableOpacity>
             </View>
 
-            <Text style={styles.modalSubtitle}>
+            <Text style={[styles.modalSubtitle, { color: theme.TEXT_SECONDARY }]}>
               {selectedConsultation?.patientName}
             </Text>
 
-            <View style={styles.consultationSummary}>
-              <Text style={styles.summaryTitle}>Consultation Summary</Text>
+            <View style={[styles.consultationSummary, { backgroundColor: theme.GRAY_LIGHT }]}>
+              <Text style={[styles.summaryTitle, { color: theme.TEXT_PRIMARY }]}>Consultation Summary</Text>
               <View style={styles.summaryRow}>
-                <Text style={styles.summaryLabel}>Type:</Text>
-                <Text style={styles.summaryValue}>
+                <Text style={[styles.summaryLabel, { color: theme.TEXT_SECONDARY }]}>Type:</Text>
+                <Text style={[styles.summaryValue, { color: theme.TEXT_PRIMARY }]}>
                   {selectedConsultation?.type.charAt(0).toUpperCase() + selectedConsultation?.type.slice(1)}
                 </Text>
               </View>
               <View style={styles.summaryRow}>
-                <Text style={styles.summaryLabel}>Reason:</Text>
-                <Text style={styles.summaryValue}>{selectedConsultation?.symptoms}</Text>
+                <Text style={[styles.summaryLabel, { color: theme.TEXT_SECONDARY }]}>Reason:</Text>
+                <Text style={[styles.summaryValue, { color: theme.TEXT_PRIMARY }]}>{selectedConsultation?.symptoms}</Text>
               </View>
             </View>
 
             <View style={styles.actionOptions}>
               <TouchableOpacity
-                style={styles.optionCard}
+                style={[styles.optionCard, { backgroundColor: theme.GRAY_LIGHT }]}
                 onPress={() => {
                   setShowConsultationModal(false);
                   navigation.navigate('Prescriptions', {
@@ -481,33 +484,33 @@ const DoctorConsultationScreen = ({ navigation }) => {
                   });
                 }}
               >
-                <Ionicons name="medical" size={24} color={COLORS.PRIMARY} />
-                <Text style={styles.optionTitle}>Create Prescription</Text>
-                <Text style={styles.optionSubtitle}>Prescribe medication</Text>
+                <Ionicons name="medical" size={24} color={theme.PRIMARY} />
+                <Text style={[styles.optionTitle, { color: theme.TEXT_PRIMARY }]}>Create Prescription</Text>
+                <Text style={[styles.optionSubtitle, { color: theme.TEXT_SECONDARY }]}>Prescribe medication</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={styles.optionCard}
+                style={[styles.optionCard, { backgroundColor: theme.GRAY_LIGHT }]}
                 onPress={() => {
                   setShowConsultationModal(false);
                   Alert.alert('Feature Coming Soon', 'Medical notes feature will be available soon.');
                 }}
               >
-                <Ionicons name="document-text" size={24} color={COLORS.SUCCESS} />
-                <Text style={styles.optionTitle}>Add Notes</Text>
-                <Text style={styles.optionSubtitle}>Medical notes</Text>
+                <Ionicons name="document-text" size={24} color={theme.SUCCESS} />
+                <Text style={[styles.optionTitle, { color: theme.TEXT_PRIMARY }]}>Add Notes</Text>
+                <Text style={[styles.optionSubtitle, { color: theme.TEXT_SECONDARY }]}>Medical notes</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={styles.optionCard}
+                style={[styles.optionCard, { backgroundColor: theme.GRAY_LIGHT }]}
                 onPress={() => {
                   setShowConsultationModal(false);
                   Alert.alert('Feature Coming Soon', 'Follow-up appointment scheduling will be available soon.');
                 }}
               >
-                <Ionicons name="calendar" size={24} color={COLORS.INFO} />
-                <Text style={styles.optionTitle}>Schedule Follow-up</Text>
-                <Text style={styles.optionSubtitle}>Next appointment</Text>
+                <Ionicons name="calendar" size={24} color={theme.INFO} />
+                <Text style={[styles.optionTitle, { color: theme.TEXT_PRIMARY }]}>Schedule Follow-up</Text>
+                <Text style={[styles.optionSubtitle, { color: theme.TEXT_SECONDARY }]}>Next appointment</Text>
               </TouchableOpacity>
             </View>
 
@@ -542,43 +545,43 @@ const DoctorConsultationScreen = ({ navigation }) => {
   const counts = getStatusCounts();
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.BACKGROUND }]}>
       {/* Stats Header */}
-      <View style={styles.statsContainer}>
+      <View style={[styles.statsContainer, { backgroundColor: theme.CARD_BACKGROUND, borderBottomColor: theme.BORDER }]}>
         <View style={styles.statCard}>
-          <Text style={[styles.statNumber, { color: COLORS.SUCCESS }]}>{counts.active}</Text>
-          <Text style={styles.statLabel}>Active</Text>
+          <Text style={[styles.statNumber, { color: theme.SUCCESS }]}>{counts.active}</Text>
+          <Text style={[styles.statLabel, { color: theme.TEXT_SECONDARY }]}>Active</Text>
         </View>
         <View style={styles.statCard}>
-          <Text style={[styles.statNumber, { color: COLORS.WARNING }]}>{counts.scheduled}</Text>
-          <Text style={styles.statLabel}>Scheduled</Text>
+          <Text style={[styles.statNumber, { color: theme.WARNING }]}>{counts.scheduled}</Text>
+          <Text style={[styles.statLabel, { color: theme.TEXT_SECONDARY }]}>Scheduled</Text>
         </View>
         <View style={styles.statCard}>
-          <Text style={[styles.statNumber, { color: COLORS.INFO }]}>{counts.completed}</Text>
-          <Text style={styles.statLabel}>Completed</Text>
+          <Text style={[styles.statNumber, { color: theme.INFO }]}>{counts.completed}</Text>
+          <Text style={[styles.statLabel, { color: theme.TEXT_SECONDARY }]}>Completed</Text>
         </View>
       </View>
 
       {/* Quick Actions */}
-      <View style={styles.quickActions}>
+      <View style={[styles.quickActions, { backgroundColor: theme.CARD_BACKGROUND, borderBottomColor: theme.BORDER }]}>
         <TouchableOpacity 
-          style={styles.quickActionButton}
+          style={[styles.quickActionButton, { backgroundColor: theme.PRIMARY }]}
           onPress={() => Alert.alert('Feature Coming Soon', 'Instant consultation feature will be available soon.')}
         >
-          <Ionicons name="flash" size={20} color={COLORS.WHITE} />
+          <Ionicons name="flash" size={20} color={theme.WHITE} />
           <Text style={styles.quickActionText}>Instant Consult</Text>
         </TouchableOpacity>
         <TouchableOpacity 
-          style={[styles.quickActionButton, { backgroundColor: COLORS.SUCCESS }]}
+          style={[styles.quickActionButton, { backgroundColor: theme.SUCCESS }]}
           onPress={() => Alert.alert('Feature Coming Soon', 'Emergency consultation feature will be available soon.')}
         >
-          <Ionicons name="warning" size={20} color={COLORS.WHITE} />
+          <Ionicons name="warning" size={20} color={theme.WHITE} />
           <Text style={styles.quickActionText}>Emergency</Text>
         </TouchableOpacity>
       </View>
 
       {/* Filter Tabs */}
-      <View style={styles.filterContainer}>
+      <View style={[styles.filterContainer, { backgroundColor: theme.CARD_BACKGROUND, borderBottomColor: theme.BORDER }]}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
           <FilterButton
             status="active"
@@ -610,14 +613,14 @@ const DoctorConsultationScreen = ({ navigation }) => {
       {/* Consultations List */}
       <ScrollView
         style={styles.consultationsList}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[theme.PRIMARY]} />}
         showsVerticalScrollIndicator={false}
       >
         {filteredConsultations.length === 0 ? (
-          <Card style={styles.emptyState}>
-            <Ionicons name="videocam-outline" size={64} color={COLORS.GRAY_MEDIUM} />
-            <Text style={styles.emptyTitle}>No Consultations</Text>
-            <Text style={styles.emptySubtitle}>
+          <Card style={[styles.emptyState, { backgroundColor: theme.CARD_BACKGROUND }]}>
+            <Ionicons name="videocam-outline" size={64} color={theme.GRAY_MEDIUM} />
+            <Text style={[styles.emptyTitle, { color: theme.TEXT_PRIMARY }]}>No Consultations</Text>
+            <Text style={[styles.emptySubtitle, { color: theme.TEXT_SECONDARY }]}>
               {filterStatus === 'all' 
                 ? 'No consultations available.'
                 : `No ${filterStatus} consultations found.`
@@ -720,6 +723,9 @@ const styles = StyleSheet.create({
   },
   consultationCard: {
     marginBottom: SPACING.MD,
+    backgroundColor: COLORS.WHITE,
+    borderWidth: 1,
+    borderColor: COLORS.BORDER,
   },
   consultationHeader: {
     flexDirection: 'row',
@@ -795,6 +801,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: SPACING.XXL,
     marginTop: SPACING.XL,
+    backgroundColor: COLORS.WHITE,
   },
   emptyTitle: {
     fontSize: FONT_SIZES.XL,
