@@ -35,11 +35,13 @@ import {
 import Card from '../../components/Card';
 import Button from '../../components/Button';
 import useProfilePicture from '../../hooks/useProfilePicture';
+import useNotifications from '../../hooks/useNotifications'; // Add this import
 
 const DoctorDashboardScreen = ({ navigation }) => {
   const { userProfile } = useAuth();
   const { theme } = useTheme();
   const { fetchUserProfilePicture, getCachedProfilePicture } = useProfilePicture();
+  const { unreadCount } = useNotifications({ autoRefresh: true }); // Add this hook
   const [dashboardData, setDashboardData] = useState({
     todayAppointments: [],
     pendingRequests: [],
@@ -597,14 +599,16 @@ const DoctorDashboardScreen = ({ navigation }) => {
           </View>
           <TouchableOpacity
             style={styles.notificationButton}
-            onPress={() => navigation.navigate('Dashboard', { screen: 'Notifications' })}
+            onPress={() => navigation.navigate('Notifications')}
           >
             <Ionicons name="notifications-outline" size={24} color={theme.TEXT_PRIMARY} />
-            <View style={[styles.notificationBadge, { backgroundColor: theme.ERROR }]}>
-              <Text style={[styles.notificationBadgeText, { color: theme.WHITE }]}>
-                {dashboardData.notifications.length || 0}
-              </Text>
-            </View>
+            {unreadCount > 0 && (
+              <View style={[styles.notificationBadge, { backgroundColor: theme.ERROR }]}>
+                <Text style={[styles.notificationBadgeText, { color: theme.WHITE }]}>
+                  {unreadCount > 99 ? '99+' : unreadCount}
+                </Text>
+              </View>
+            )}
           </TouchableOpacity>
         </View>
 

@@ -29,11 +29,16 @@ import {
 } from '../../constants';
 import Card from '../../components/Card';
 import Button from '../../components/Button';
+import useNotifications from '../../hooks/useNotifications'; // Add this import
 
 const EmergencyDashboardScreen = ({ navigation }) => {
   const { userProfile } = useAuth();
   const { theme } = useTheme();
   const styles = getStyles(theme);
+  const { unreadCount } = useNotifications({ 
+    autoRefresh: true,
+    limitCount: 100
+  }); // Add this hook
   const [dashboardData, setDashboardData] = useState({
     activeEmergencies: [],
     pendingDispatches: [],
@@ -394,12 +399,16 @@ const EmergencyDashboardScreen = ({ navigation }) => {
           </View>
           <TouchableOpacity
             style={styles.alertButton}
-            onPress={() => navigation.navigate('Notifications')}
+            onPress={() => navigation.navigate('Dashboard', { screen: 'Notifications' })}
           >
             <Ionicons name="notifications" size={24} color={COLORS.WHITE} />
-            <View style={styles.alertBadge}>
-              <Text style={styles.alertBadgeText}>{dashboardData.alerts.length}</Text>
-            </View>
+            {unreadCount > 0 && (
+              <View style={styles.alertBadge}>
+                <Text style={styles.alertBadgeText}>
+                  {unreadCount > 99 ? '99+' : unreadCount}
+                </Text>
+              </View>
+            )}
           </TouchableOpacity>
         </View>
 
