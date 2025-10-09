@@ -226,7 +226,7 @@ const TelemedicineScreen = ({ navigation }) => {
       <View style={styles.deviceHeader}>
         <Text style={styles.deviceTitle}>{title}</Text>
         <Text style={styles.deviceStatus}>
-          {isConnected ? `Connected (${connectedDevice.batteryLevel}%)` : 'Tap to connect'}
+          {isConnected ? `Connected (${connectedDevice?.batteryLevel || 'N/A'}%)` : 'Tap to connect'}
         </Text>
       </View>
       <TouchableOpacity
@@ -489,25 +489,36 @@ const getStyles = (theme) => StyleSheet.create({
     backgroundColor: theme.CARD_BACKGROUND,
     borderWidth: 1,
     borderColor: theme.BORDER,
+    borderRadius: BORDER_RADIUS.MD,
+    padding: SPACING.MD,
   },
   deviceHeader: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
     marginBottom: SPACING.MD,
   },
   deviceTitle: {
     fontSize: FONT_SIZES.LG,
     fontWeight: 'bold',
     color: theme.TEXT_PRIMARY,
-    marginLeft: SPACING.SM,
   },
   deviceStatus: {
     fontSize: FONT_SIZES.SM,
     color: theme.TEXT_SECONDARY,
-    marginBottom: SPACING.SM,
+    textAlign: 'right',
+  },
+  deviceIcon: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    justifyContent: 'center',
+    alignItems: 'center',
+    alignSelf: 'center',
+    marginBottom: SPACING.MD,
   },
   connectButton: {
-    marginBottom: SPACING.MD,
+    marginBottom: SPACING.XS,
   },
   monitoringCard: {
     marginBottom: SPACING.MD,
@@ -518,18 +529,18 @@ const getStyles = (theme) => StyleSheet.create({
   monitoringHeader: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
     marginBottom: SPACING.MD,
   },
   monitoringTitle: {
     fontSize: FONT_SIZES.LG,
     fontWeight: 'bold',
     color: theme.TEXT_PRIMARY,
-    marginLeft: SPACING.SM,
   },
   monitoringStatus: {
     fontSize: FONT_SIZES.SM,
     color: theme.TEXT_SECONDARY,
-    marginBottom: SPACING.SM,
+    textAlign: 'right',
   },
   monitoringButton: {
     marginBottom: SPACING.MD,
@@ -543,13 +554,18 @@ const getStyles = (theme) => StyleSheet.create({
   vitalSignsHeader: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
     marginBottom: SPACING.MD,
   },
   vitalSignsTitle: {
     fontSize: FONT_SIZES.LG,
     fontWeight: 'bold',
     color: theme.TEXT_PRIMARY,
-    marginLeft: SPACING.SM,
+  },
+  timestamp: {
+    fontSize: FONT_SIZES.SM,
+    color: theme.TEXT_SECONDARY,
+    textAlign: 'right',
   },
   vitalSignsGrid: {
     flexDirection: 'row',

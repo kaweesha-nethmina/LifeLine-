@@ -42,7 +42,16 @@ import useProfilePicture from '../hooks/useProfilePicture';
 const ChatScreen = ({ navigation, route }) => {
   // Add safety check for route.params
   const routeParams = route?.params || {};
-  const { appointmentId, doctorId, doctorName, patientId, patientName, chatId: routeChatId } = routeParams;
+  const { 
+    appointmentId, 
+    doctorId, 
+    doctorName, 
+    patientId, 
+    patientName, 
+    chatId: routeChatId,
+    labResultId,
+    labResultTitle
+  } = routeParams;
   
   const { user, userProfile } = useAuth();
   const { theme } = useTheme();
@@ -64,17 +73,35 @@ const ChatScreen = ({ navigation, route }) => {
       Alert.alert(
         'Error',
         'Missing required chat parameters. Please try again.',
-        [{ text: 'Go Back', onPress: () => navigation.goBack() }]
+        [{ text: 'Go Back', onPress: () => navigation?.goBack() }]
       );
     }
   }, []);
 
   // If we don't have valid parameters, show a simple loading screen
   if (!hasValidParams) {
+    // Create a minimal styles object for the error state
+    const errorStyles = StyleSheet.create({
+      container: {
+        flex: 1,
+        backgroundColor: theme?.BACKGROUND || '#ffffff',
+        justifyContent: 'center',
+        alignItems: 'center',
+      },
+    });
+    
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: theme.BACKGROUND }]}>
-        <View style={[styles.container, { backgroundColor: theme.BACKGROUND }]}>
-          <Text style={{ color: theme.TEXT_PRIMARY }}>Loading...</Text>
+      <SafeAreaView style={errorStyles.container}>
+        <View style={errorStyles.container}>
+          <Text style={{ color: theme?.TEXT_PRIMARY || '#000000' }}>
+            Missing required chat parameters. Please try again.
+          </Text>
+          <TouchableOpacity 
+            onPress={() => navigation?.goBack()}
+            style={{ marginTop: 20, padding: 10, backgroundColor: theme?.PRIMARY || '#007AFF', borderRadius: 5 }}
+          >
+            <Text style={{ color: theme?.WHITE || '#ffffff' }}>Go Back</Text>
+          </TouchableOpacity>
         </View>
       </SafeAreaView>
     );
@@ -82,14 +109,14 @@ const ChatScreen = ({ navigation, route }) => {
 
   useEffect(() => {
     // Load chat messages from Firebase with real-time listener
-    if (user) {
+    if (user && hasValidParams) {
       // Validate required parameters (redundant check but kept for safety)
       if (!doctorId || !patientId) {
         console.warn('Missing critical chat parameters: doctorId or patientId');
         Alert.alert(
           'Error', 
           'Unable to load chat. Missing doctor or patient information.',
-          [{ text: 'Go Back', onPress: () => navigation.goBack() }]
+          [{ text: 'Go Back', onPress: () => navigation?.goBack() }]
         );
         return;
       }
@@ -97,8 +124,8 @@ const ChatScreen = ({ navigation, route }) => {
       loadMessages();
       loadChatPartnerName();
       loadChatParticipantsProfilePictures(); // Load profile pictures for chat participants
-    } else {
-      // User is not authenticated, clear any existing data
+    } else if (!hasValidParams) {
+      // User is not authenticated or missing parameters, clear any existing data
       setMessages([]);
       setChatPartnerName('');
       setProfilePictures({});
@@ -111,7 +138,7 @@ const ChatScreen = ({ navigation, route }) => {
         unsubscribeRef.current();
       }
     };
-  }, [appointmentId, doctorId, patientId, user]);
+  }, [appointmentId, doctorId, patientId, user, hasValidParams]);
 
   useEffect(() => {
     // Scroll to bottom when new messages arrive
@@ -324,6 +351,12 @@ const ChatScreen = ({ navigation, route }) => {
         chatParams.appointmentId = appointmentId;
       }
       
+      // Add lab result context if available
+      if (labResultId) {
+        chatParams.labResultId = labResultId;
+        chatParams.labResultTitle = labResultTitle || 'Lab Result';
+      }
+      
       console.log('Sending message with params:', chatParams);
       
       // Update chat metadata with the latest message
@@ -474,7 +507,7 @@ const ChatScreen = ({ navigation, route }) => {
         <View style={[styles.header, { backgroundColor: theme.PRIMARY }]}>
           <TouchableOpacity 
             style={styles.backButton}
-            onPress={() => navigation.goBack()}
+            onPress={() => navigation?.goBack()}
           >
             <Ionicons name="arrow-back" size={24} color={theme.WHITE} />
           </TouchableOpacity>
@@ -482,11 +515,11 @@ const ChatScreen = ({ navigation, route }) => {
             {user && profilePictures[user.uid === doctorId ? patientId : doctorId] ? (
               <Image 
                 source={{ uri: profilePictures[user.uid === doctorId ? patientId : doctorId] }} 
-                style={styles.doctorAvatar}
+                style={styles.senderAvatar}
                 onError={() => console.log('Chat partner avatar image load error')}
               />
             ) : (
-              <View style={[styles.doctorAvatar, { backgroundColor: theme.WHITE }]}>
+              <View style={[styles.senderAvatar, { backgroundColor: theme.WHITE }]}>
                 <Ionicons name="person" size={20} color={theme.PRIMARY} />
               </View>
             )}
@@ -494,13 +527,29 @@ const ChatScreen = ({ navigation, route }) => {
               <Text style={[styles.doctorName, { color: theme.WHITE }]}>
                 {chatPartnerName || (user && user.uid === doctorId ? patientName : doctorName) || 'Chat Partner'}
               </Text>
-              <Text style={[styles.doctorStatus, { color: theme.WHITE }]}>Online</Text>
+              {labResultTitle ? (
+                <Text style={[styles.doctorStatus, { color: theme.WHITE }]}>
+                  Re: {labResultTitle}
+                </Text>
+              ) : (
+                <Text style={[styles.doctorStatus, { color: theme.WHITE }]}>Online</Text>
+              )}
             </View>
           </View>
           <TouchableOpacity style={styles.videoCallButton}>
             <Ionicons name="videocam" size={24} color={theme.WHITE} />
           </TouchableOpacity>
         </View>
+
+        {/* Lab Result Context Banner */}
+        {labResultTitle && (
+          <View style={[styles.contextBanner, { backgroundColor: theme.INFO + '20', borderColor: theme.INFO }]}>
+            <Ionicons name="flask" size={20} color={theme.INFO} style={styles.contextIcon} />
+            <Text style={[styles.contextText, { color: theme.INFO }]}>
+              Chat about: {labResultTitle}
+            </Text>
+          </View>
+        )}
 
         {/* Messages List */}
         <FlatList
@@ -616,6 +665,23 @@ const getStyles = (theme) => StyleSheet.create({
   },
   videoCallButton: {
     padding: SPACING.SM,
+  },
+  contextBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: SPACING.MD,
+    paddingVertical: SPACING.SM,
+    backgroundColor: theme.INFO + '20',
+    borderBottomWidth: 1,
+    borderBottomColor: theme.INFO,
+  },
+  contextIcon: {
+    marginRight: SPACING.SM,
+  },
+  contextText: {
+    fontSize: FONT_SIZES.SM,
+    color: theme.INFO,
+    fontWeight: '600',
   },
   messagesList: {
     flex: 1,

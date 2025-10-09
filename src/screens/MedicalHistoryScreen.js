@@ -20,9 +20,12 @@ import {
   getDocs,
   orderBy,
   doc,
-  deleteDoc
+  deleteDoc,
+  addDoc,
+  serverTimestamp
 } from 'firebase/firestore';
-import { db } from '../services/firebase';
+import { db, storage } from '../services/firebase';
+import { supabaseStorage } from '../services/supabase';
 import {
   COLORS,
   FONT_SIZES,
@@ -33,6 +36,7 @@ import Card from '../components/Card';
 import Button from '../components/Button';
 import useProfilePicture from '../hooks/useProfilePicture';
 import LabResultModal from '../components/LabResultModal';
+import PatientLabResultUploadModal from '../components/PatientLabResultUploadModal';
 
 const MedicalHistoryScreen = ({ navigation, route }) => {
   const { user, userProfile } = useAuth();
@@ -45,6 +49,7 @@ const MedicalHistoryScreen = ({ navigation, route }) => {
   const [profilePicture, setProfilePicture] = useState(null);
   const [selectedLabResult, setSelectedLabResult] = useState(null);
   const [showLabResultModal, setShowLabResultModal] = useState(false);
+  const [showUploadModal, setShowUploadModal] = useState(false);
 
   useEffect(() => {
     loadMedicalHistory();
@@ -150,7 +155,8 @@ const MedicalHistoryScreen = ({ navigation, route }) => {
             uploadDate: labResult.uploadDate || new Date().toISOString(),
             details: `Doctor: ${labResult.doctorName || 'Unknown Doctor'}\nLicense: ${labResult.doctorLicense || 'N/A'}`,
             summary: `Lab result titled "${labResult.title || 'Untitled'}" uploaded by ${labResult.doctorName || 'Unknown Doctor'}`,
-            critical: false
+            critical: false,
+            uploadedBy: labResult.uploadedBy || 'doctor' // Add this field
           });
         });
         
@@ -164,6 +170,69 @@ const MedicalHistoryScreen = ({ navigation, route }) => {
       }
     } catch (error) {
       console.error('Error loading medical history:', error);
+    }
+  };
+
+  // Add this function to handle patient lab result uploads
+  const handlePatientLabResultUpload = async (labResultData) => {
+    try {
+      // Upload file to Supabase Storage
+      const fileForUpload = {
+        uri: labResultData.uri,
+        type: labResultData.fileType,
+        name: labResultData.fileName,
+        size: labResultData.fileSize
+      };
+      
+      // Use the same file path structure as doctor uploads
+      const fullFileName = `lab_results/${Date.now()}_${labResultData.fileName}`;
+      
+      const { data: uploadData, error: uploadError } = await supabaseStorage.uploadFile(
+        user.uid,
+        fileForUpload,
+        fullFileName
+      );
+      
+      if (uploadError) {
+        throw new Error(`Supabase upload failed: ${uploadError.message}`);
+      }
+      
+      console.log('File uploaded successfully:', uploadData);
+      
+      // Use the actual file path from the upload response to avoid duplication issues
+      // Remove the bucket name prefix if it exists in the Key
+      let filePath = uploadData.Key || `documents/${user.uid}/${fullFileName}`;
+      if (filePath.startsWith('healthcare-documents/')) {
+        filePath = filePath.substring('healthcare-documents/'.length);
+      }
+      
+      // Get the public URL for the uploaded file
+      const publicUrl = supabaseStorage.getPublicUrl(filePath);
+      
+      console.log('Generated file URL:', publicUrl);
+      console.log('File path used:', filePath);
+      
+      // Save metadata to Firestore
+      const labResultDoc = await addDoc(
+        collection(db, 'users', user.uid, 'labResults'),
+        {
+          ...labResultData,
+          fileUrl: publicUrl,
+          supabaseFilePath: filePath,
+          storageProvider: 'supabase',
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp()
+        }
+      );
+      
+      // Refresh the medical history to show the new lab result
+      await loadMedicalHistory();
+      
+      Alert.alert('Success', 'Lab result uploaded successfully!');
+      setShowUploadModal(false);
+    } catch (error) {
+      console.error('Error uploading lab result:', error);
+      Alert.alert('Error', `Failed to upload lab result: ${error.message}`);
     }
   };
 
@@ -217,6 +286,28 @@ const MedicalHistoryScreen = ({ navigation, route }) => {
       year: 'numeric',
       month: 'short',
       day: 'numeric'
+    });
+  };
+
+  // Add function to handle chat navigation
+  const handleLabResultChat = (labResult) => {
+    // Generate consistent chat ID using sorted participant IDs
+    const participantIds = [user.uid, labResult.doctorId || labResult.uploadedBy].sort();
+    const chatId = `${participantIds[0]}_${participantIds[1]}`;
+    
+    // Navigate to chat screen with lab result context
+    // Use nested navigation to reach the Chat screen in the Consultation stack
+    navigation.navigate('Consultation', {
+      screen: 'Chat',
+      params: {
+        doctorId: labResult.doctorId || labResult.uploadedBy,
+        patientId: user.uid,
+        doctorName: labResult.doctorName || 'Doctor',
+        patientName: `${userProfile?.firstName || ''} ${userProfile?.lastName || ''}`.trim() || 'Patient',
+        labResultId: labResult.id,
+        labResultTitle: labResult.title,
+        chatId: chatId // Pass the consistent chat ID
+      }
     });
   };
 
@@ -434,7 +525,15 @@ Doctor: ${record.doctor}`,
       {/* Floating Action Button */}
       <TouchableOpacity
         style={[styles.fab, { backgroundColor: theme.PRIMARY }]}
-        onPress={() => Alert.alert('Feature Coming Soon', 'Add new medical record functionality will be available soon.')}
+        onPress={() => {
+          // Check if we're filtering by lab results or showing all
+          if (filterType === 'lab-result' || filterType === 'all') {
+            // Show upload modal for lab results
+            setShowUploadModal(true);
+          } else {
+            Alert.alert('Feature Coming Soon', 'Add new medical record functionality will be available soon.');
+          }
+        }}
       >
         <Ionicons name="add" size={24} color={theme.WHITE} />
       </TouchableOpacity>
@@ -446,6 +545,15 @@ Doctor: ${record.doctor}`,
         labResult={selectedLabResult}
         currentUser={user}
         onDelete={loadMedicalHistory}
+        onChatPress={handleLabResultChat}
+      />
+      
+      {/* Patient Lab Result Upload Modal */}
+      <PatientLabResultUploadModal
+        visible={showUploadModal}
+        onClose={() => setShowUploadModal(false)}
+        onUpload={handlePatientLabResultUpload}
+        patientProfile={userProfile}
       />
     </SafeAreaView>
   );
