@@ -20,11 +20,13 @@ import {
 } from '../../constants';
 import Card from '../../components/Card';
 import Button from '../../components/Button';
+import useNotifications from '../../hooks/useNotifications'; // Add this import
 
 const SimpleEmergencyDashboardScreen = ({ navigation }) => {
   const { userProfile } = useAuth();
   const { theme } = useTheme();
   const styles = getStyles(theme);
+  const { unreadCount } = useNotifications({ autoRefresh: true }); // Add this hook
   const [refreshing, setRefreshing] = useState(false);
 
   const onRefresh = async () => {
@@ -53,9 +55,13 @@ const SimpleEmergencyDashboardScreen = ({ navigation }) => {
             onPress={() => navigation.navigate('Notifications')}
           >
             <Ionicons name="notifications" size={24} color={COLORS.WHITE} />
-            <View style={styles.alertBadge}>
-              <Text style={styles.alertBadgeText}>3</Text>
-            </View>
+            {unreadCount > 0 && (
+              <View style={styles.alertBadge}>
+                <Text style={styles.alertBadgeText}>
+                  {unreadCount > 99 ? '99+' : unreadCount}
+                </Text>
+              </View>
+            )}
           </TouchableOpacity>
         </View>
 

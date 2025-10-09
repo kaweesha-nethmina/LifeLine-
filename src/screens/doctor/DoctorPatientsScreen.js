@@ -36,6 +36,7 @@ import Card from '../../components/Card';
 import Button from '../../components/Button';
 import useProfilePicture from '../../hooks/useProfilePicture';
 import LabResultUploadModal from '../../components/LabResultUploadModal';
+import PatientLabResultsModal from '../../components/PatientLabResultsModal';
 
 // Add this import for Supabase storage
 import { supabaseStorage } from '../../services/supabase';
@@ -53,7 +54,9 @@ const DoctorPatientsScreen = ({ navigation }) => {
   const [selectedPatient, setSelectedPatient] = useState(null);
   const [showPatientModal, setShowPatientModal] = useState(false);
   const [showLabUploadModal, setShowLabUploadModal] = useState(false);
+  const [showPatientLabResultsModal, setShowPatientLabResultsModal] = useState(false);
   const [selectedPatientForUpload, setSelectedPatientForUpload] = useState(null);
+  const [selectedPatientForLabResults, setSelectedPatientForLabResults] = useState(null);
   const patientsListenerRef = useRef(null);
 
   useEffect(() => {
@@ -218,6 +221,11 @@ const DoctorPatientsScreen = ({ navigation }) => {
         });
         break;
       case 'labresults':
+        // Open patient lab results modal to show both doctor and patient uploaded results
+        setSelectedPatientForLabResults(patient);
+        setShowPatientLabResultsModal(true);
+        break;
+      case 'upload':
         // Open lab result upload modal
         setSelectedPatientForUpload(patient);
         setShowLabUploadModal(true);
@@ -344,6 +352,102 @@ const DoctorPatientsScreen = ({ navigation }) => {
       console.error('Error deleting lab result:', error);
       throw error;
     }
+  };
+
+  // Function to load patient lab results (both doctor-uploaded and patient-uploaded)
+  const loadPatientLabResults = async (patientId) => {
+    try {
+      if (!patientId) return { doctorResults: [], patientResults: [] };
+      
+      // Fetch all lab results for this patient
+      const labResultsQuery = query(
+        collection(db, 'users', patientId, 'labResults')
+      );
+      
+      const labResultsSnapshot = await getDocs(labResultsQuery);
+      const doctorResults = [];
+      const patientResults = [];
+      
+      labResultsSnapshot.forEach((doc) => {
+        const labResult = doc.data();
+        // Determine if it's doctor-uploaded or patient-uploaded
+        if (labResult.uploadedBy === userProfile.uid || labResult.uploadedBy === 'doctor' || !labResult.uploadedBy) {
+          // This is a doctor-uploaded result (either by current doctor or legacy format)
+          doctorResults.push({
+            id: doc.id,
+            ...labResult,
+            isDoctorUploaded: true,
+            doctorId: labResult.uploadedBy === 'doctor' || !labResult.uploadedBy ? userProfile.uid : labResult.uploadedBy
+          });
+        } else if (labResult.uploadedBy === 'patient') {
+          // This is a patient-uploaded result
+          patientResults.push({
+            id: doc.id,
+            ...labResult,
+            isPatientUploaded: true,
+            doctorId: userProfile.uid // Add doctorId for patient-uploaded results
+          });
+        }
+      });
+      
+      // Sort by upload date (newest first)
+      doctorResults.sort((a, b) => new Date(b.uploadDate) - new Date(a.uploadDate));
+      patientResults.sort((a, b) => new Date(b.uploadDate) - new Date(a.uploadDate));
+      
+      return { doctorResults, patientResults };
+    } catch (error) {
+      console.error('Error loading patient lab results:', error);
+      return { doctorResults: [], patientResults: [] };
+    }
+  };
+
+  // Function to handle viewing patient lab results
+  const handleViewPatientLabResults = async (patient) => {
+    try {
+      // Load both doctor-uploaded and patient-uploaded lab results
+      const { doctorResults, patientResults } = await loadPatientLabResults(patient.id);
+      
+      // Show results in an alert or navigate to a dedicated screen
+      // For now, we'll show a simple alert with counts
+      Alert.alert(
+        'Patient Lab Results',
+        `Doctor Uploaded: ${doctorResults.length}\nPatient Uploaded: ${patientResults.length}`,
+        [
+          {
+            text: 'View All',
+            onPress: () => {
+              // Navigate to a dedicated lab results screen (to be implemented)
+              Alert.alert('Feature Coming Soon', 'Detailed lab results view will be available soon.');
+            }
+          },
+          { text: 'OK' }
+        ]
+      );
+    } catch (error) {
+      console.error('Error viewing patient lab results:', error);
+      Alert.alert('Error', 'Failed to load patient lab results');
+    }
+  };
+
+  // Function to handle chat navigation for lab results
+  const handleLabResultChat = (labResult) => {
+    // Generate consistent chat ID using sorted participant IDs
+    const participantIds = [userProfile?.uid, selectedPatientForLabResults?.id].sort();
+    const chatId = `${participantIds[0]}_${participantIds[1]}`;
+    
+    // Navigate to the Chat screen in the Patients stack navigator
+    navigation.navigate('Patients', {
+      screen: 'Chat',
+      params: {
+        doctorId: userProfile?.uid,
+        doctorName: `${userProfile?.firstName || ''} ${userProfile?.lastName || ''}`.trim() || 'Doctor',
+        patientId: selectedPatientForLabResults?.id,
+        patientName: selectedPatientForLabResults?.name,
+        labResultId: labResult.id,
+        labResultTitle: labResult.title,
+        chatId: chatId // Pass the consistent chat ID
+      }
+    });
   };
 
   const calculateAge = (birthDate) => {
@@ -542,44 +646,46 @@ const DoctorPatientsScreen = ({ navigation }) => {
 
         <View style={[styles.patientActions, { borderTopColor: theme.BORDER }]}>
           <TouchableOpacity
-            style={styles.actionButton}
+            style={styles.iconButton}
             onPress={() => handlePatientAction(patient, 'chat')}
           >
-            <Ionicons name="chatbubble-outline" size={18} color={theme.SUCCESS} />
-            <Text style={[styles.actionText, { color: theme.SUCCESS }]}>Chat</Text>
+            <Ionicons name="chatbubble-outline" size={20} color={theme.SUCCESS} />
           </TouchableOpacity>
           
           <TouchableOpacity
-            style={styles.actionButton}
+            style={styles.iconButton}
             onPress={() => handlePatientAction(patient, 'prescription')}
           >
-            <Ionicons name="medical-outline" size={18} color={theme.PRIMARY} />
-            <Text style={[styles.actionText, { color: theme.PRIMARY }]}>Prescribe</Text>
+            <Ionicons name="medical-outline" size={20} color={theme.PRIMARY} />
           </TouchableOpacity>
           
           <TouchableOpacity
-            style={styles.actionButton}
+            style={styles.iconButton}
+            onPress={() => handlePatientAction(patient, 'upload')}
+          >
+            <Ionicons name="cloud-upload-outline" size={20} color={theme.INFO} />
+          </TouchableOpacity>
+          
+          <TouchableOpacity
+            style={styles.iconButton}
             onPress={() => handlePatientAction(patient, 'labresults')}
           >
-            <Ionicons name="flask-outline" size={18} color={theme.INFO} />
-            <Text style={[styles.actionText, { color: theme.INFO }]}>Lab Results</Text>
+            <Ionicons name="flask-outline" size={20} color={theme.INFO} />
           </TouchableOpacity>
           
           <TouchableOpacity
-            style={styles.actionButton}
+            style={styles.iconButton}
             onPress={() => handlePatientAction(patient, 'schedule')}
           >
-            <Ionicons name="calendar-outline" size={18} color={theme.INFO} />
-            <Text style={[styles.actionText, { color: theme.INFO }]}>Schedule</Text>
+            <Ionicons name="calendar-outline" size={20} color={theme.INFO} />
           </TouchableOpacity>
           
           {patient.status === 'emergency' && (
             <TouchableOpacity
-              style={styles.actionButton}
+              style={styles.iconButton}
               onPress={() => handlePatientAction(patient, 'emergency')}
             >
-              <Ionicons name="call-outline" size={18} color={theme.EMERGENCY} />
-              <Text style={[styles.actionText, { color: theme.EMERGENCY }]}>Emergency</Text>
+              <Ionicons name="call-outline" size={20} color={theme.EMERGENCY} />
             </TouchableOpacity>
           )}
         </View>
@@ -793,7 +899,7 @@ const DoctorPatientsScreen = ({ navigation }) => {
 
       <PatientDetailModal />
       
-      {/* Add the Lab Result Upload Modal */}
+      {/* Lab Result Upload Modal */}
       <LabResultUploadModal
         visible={showLabUploadModal}
         onClose={() => {
@@ -805,6 +911,18 @@ const DoctorPatientsScreen = ({ navigation }) => {
         patientId={selectedPatientForUpload?.id}
         patientName={selectedPatientForUpload?.name}
         doctorProfile={userProfile}
+      />
+      
+      {/* Patient Lab Results Modal */}
+      <PatientLabResultsModal
+        visible={showPatientLabResultsModal}
+        onClose={() => {
+          setShowPatientLabResultsModal(false);
+          setSelectedPatientForLabResults(null);
+        }}
+        patient={selectedPatientForLabResults}
+        currentUser={userProfile}
+        onChatPress={handleLabResultChat}
       />
     </SafeAreaView>
   );
@@ -983,19 +1101,18 @@ const getStyles = (theme) => StyleSheet.create({
   patientActions: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    paddingTop: SPACING.SM,
+    alignItems: 'center',
+    paddingTop: SPACING.MD,
     borderTopWidth: 1,
     borderTopColor: theme.BORDER,
   },
-  actionButton: {
+  iconButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: SPACING.XS,
-    paddingHorizontal: SPACING.SM,
-  },
-  actionText: {
-    fontSize: FONT_SIZES.XS,
-    marginTop: SPACING.XS / 2,
-    fontWeight: '500',
+    marginHorizontal: SPACING.XS,
   },
   emptyState: {
     alignItems: 'center',

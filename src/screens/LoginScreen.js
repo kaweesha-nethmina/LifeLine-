@@ -20,7 +20,6 @@ import { COLORS, FONT_SIZES, SPACING } from '../constants';
 const LoginScreen = ({ navigation }) => {
   const { login, loading, error, clearError } = useAuth();
   const { theme } = useTheme();
-  const styles = getStyles(theme);
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -214,10 +213,10 @@ const LoginScreen = ({ navigation }) => {
   );
 };
 
-const getStyles = (theme) => StyleSheet.create({
+const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.BACKGROUND,
+    backgroundColor: COLORS.WHITE,
   },
   keyboardView: {
     flex: 1,
@@ -247,12 +246,12 @@ const getStyles = (theme) => StyleSheet.create({
   title: {
     fontSize: FONT_SIZES.XXL,
     fontWeight: 'bold',
-    color: theme.TEXT_PRIMARY,
+    color: COLORS.TEXT_PRIMARY,
     marginBottom: SPACING.SM,
   },
   subtitle: {
     fontSize: FONT_SIZES.MD,
-    color: theme.TEXT_SECONDARY,
+    color: COLORS.TEXT_SECONDARY,
     textAlign: 'center',
     lineHeight: 22,
   },
@@ -268,14 +267,14 @@ const getStyles = (theme) => StyleSheet.create({
   errorContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: theme.ERROR + '20',
+    backgroundColor: COLORS.ERROR + '20',
     padding: SPACING.MD,
     borderRadius: 8,
     marginBottom: SPACING.LG,
   },
   errorText: {
     fontSize: FONT_SIZES.SM,
-    color: theme.ERROR,
+    color: COLORS.ERROR,
     marginLeft: SPACING.SM,
     flex: 1,
   },
@@ -290,7 +289,7 @@ const getStyles = (theme) => StyleSheet.create({
   },
   footerText: {
     fontSize: FONT_SIZES.SM,
-    color: theme.TEXT_SECONDARY,
+    color: COLORS.TEXT_SECONDARY,
   },
   signUpButton: {
     backgroundColor: 'transparent',
@@ -303,17 +302,17 @@ const getStyles = (theme) => StyleSheet.create({
     alignItems: 'center',
     paddingTop: SPACING.LG,
     borderTopWidth: 1,
-    borderTopColor: theme.BORDER,
+    borderTopColor: COLORS.BORDER,
   },
   emergencyTitle: {
     fontSize: FONT_SIZES.MD,
     fontWeight: '600',
-    color: theme.TEXT_PRIMARY,
+    color: COLORS.TEXT_PRIMARY,
     marginBottom: SPACING.SM,
   },
   emergencyText: {
     fontSize: FONT_SIZES.SM,
-    color: theme.TEXT_SECONDARY,
+    color: COLORS.TEXT_SECONDARY,
     textAlign: 'center',
     marginBottom: SPACING.MD,
     lineHeight: 20,

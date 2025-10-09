@@ -36,7 +36,8 @@ const SymptomCheckerTab = ({
   scrollViewRef,
   assessment,
   getSeverityColor,
-  theme // Add theme prop
+  theme, // Add theme prop
+  styles // Add styles prop
 }) => (
   <KeyboardAvoidingView
     style={[styles.keyboardAvoidingView, { backgroundColor: theme.BACKGROUND }]}
@@ -154,7 +155,7 @@ const SymptomCheckerTab = ({
   </KeyboardAvoidingView>
 );
 
-const HealthScoreTab = ({ healthScore, getHealthScoreColor, theme }) => ( // Add theme prop
+const HealthScoreTab = ({ healthScore, getHealthScoreColor, theme, styles }) => ( // Add styles prop
   <ScrollView style={[styles.tabContent, { backgroundColor: theme.BACKGROUND }]} showsVerticalScrollIndicator={false}>
     {healthScore && (
       <Card style={[styles.healthScoreCard, { backgroundColor: theme.CARD_BACKGROUND, borderColor: theme.BORDER }]}>
@@ -322,12 +323,14 @@ const AIHealthAssistantScreen = ({ navigation }) => {
           assessment={assessment}
           getSeverityColor={getSeverityColor}
           theme={theme} // Pass theme to SymptomCheckerTab
+          styles={styles} // Pass styles to SymptomCheckerTab
         />
       ) : (
         <HealthScoreTab 
           healthScore={healthScore}
           getHealthScoreColor={getHealthScoreColor}
           theme={theme} // Pass theme to HealthScoreTab
+          styles={styles} // Pass styles to HealthScoreTab
         />
       )}
     </SafeAreaView>
@@ -364,13 +367,14 @@ const getStyles = (theme) => StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: theme.BORDER,
   },
-  tabButton: {
+  tab: {
     flex: 1,
     paddingVertical: SPACING.SM,
     alignItems: 'center',
+    borderBottomWidth: 2,
+    borderBottomColor: 'transparent',
   },
   activeTab: {
-    borderBottomWidth: 2,
     borderBottomColor: theme.PRIMARY,
   },
   tabText: {

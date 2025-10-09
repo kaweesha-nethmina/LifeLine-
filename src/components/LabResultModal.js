@@ -31,7 +31,8 @@ const LabResultModal = ({
   onClose, 
   labResult,
   currentUser,
-  onDelete // Add onDelete function for patient to delete their own lab results
+  onDelete, // Add onDelete function for patient to delete their own lab results
+  onChatPress // Add onChatPress function for chat navigation
 }) => {
   const { theme } = useTheme();
   const styles = getStyles(theme);
@@ -237,6 +238,20 @@ const LabResultModal = ({
     );
   };
 
+  // Add function to handle chat navigation
+  const handleOpenChat = () => {
+    // Close the modal first
+    onClose();
+    
+    // Call the onChatPress function if provided
+    if (onChatPress) {
+      onChatPress(labResult);
+    } else {
+      // Fallback alert if no onChatPress function is provided
+      Alert.alert('Chat', 'Chat functionality will be implemented here');
+    }
+  };
+
   const isImageFile = () => {
     if (!labResult?.fileType && !labResult?.fileUrl) return false;
     
@@ -294,6 +309,10 @@ const LabResultModal = ({
 
   if (!labResult) return null;
 
+  // Determine if this is a patient-uploaded result
+  const isPatientUploaded = labResult.uploadedBy === 'patient';
+  const isDoctorUploaded = labResult.uploadedBy === 'doctor' || !labResult.uploadedBy;
+
   return (
     <Modal
       visible={visible}
@@ -324,16 +343,28 @@ const LabResultModal = ({
                 <Text style={[styles.infoValue, { color: theme.TEXT_PRIMARY }]}>{formatDate(labResult.uploadDate)}</Text>
               </View>
               
-              <View style={styles.infoRow}>
-                <Text style={[styles.infoLabel, { color: theme.TEXT_SECONDARY }]}>Doctor</Text>
-                <Text style={[styles.infoValue, { color: theme.TEXT_PRIMARY }]}>{labResult.doctorName || 'N/A'}</Text>
-              </View>
+              {isDoctorUploaded && (
+                <>
+                  <View style={styles.infoRow}>
+                    <Text style={[styles.infoLabel, { color: theme.TEXT_SECONDARY }]}>Doctor</Text>
+                    <Text style={[styles.infoValue, { color: theme.TEXT_PRIMARY }]}>{labResult.doctorName || 'N/A'}</Text>
+                  </View>
+                  
+                  <View style={styles.infoRow}>
+                    <Text style={[styles.infoLabel, { color: theme.TEXT_SECONDARY }]}>License Number</Text>
+                    <Text style={[styles.infoValue, { color: theme.TEXT_PRIMARY }]}>{labResult.doctorLicense || 'N/A'}</Text>
+                  </View>
+                </>
+              )}
               
-              <View style={styles.infoRow}>
-                <Text style={[styles.infoLabel, { color: theme.TEXT_SECONDARY }]}>License Number</Text>
-                <Text style={[styles.infoValue, { color: theme.TEXT_PRIMARY }]}>{labResult.doctorLicense || 'N/A'}</Text>
-              </View>
-              
+              {/* Show doctor information for patient-uploaded results as well */}
+              {isPatientUploaded && labResult.doctorName && (
+                <View style={styles.infoRow}>
+                  <Text style={[styles.infoLabel, { color: theme.TEXT_SECONDARY }]}>Doctor</Text>
+                  <Text style={[styles.infoValue, { color: theme.TEXT_PRIMARY }]}>{labResult.doctorName || 'N/A'}</Text>
+                </View>
+              )}
+
               <View style={styles.infoRow}>
                 <Text style={[styles.infoLabel, { color: theme.TEXT_SECONDARY }]}>Patient</Text>
                 <Text style={[styles.infoValue, { color: theme.TEXT_PRIMARY }]}>{labResult.patientName || 'N/A'}</Text>
@@ -355,6 +386,20 @@ const LabResultModal = ({
                   {labResult.fileSize ? `${Math.round(labResult.fileSize / 1024)} KB` : 'N/A'}
                 </Text>
               </View>
+              
+              <View style={styles.infoRow}>
+                <Text style={[styles.infoLabel, { color: theme.TEXT_SECONDARY }]}>Source</Text>
+                <Text style={[styles.infoValue, { color: theme.TEXT_PRIMARY }]}>
+                  {isPatientUploaded ? 'Uploaded by Patient' : 'Uploaded by Doctor'}
+                </Text>
+              </View>
+              
+              {isPatientUploaded && (
+                <View style={styles.infoRow}>
+                  <Text style={[styles.infoLabel, { color: theme.TEXT_SECONDARY }]}>Status</Text>
+                  <Text style={[styles.infoValue, { color: theme.WARNING }]}>Pending Review</Text>
+                </View>
+              )}
             </Card>
 
             {labResult.fileUrl && (
@@ -453,37 +498,64 @@ const LabResultModal = ({
           </ScrollView>
 
           <View style={styles.modalActions}>
-            <Button
-              title="Close"
+            <TouchableOpacity
               onPress={onClose}
-              variant="outline"
-              style={styles.actionButton}
-            />
+              style={[styles.iconButton, { backgroundColor: theme.GRAY_LIGHT }]}
+            >
+              <Ionicons name="close-outline" size={20} color={theme.TEXT_PRIMARY} />
+            </TouchableOpacity>
+            
             {labResult.fileUrl && (
               <>
-                <Button
-                  title={downloading ? "Downloading..." : "Download"}
+                <TouchableOpacity
                   onPress={handleDownloadFile}
-                  style={styles.actionButton}
+                  style={[styles.iconButton, { backgroundColor: theme.SUCCESS }]}
                   disabled={downloading || deleting}
-                />
-                <Button
-                  title={loadingFile ? "Opening..." : "View File"}
+                >
+                  <Ionicons 
+                    name={downloading ? "download-outline" : "download-outline"} 
+                    size={20} 
+                    color={theme.WHITE} 
+                  />
+                </TouchableOpacity>
+                
+                <TouchableOpacity
                   onPress={handleViewFile}
-                  style={styles.actionButton}
+                  style={[styles.iconButton, { backgroundColor: theme.INFO }]}
                   disabled={loadingFile || downloading || deleting}
-                />
+                >
+                  <Ionicons 
+                    name={loadingFile ? "eye-outline" : "eye-outline"} 
+                    size={20} 
+                    color={theme.WHITE} 
+                  />
+                </TouchableOpacity>
               </>
             )}
+            
+            {/* Show chat button for doctor-patient communication */}
+            {(isDoctorUploaded || isPatientUploaded) && (
+              <TouchableOpacity
+                onPress={handleOpenChat}
+                style={[styles.iconButton, { backgroundColor: theme.PRIMARY }]}
+              >
+                <Ionicons name="chatbubble-ellipses-outline" size={20} color={theme.WHITE} />
+              </TouchableOpacity>
+            )}
+            
             {/* Show delete button only if currentUser is the patient who owns this lab result */}
             {currentUser && currentUser.uid === labResult.patientId && (
-              <Button
-                title={deleting ? "Deleting..." : "Delete"}
+              <TouchableOpacity
                 onPress={handleDeleteLabResult}
-                style={styles.actionButton}
-                variant="danger"
+                style={[styles.iconButton, { backgroundColor: theme.ERROR }]}
                 disabled={deleting || downloading || loadingFile}
-              />
+              >
+                <Ionicons 
+                  name={deleting ? "trash-outline" : "trash-outline"} 
+                  size={20} 
+                  color={theme.WHITE} 
+                />
+              </TouchableOpacity>
             )}
           </View>
         </View>
@@ -637,10 +709,16 @@ const getStyles = (theme) => StyleSheet.create({
   },
   modalActions: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: SPACING.MD,
   },
-  actionButton: {
-    flex: 1,
+  iconButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
     marginHorizontal: SPACING.XS,
   },
 });

@@ -34,7 +34,7 @@ import Button from '../components/Button';
 import useProfilePicture from '../hooks/useProfilePicture';
 
 // Separate DoctorCard component to avoid re-creating it on every render
-const DoctorCard = ({ doctor, onViewProfile, onBookAppointment, chatMode, theme }) => { // Add theme prop
+const DoctorCard = ({ doctor, onViewProfile, onBookAppointment, chatMode, theme, styles }) => { // Add styles prop
   const { fetchUserProfilePicture, getCachedProfilePicture } = useProfilePicture();
   const [profilePicture, setProfilePicture] = useState(null);
   const [loadingProfilePicture, setLoadingProfilePicture] = useState(false);
@@ -544,6 +544,7 @@ const DoctorListScreen = ({ navigation, route }) => {
                 onBookAppointment={handleBookAppointment}
                 chatMode={chatMode}
                 theme={theme} // Pass theme to DoctorCard
+                styles={styles} // Pass styles to DoctorCard
               />
             ))
           )}
